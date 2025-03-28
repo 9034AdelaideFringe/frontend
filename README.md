@@ -87,6 +87,11 @@ The build artifacts will be stored in the `dist/` directory, ready to be deploye
 
 This project is currently in development.
 
+你可以使用以下测试账号登录：
+
+邮箱: test@example.com
+密码: password123
+
 ## License
 
 This project is licensed under the MIT License.
