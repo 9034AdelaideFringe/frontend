@@ -1,0 +1,51 @@
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+  background-color: white;
+}
+
+.formGroup input:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-color: transparent;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btnPrimary {
+  background-color: #ff3366;
+  color: white;
+}
+
+.btnPrimary:hover {
+  background-color: #e62c5d;
+}
+
+.btnSecondary {
+  background-color: transparent;
+  border: 1px solid #ff3366;
+  color: #ff3366;
+}
+
+.btnSecondary:hover {
+  background-color: #fff5f7;
+}

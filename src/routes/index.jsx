@@ -1,14 +1,17 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
-import HomePage from '../pages/HomePage'
 import MainLayout from '../components/layout/MainLayout'
+import HomePage from '../pages/HomePage'
+import EventsPage from '../pages/EventsPage'
+import EventDetailPage from '../pages/EventDetailPage'
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<HomePage />} />
-        {/* Add more routes as needed */}
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="events" element={<EventsPage />} />
+        <Route path="events/:id" element={<EventDetailPage />} />
       </Route>
     </Routes>
   )

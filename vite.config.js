@@ -6,7 +6,14 @@ export default defineConfig({
   plugins: [react()],
   css: {
     postcss: {
-      plugins: [] // 空数组而不是 false
+      plugins: []
+    },
+    modules: {
+      // 在开发模式下保留原始类名（添加后缀）
+      localsConvention: 'camelCaseOnly',
+      generateScopedName: process.env.NODE_ENV === 'development'
+        ? '[local]_[hash:base64:5]'
+        : '[hash:base64:5]'
     }
   },
   resolve: {
@@ -16,13 +23,12 @@ export default defineConfig({
   },
   server: {
     hmr: {
-      overlay: false // 禁用错误覆盖
+      overlay: false
     },
     fs: {
-      strict: true, // 限制访问仅限于当前工作目录
-      allow: ['.'] // 仅允许当前目录
+      strict: true,
+      allow: ['.']
     }
   },
-  // 强制使用本地配置，忽略父目录的配置
   configFile: resolve(__dirname, 'vite.config.js')
 })
