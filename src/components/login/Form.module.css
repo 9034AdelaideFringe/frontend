@@ -49,3 +49,9 @@
 .btnSecondary:hover {
   background-color: #fff5f7;
 }
+
+.errorText {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}

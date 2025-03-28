@@ -6,17 +6,19 @@ const RegisterForm = ({ onRegister }) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   const handleSubmit = (e) => {
     e.preventDefault()
     
-    // 简单的密码匹配验证
+    // 密码验证
     if (password !== confirmPassword) {
-      alert('两次输入的密码不匹配')
-      return
+      setPasswordError('两次输入的密码不匹配');
+      return;
     }
     
-    onRegister({ name, email, password })
+    setPasswordError('');
+    onRegister({ name, email, password });
   }
 
   return (
@@ -60,6 +62,7 @@ const RegisterForm = ({ onRegister }) => {
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
         />
+        {passwordError && <div className={styles.errorText}>{passwordError}</div>}
       </div>
       <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>注册</button>
     </form>

@@ -36,3 +36,64 @@
   display: flex;
   gap: 1rem;
 }
+
+.userMenu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ff3366;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.userAvatar:hover {
+  transform: scale(1.05);
+}
+
+.userDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  min-width: 150px;
+  z-index: 100;
+  margin-top: 8px;
+}
+
+.userMenu:hover .userDropdown {
+  display: flex;
+}
+
+.userName {
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.errorMessage {
+  color: #e53e3e;
+  background-color: #fed7d7;
+  border: 1px solid #feb2b2;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
