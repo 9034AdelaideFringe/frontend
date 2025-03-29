@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import Modal from '../login/modal'
 import LoginForm from '../login/LoginForm'
@@ -15,6 +15,10 @@ const Header = () => {
   const [loginError, setLoginError] = useState('')
   const [registerError, setRegisterError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
+  
+  const dropdownRef = useRef(null)
+  const avatarRef = useRef(null)
   
   // Check login status on page load
   useEffect(() => {
@@ -29,10 +33,39 @@ const Header = () => {
     checkAuth();
   }, []);
 
+  // Add click outside listener to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showDropdown && 
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target) &&
+        avatarRef.current && 
+        !avatarRef.current.contains(event.target)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    // Add event listener when dropdown is shown
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    // Clean up event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
+
   // Get user's initial
   const getUserInitial = () => {
     if (!user || !user.name) return '?';
     return user.name.charAt(0).toUpperCase();
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
   };
 
   const handleLogin = (credentials) => {
@@ -80,6 +113,7 @@ const Header = () => {
       .then(() => {
         setUser(null);
         setIsLoggedIn(false);
+        setShowDropdown(false);
         console.log('Logged out');
       })
       .catch(error => {
@@ -94,25 +128,36 @@ const Header = () => {
         <div className={styles.authButtons}>
           {isLoggedIn ? (
             <div className={styles.userMenu}>
-              <div className={styles.userAvatar}>
+              <div 
+                className={styles.userAvatar} 
+                onClick={toggleDropdown}
+                ref={avatarRef}
+                tabIndex="0"
+              >
                 {getUserInitial()}
               </div>
-              <div className={styles.userDropdown}>
+              <div 
+                className={`${styles.userDropdown} ${showDropdown ? styles.show : ''}`}
+                ref={dropdownRef}
+              >
                 <span className={styles.userName}>{user?.name}</span>
-                {user?.role === 'admin' && (
+                {user?.role === 'admin' ? (
                   <Link 
                     to="/admin" 
                     className={`${formStyles.btn} ${formStyles.btnSecondary} ${styles.menuLink}`}
+                    onClick={() => setShowDropdown(false)}
                   >
                     Admin Dashboard
                   </Link>
+                ) : (
+                  <Link 
+                    to="/user" 
+                    className={`${formStyles.btn} ${formStyles.btnSecondary} ${styles.menuLink}`}
+                    onClick={() => setShowDropdown(false)}
+                  >
+                    My Account
+                  </Link>
                 )}
-                <Link 
-                  to="/user" 
-                  className={`${formStyles.btn} ${formStyles.btnSecondary} ${styles.menuLink}`}
-                >
-                  My Account
-                </Link>
                 <button 
                   className={`${formStyles.btn} ${formStyles.btnSecondary}`}
                   onClick={handleLogout}

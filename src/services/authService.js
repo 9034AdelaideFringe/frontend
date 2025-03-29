@@ -2,14 +2,14 @@
 const users = [
   {
     id: '1',
-    name: '测试用户',
+    name: 'Tester',
     email: 'test@example.com',
     password: 'password123', // 实际项目中密码应该加密存储
     role: 'user'
   },
   {
     id: '2',
-    name: '管理员',
+    name: 'Admin',
     email: 'admin@example.com',
     password: 'admin123',
     role: 'admin'
