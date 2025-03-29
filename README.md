@@ -1,14 +1,21 @@
 # Adelaide Fringe React Application
 
-A web application for the Adelaide Fringe festival that allows users to browse events, view event details, and manage user authentication.
+A web application for the Adelaide Fringe festival that allows users to browse events, view event details, and manage user authentication. The application also includes an admin panel for event and ticket management.
 
 ## Features
 
+### User Features
 - Browse all events
 - View featured events on homepage
 - View detailed information about specific events
 - User authentication (login/register)
 - Responsive design
+
+### Admin Features
+- Dashboard with event statistics and quick actions
+- Event management (create, edit, delete events)
+- Ticket management (view, mark as used/cancelled)
+- Responsive admin interface
 
 ## Tech Stack
 
@@ -26,11 +33,13 @@ my-react-app/
 │   ├── assets/          # Images, fonts, and other static assets
 │   ├── components/      # Reusable UI components
 │   │   ├── common/      # Common UI components used across the app
-│   │   ├── layout/      # Layout components (Header, Footer, etc.)
+│   │   ├── layout/      # Layout components (Header, Footer, AdminLayout, etc.)
 │   │   └── login/       # Authentication related components
 │   ├── context/         # React context definitions
 │   ├── hooks/           # Custom React hooks
 │   ├── pages/           # Page components
+│   │   ├── admin/       # Admin pages (Dashboard, EventManagement, etc.)
+│   │   └── ...          # User-facing pages (HomePage, EventsPage, etc.)
 │   ├── routes/          # Routing configuration
 │   ├── services/        # API and external service integrations
 │   ├── store/           # State management
@@ -83,14 +92,23 @@ npm run build
 
 The build artifacts will be stored in the `dist/` directory, ready to be deployed to any static hosting service.
 
+## Authentication
+
+The application provides two types of users:
+
+### Regular User
+- Email: test@example.com
+- Password: password123
+
+### Admin User
+- Email: admin@example.com
+- Password: admin123
+
+Admin users have access to the admin panel at `/admin`
+
 ## Project Status
 
 This project is currently in development.
-
-你可以使用以下测试账号登录：
-
-邮箱: test@example.com
-密码: password123
 
 ## License
 
