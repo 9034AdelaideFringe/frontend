@@ -1,0 +1,108 @@
+.createEvent {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroupFull {
+  display: flex;
+  flex-direction: column;
+  grid-column: 1 / -1;
+}
+
+.formGroup label,
+.formGroupFull label {
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroupFull textarea {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroupFull textarea:focus {
+  border-color: #ff3366;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 51, 102, 0.2);
+}
+
+.inputError {
+  border-color: #f44336 !important;
+}
+
+.error {
+  color: #f44336;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.submitBtn, .cancelBtn {
+  padding: 10px 24px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.submitBtn {
+  background-color: #ff3366;
+  color: white;
+}
+
+.submitBtn:hover {
+  background-color: #e62c5d;
+}
+
+.cancelBtn {
+  background-color: #f2f2f2;
+  color: #666;
+}
+
+.cancelBtn:hover {
+  background-color: #e5e5e5;
+}
+
+.currentImage {
+  margin-bottom: 10px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

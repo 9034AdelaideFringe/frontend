@@ -91,12 +91,6 @@ const Header = () => {
     <header className={styles.header}>
       <div className={styles.container}>
         <Link to="/" className={styles.logo}>Adelaide Fringe</Link>
-        <nav className={styles.nav}>
-          <ul>
-            <li><Link to="/">首页</Link></li>
-            <li><Link to="/events">活动</Link></li>
-          </ul>
-        </nav>
         <div className={styles.authButtons}>
           {isLoggedIn ? (
             <div className={styles.userMenu}>
