@@ -103,7 +103,7 @@ const Header = () => {
                   className={`${formStyles.btn} ${formStyles.btnSecondary}`}
                   onClick={handleLogout}
                 >
-                  登出
+                  LOGOUT
                 </button>
               </div>
             </div>
@@ -117,7 +117,7 @@ const Header = () => {
                 }}
                 disabled={isLoading}
               >
-                登录
+                LOGIN
               </button>
               <button 
                 className={`${formStyles.btn} ${formStyles.btnPrimary}`}
@@ -127,7 +127,7 @@ const Header = () => {
                 }}
                 disabled={isLoading}
               >
-                注册
+                REGISTER
               </button>
             </>
           )}
@@ -138,7 +138,7 @@ const Header = () => {
       <Modal 
         isOpen={isLoginModalOpen} 
         onClose={() => setIsLoginModalOpen(false)}
-        title="登录"
+        title="LOGIN"
       >
         {loginError && <div className={styles.errorMessage}>{loginError}</div>}
         <LoginForm onLogin={handleLogin} />
@@ -148,7 +148,7 @@ const Header = () => {
       <Modal 
         isOpen={isRegisterModalOpen} 
         onClose={() => setIsRegisterModalOpen(false)}
-        title="注册"
+        title="REGISTER"
       >
         {registerError && <div className={styles.errorMessage}>{registerError}</div>}
         <RegisterForm onRegister={handleRegister} />

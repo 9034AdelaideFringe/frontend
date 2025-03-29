@@ -13,10 +13,10 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 获取事件数据以计算统计信息
+    // Get event data to calculate statistics
     getAllEvents()
       .then(events => {
-        // 在实际应用中，这些可能来自不同的API调用
+        // In a real application, these might come from different API calls
         const today = new Date();
         const upcoming = events.filter(event => {
           const eventDate = new Date(event.date);
@@ -26,10 +26,10 @@ const AdminDashboard = () => {
         setStats({
           totalEvents: events.length,
           upcomingEvents: upcoming.length,
-          activeTickets: Math.floor(Math.random() * 500) // 模拟数据
+          activeTickets: Math.floor(Math.random() * 500) // Mock data
         });
 
-        // 获取最近创建的事件（这里简单地取前3个）
+        // Get recently created events (simply taking the first 3 here)
         setRecentEvents(events.slice(0, 3));
         setLoading(false);
       })
@@ -42,48 +42,48 @@ const AdminDashboard = () => {
   return (
     <div className={styles.dashboard}>
       {loading ? (
-        <div className={styles.loading}>加载中...</div>
+        <div className={styles.loading}>Loading...</div>
       ) : (
         <>
           <div className={styles.statsGrid}>
             <div className={styles.statCard}>
-              <h3>活动总数</h3>
+              <h3>Total Events</h3>
               <div className={styles.statValue}>{stats.totalEvents}</div>
             </div>
             <div className={styles.statCard}>
-              <h3>即将到来的活动</h3>
+              <h3>Upcoming Events</h3>
               <div className={styles.statValue}>{stats.upcomingEvents}</div>
             </div>
             <div className={styles.statCard}>
-              <h3>有效票数</h3>
+              <h3>Active Tickets</h3>
               <div className={styles.statValue}>{stats.activeTickets}</div>
             </div>
           </div>
 
           <div className={styles.quickActions}>
-            <h2 className={styles.sectionTitle}>快速操作</h2>
+            <h2 className={styles.sectionTitle}>Quick Actions</h2>
             <div className={styles.actionButtons}>
               <Link to="/admin/events/create" className={styles.actionButton}>
-                创建新活动
+                Create New Event
               </Link>
               <Link to="/admin/events" className={styles.actionButton}>
-                管理活动
+                Manage Events
               </Link>
               <Link to="/admin/tickets" className={styles.actionButton}>
-                管理票务
+                Manage Tickets
               </Link>
             </div>
           </div>
 
           <div className={styles.recentEvents}>
-            <h2 className={styles.sectionTitle}>近期活动</h2>
+            <h2 className={styles.sectionTitle}>Recent Events</h2>
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>活动名称</th>
-                  <th>日期</th>
-                  <th>场地</th>
-                  <th>操作</th>
+                  <th>Event Name</th>
+                  <th>Date</th>
+                  <th>Venue</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -97,7 +97,7 @@ const AdminDashboard = () => {
                         to={`/admin/events/edit/${event.id}`}
                         className={styles.editBtn}
                       >
-                        编辑
+                        Edit
                       </Link>
                     </td>
                   </tr>

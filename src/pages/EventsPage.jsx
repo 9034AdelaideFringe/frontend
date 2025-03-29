@@ -22,10 +22,10 @@ const EventsPage = () => {
 
   return (
     <div className={styles.eventsPage}>
-      <h1 className={styles.pageTitle}>浏览所有活动</h1>
+      <h1 className={styles.pageTitle}>View all events</h1>
       
       {loading ? (
-        <div className={styles.loading}>加载中...</div>
+        <div className={styles.loading}>loading...</div>
       ) : (
         <EventList events={events} title="" />
       )}

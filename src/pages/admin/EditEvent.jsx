@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getEventById } from '../../services/eventService'
-import styles from './CreateEvent.module.css' // 可以重用创建事件的样式
+import styles from './CreateEvent.module.css' // Reusing create event styles
 
 const EditEvent = () => {
   const { id } = useParams();
@@ -22,7 +22,7 @@ const EditEvent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // 获取事件详情
+    // Get event details
     getEventById(id)
       .then(eventData => {
         setFormData({
@@ -41,7 +41,7 @@ const EditEvent = () => {
       })
       .catch(error => {
         console.error('Error fetching event details:', error);
-        alert('获取活动信息失败');
+        alert('Failed to retrieve event information');
         navigate('/admin/events');
       });
   }, [id, navigate]);
@@ -72,13 +72,13 @@ const EditEvent = () => {
     const newErrors = {};
 
     // Required fields
-    if (!formData.title) newErrors.title = '活动名称是必填项';
-    if (!formData.date) newErrors.date = '日期是必填项';
-    if (!formData.time) newErrors.time = '时间是必填项';
-    if (!formData.venue) newErrors.venue = '场地是必填项';
-    if (!formData.price) newErrors.price = '价格是必填项';
-    if (!formData.description) newErrors.description = '活动描述是必填项';
-    if (!formData.abstract) newErrors.abstract = '活动简介是必填项';
+    if (!formData.title) newErrors.title = 'Event name is required';
+    if (!formData.date) newErrors.date = 'Date is required';
+    if (!formData.time) newErrors.time = 'Time is required';
+    if (!formData.venue) newErrors.venue = 'Venue is required';
+    if (!formData.price) newErrors.price = 'Price is required';
+    if (!formData.description) newErrors.description = 'Event description is required';
+    if (!formData.abstract) newErrors.abstract = 'Event abstract is required';
 
     return newErrors;
   };
@@ -96,23 +96,23 @@ const EditEvent = () => {
     setIsSubmitting(true);
     
     try {
-      // 这里应该调用API更新活动
-      // 模拟API调用
+      // Call API to update event here
+      // Mock API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      console.log('更新的活动数据:', { id, ...formData });
-      alert('活动更新成功！');
+      console.log('Updated event data:', { id, ...formData });
+      alert('Event updated successfully!');
       navigate('/admin/events');
     } catch (error) {
-      console.error('更新活动出错:', error);
-      alert('更新活动时出错，请重试');
+      console.error('Error updating event:', error);
+      alert('Error updating event, please try again');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (loading) {
-    return <div className={styles.loading}>加载中...</div>;
+    return <div className={styles.loading}>Loading...</div>;
   }
 
   return (
@@ -120,7 +120,7 @@ const EditEvent = () => {
       <form onSubmit={handleSubmit}>
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
-            <label htmlFor="title">活动名称</label>
+            <label htmlFor="title">Event Name</label>
             <input
               id="title"
               name="title"
@@ -133,7 +133,7 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="date">活动日期</label>
+            <label htmlFor="date">Event Date</label>
             <input
               id="date"
               name="date"
@@ -147,7 +147,7 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="time">活动时间</label>
+            <label htmlFor="time">Event Time</label>
             <input
               id="time"
               name="time"
@@ -161,7 +161,7 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="venue">活动场地</label>
+            <label htmlFor="venue">Venue</label>
             <input
               id="venue"
               name="venue"
@@ -174,12 +174,12 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="price">价格范围</label>
+            <label htmlFor="price">Price Range</label>
             <input
               id="price"
               name="price"
               type="text"
-              placeholder="例如: 40-120"
+              placeholder="e.g., 40-120"
               value={formData.price}
               onChange={handleInputChange}
               className={errors.price ? styles.inputError : ''}
@@ -188,7 +188,7 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="image">活动图片</label>
+            <label htmlFor="image">Event Image</label>
             {currentImage && (
               <div className={styles.currentImage}>
                 <img 
@@ -196,7 +196,7 @@ const EditEvent = () => {
                   alt="Current event" 
                   style={{ maxWidth: '100px', marginBottom: '10px' }}
                 />
-                <p>当前图片</p>
+                <p>Current image</p>
               </div>
             )}
             <input
@@ -209,7 +209,7 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroupFull}>
-            <label htmlFor="abstract">活动简介</label>
+            <label htmlFor="abstract">Event Abstract</label>
             <textarea
               id="abstract"
               name="abstract"
@@ -222,7 +222,7 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroupFull}>
-            <label htmlFor="description">活动详细描述</label>
+            <label htmlFor="description">Event Description</label>
             <textarea
               id="description"
               name="description"
@@ -242,14 +242,14 @@ const EditEvent = () => {
             className={styles.cancelBtn}
             disabled={isSubmitting}
           >
-            取消
+            Cancel
           </button>
           <button 
             type="submit" 
             className={styles.submitBtn}
             disabled={isSubmitting}
           >
-            {isSubmitting ? '提交中...' : '更新活动'}
+            {isSubmitting ? 'Submitting...' : 'Update Event'}
           </button>
         </div>
       </form>

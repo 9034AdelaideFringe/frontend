@@ -1,11 +1,13 @@
 import React from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { logout } from '../../services/authService'
+import { getCurrentUser } from '../../services/authService'
 import styles from './AdminLayout.module.css'
 
 const AdminLayout = () => {
   const location = useLocation();
   const { pathname } = location;
+  const user = getCurrentUser();
   
   const handleLogout = () => {
     logout().then(() => {
@@ -15,54 +17,68 @@ const AdminLayout = () => {
   
   return (
     <div className={styles.adminLayout}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <h2>管理控制台</h2>
+      <header className={styles.adminHeader}>
+        <div className={styles.headerContainer}>         
+          <nav className={styles.adminNav}>
+            <ul>
+              <li>
+                <Link 
+                  to="/admin" 
+                  className={pathname === '/admin' ? styles.active : ''}
+                >
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/admin/events" 
+                  className={pathname.includes('/admin/events') && !pathname.includes('/create') && !pathname.includes('/edit') ? styles.active : ''}
+                >
+                  Events
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/admin/events/create" 
+                  className={pathname === '/admin/events/create' ? styles.active : ''}
+                >
+                  Create Event
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/admin/tickets" 
+                  className={pathname === '/admin/tickets' ? styles.active : ''}
+                >
+                  Tickets
+                </Link>
+              </li>
+            </ul>
+          </nav>
+          
+          <div className={styles.headerRight}>
+            <div className={styles.actionButtons}>
+              <Link to="/" className={styles.backToSite}>
+                Back to Site
+              </Link>
+              <button className={styles.logoutBtn} onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
+          </div>
         </div>
-        <nav className={styles.sidebarNav}>
-          <ul>
-            <li>
-              <Link 
-                to="/admin" 
-                className={pathname === '/admin' ? styles.active : ''}
-              >
-                仪表盘
-              </Link>
-            </li>
-            <li>
-              <Link 
-                to="/admin/events" 
-                className={pathname.includes('/admin/events') ? styles.active : ''}
-              >
-                活动管理
-              </Link>
-            </li>
-            <li>
-              <Link 
-                to="/admin/tickets" 
-                className={pathname === '/admin/tickets' ? styles.active : ''}
-              >
-                票务管理
-              </Link>
-            </li>
-          </ul>
-        </nav>
-        <div className={styles.sidebarFooter}>
-          <button className={styles.logoutBtn} onClick={handleLogout}>退出登录</button>
-          <Link to="/" className={styles.backToSite}>返回站点</Link>
-        </div>
-      </aside>
+      </header>
       
       <main className={styles.content}>
-        <header className={styles.contentHeader}>
+        <div className={styles.contentHeader}>
           <h1>
-            {pathname === '/admin' && '仪表盘'}
-            {pathname === '/admin/events' && '活动管理'}
-            {pathname === '/admin/events/create' && '创建活动'}
-            {pathname.includes('/admin/events/edit') && '编辑活动'}
-            {pathname === '/admin/tickets' && '票务管理'}
+            {pathname === '/admin' && 'Admin Dashboard'}
+            {pathname === '/admin/events' && 'Event Management'}
+            {pathname === '/admin/events/create' && 'Create New Event'}
+            {pathname.includes('/admin/events/edit') && 'Edit Event'}
+            {pathname === '/admin/tickets' && 'Ticket Management'}
           </h1>
-        </header>
+        </div>
         <div className={styles.contentBody}>
           <Outlet />
         </div>

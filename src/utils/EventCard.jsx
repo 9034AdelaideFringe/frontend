@@ -14,7 +14,7 @@ const EventCard = ({ event }) => {
         <h3 className={styles.title}>{title}</h3>
         <p className={styles.abstract}>{abstract}</p>
         <Link to={`/events/${id}`} className={styles.link}>
-          了解更多
+          Learn More
         </Link>
       </div>
     </div>

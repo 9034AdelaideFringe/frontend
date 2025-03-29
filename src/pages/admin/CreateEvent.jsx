@@ -43,13 +43,13 @@ const CreateEvent = () => {
     const newErrors = {};
 
     // Required fields
-    if (!formData.title) newErrors.title = '活动名称是必填项';
-    if (!formData.date) newErrors.date = '日期是必填项';
-    if (!formData.time) newErrors.time = '时间是必填项';
-    if (!formData.venue) newErrors.venue = '场地是必填项';
-    if (!formData.price) newErrors.price = '价格是必填项';
-    if (!formData.description) newErrors.description = '活动描述是必填项';
-    if (!formData.abstract) newErrors.abstract = '活动简介是必填项';
+    if (!formData.title) newErrors.title = 'Event name is required';
+    if (!formData.date) newErrors.date = 'Date is required';
+    if (!formData.time) newErrors.time = 'Time is required';
+    if (!formData.venue) newErrors.venue = 'Venue is required';
+    if (!formData.price) newErrors.price = 'Price is required';
+    if (!formData.description) newErrors.description = 'Event description is required';
+    if (!formData.abstract) newErrors.abstract = 'Event abstract is required';
 
     return newErrors;
   };
@@ -67,16 +67,16 @@ const CreateEvent = () => {
     setIsSubmitting(true);
     
     try {
-      // 在这里应该调用API创建活动
-      // 模拟API调用
+      // Call API to create event here
+      // Mock API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      console.log('提交的活动数据:', formData);
-      alert('活动创建成功！');
+      console.log('Submitted event data:', formData);
+      alert('Event created successfully!');
       navigate('/admin/events');
     } catch (error) {
-      console.error('创建活动出错:', error);
-      alert('创建活动时出错，请重试');
+      console.error('Error creating event:', error);
+      alert('Error creating event, please try again');
     } finally {
       setIsSubmitting(false);
     }
@@ -87,7 +87,7 @@ const CreateEvent = () => {
       <form onSubmit={handleSubmit}>
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
-            <label htmlFor="title">活动名称</label>
+            <label htmlFor="title">Event Name</label>
             <input
               id="title"
               name="title"
@@ -100,7 +100,7 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="date">活动日期</label>
+            <label htmlFor="date">Event Date</label>
             <input
               id="date"
               name="date"
@@ -114,7 +114,7 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="time">活动时间</label>
+            <label htmlFor="time">Event Time</label>
             <input
               id="time"
               name="time"
@@ -128,7 +128,7 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="venue">活动场地</label>
+            <label htmlFor="venue">Venue</label>
             <input
               id="venue"
               name="venue"
@@ -141,12 +141,12 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="price">价格范围</label>
+            <label htmlFor="price">Price Range</label>
             <input
               id="price"
               name="price"
               type="text"
-              placeholder="例如: 40-120"
+              placeholder="e.g., 40-120"
               value={formData.price}
               onChange={handleInputChange}
               className={errors.price ? styles.inputError : ''}
@@ -155,7 +155,7 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="image">活动图片</label>
+            <label htmlFor="image">Event Image</label>
             <input
               id="image"
               name="image"
@@ -166,7 +166,7 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroupFull}>
-            <label htmlFor="abstract">活动简介</label>
+            <label htmlFor="abstract">Event Abstract</label>
             <textarea
               id="abstract"
               name="abstract"
@@ -179,7 +179,7 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroupFull}>
-            <label htmlFor="description">活动详细描述</label>
+            <label htmlFor="description">Event Description</label>
             <textarea
               id="description"
               name="description"
@@ -199,14 +199,14 @@ const CreateEvent = () => {
             className={styles.cancelBtn}
             disabled={isSubmitting}
           >
-            取消
+            Cancel
           </button>
           <button 
             type="submit" 
             className={styles.submitBtn}
             disabled={isSubmitting}
           >
-            {isSubmitting ? '提交中...' : '创建活动'}
+            {isSubmitting ? 'Submitting...' : 'Create Event'}
           </button>
         </div>
       </form>

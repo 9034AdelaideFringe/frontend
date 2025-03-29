@@ -11,9 +11,9 @@ const RegisterForm = ({ onRegister }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     
-    // 密码验证
+    // Password validation
     if (password !== confirmPassword) {
-      setPasswordError('两次输入的密码不匹配');
+      setPasswordError('Passwords do not match');
       return;
     }
     
@@ -24,7 +24,7 @@ const RegisterForm = ({ onRegister }) => {
   return (
     <form onSubmit={handleSubmit}>
       <div className={styles.formGroup}>
-        <label htmlFor="name">姓名</label>
+        <label htmlFor="name">Name</label>
         <input
           type="text"
           id="name"
@@ -34,7 +34,7 @@ const RegisterForm = ({ onRegister }) => {
         />
       </div>
       <div className={styles.formGroup}>
-        <label htmlFor="email">邮箱</label>
+        <label htmlFor="email">Email</label>
         <input
           type="email"
           id="email"
@@ -44,7 +44,7 @@ const RegisterForm = ({ onRegister }) => {
         />
       </div>
       <div className={styles.formGroup}>
-        <label htmlFor="password">密码</label>
+        <label htmlFor="password">Password</label>
         <input
           type="password"
           id="password"
@@ -54,7 +54,7 @@ const RegisterForm = ({ onRegister }) => {
         />
       </div>
       <div className={styles.formGroup}>
-        <label htmlFor="confirmPassword">确认密码</label>
+        <label htmlFor="confirmPassword">Confirm Password</label>
         <input
           type="password"
           id="confirmPassword"
@@ -64,7 +64,7 @@ const RegisterForm = ({ onRegister }) => {
         />
         {passwordError && <div className={styles.errorText}>{passwordError}</div>}
       </div>
-      <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>注册</button>
+      <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Register</button>
     </form>
   )
 }

@@ -10,7 +10,7 @@ const EventDetailPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // 获取事件详情
+    // Get event details
     getEventById(id)
       .then(data => {
         setEvent(data);
@@ -23,7 +23,7 @@ const EventDetailPage = () => {
   }, [id]);
 
   if (loading) {
-    return <div className={styles.loading}>加载中...</div>;
+    return <div className={styles.loading}>Loading...</div>;
   }
 
   if (error) {
@@ -31,7 +31,7 @@ const EventDetailPage = () => {
   }
 
   if (!event) {
-    return <div className={styles.error}>未找到该活动</div>;
+    return <div className={styles.error}>Event not found</div>;
   }
 
   return (
@@ -45,32 +45,32 @@ const EventDetailPage = () => {
         
         <div className={styles.info}>
           <div className={styles.infoItem}>
-            <span className={styles.label}>日期:</span>
+            <span className={styles.label}>Date:</span>
             <span>{event.date}</span>
           </div>
           <div className={styles.infoItem}>
-            <span className={styles.label}>时间:</span>
+            <span className={styles.label}>Time:</span>
             <span>{event.time}</span>
           </div>
           <div className={styles.infoItem}>
-            <span className={styles.label}>地点:</span>
+            <span className={styles.label}>Venue:</span>
             <span>{event.venue}</span>
           </div>
           <div className={styles.infoItem}>
-            <span className={styles.label}>票价:</span>
+            <span className={styles.label}>Price:</span>
             <span>{event.price}</span>
           </div>
         </div>
         
         <div className={styles.description}>
-          <h2>活动详情</h2>
+          <h2>Event Details</h2>
           <p>{event.description}</p>
         </div>
         
         <div className={styles.actions}>
-          <button className={styles.btnPrimary}>购票</button>
+          <button className={styles.btnPrimary}>Buy Tickets</button>
           <Link to="/events" className={styles.btnSecondary}>
-            返回活动列表
+            Back to Events
           </Link>
         </div>
       </div>

@@ -1,50 +1,50 @@
 import React, { useState, useEffect } from 'react'
 import styles from './TicketManagement.module.css'
 
-// Mock data for tickets
+// Mock data for tickets - Update event names to English
 const mockTickets = [
   { 
     id: '1', 
     eventId: '1', 
-    eventName: '马戏团表演',
-    customerName: '张三',
-    customerEmail: 'zhang@example.com',
+    eventName: 'Circus Performance',
+    customerName: 'John Smith',
+    customerEmail: 'john@example.com',
     purchaseDate: '2025-02-15',
     quantity: 2,
-    totalPrice: '¥200',
+    totalPrice: '$200',
     status: 'active'
   },
   { 
     id: '2', 
     eventId: '2', 
-    eventName: '爵士音乐节',
-    customerName: '李四',
-    customerEmail: 'li@example.com',
+    eventName: 'Jazz Festival',
+    customerName: 'Emma Lee',
+    customerEmail: 'emma@example.com',
     purchaseDate: '2025-02-14',
     quantity: 1,
-    totalPrice: '¥95',
+    totalPrice: '$95',
     status: 'active'
   },
   { 
     id: '3', 
     eventId: '4', 
-    eventName: '戏剧表演《夜幕降临》',
-    customerName: '王五',
-    customerEmail: 'wang@example.com',
+    eventName: 'Theatre Performance "Nightfall"',
+    customerName: 'Michael Wang',
+    customerEmail: 'michael@example.com',
     purchaseDate: '2025-02-10',
     quantity: 4,
-    totalPrice: '¥340',
+    totalPrice: '$340',
     status: 'active'
   },
   { 
     id: '4', 
     eventId: '3', 
-    eventName: '当代艺术展',
-    customerName: '赵六',
-    customerEmail: 'zhao@example.com',
+    eventName: 'Contemporary Art Exhibition',
+    customerName: 'Sarah Zhang',
+    customerEmail: 'sarah@example.com',
     purchaseDate: '2025-02-05',
     quantity: 3,
-    totalPrice: '¥75',
+    totalPrice: '$75',
     status: 'used'
   }
 ];
@@ -56,7 +56,7 @@ const TicketManagement = () => {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    // 模拟API加载
+    // Mock API loading
     setTimeout(() => {
       setTickets(mockTickets);
       setLoading(false);
@@ -71,7 +71,7 @@ const TicketManagement = () => {
     ));
   };
 
-  // 过滤和搜索票务
+  // Filter and search tickets
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.eventName.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          ticket.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -87,7 +87,7 @@ const TicketManagement = () => {
         <div className={styles.search}>
           <input
             type="text"
-            placeholder="搜索票务..."
+            placeholder="Search tickets..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -97,30 +97,30 @@ const TicketManagement = () => {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           >
-            <option value="all">全部票务</option>
-            <option value="active">有效票</option>
-            <option value="used">已使用</option>
-            <option value="cancelled">已取消</option>
+            <option value="all">All Tickets</option>
+            <option value="active">Active</option>
+            <option value="used">Used</option>
+            <option value="cancelled">Cancelled</option>
           </select>
         </div>
       </div>
       
       {loading ? (
-        <div className={styles.loading}>加载中...</div>
+        <div className={styles.loading}>Loading...</div>
       ) : (
         <div className={styles.tableContainer}>
           <table className={styles.table}>
             <thead>
               <tr>
                 <th>ID</th>
-                <th>活动名称</th>
-                <th>客户姓名</th>
-                <th>客户邮箱</th>
-                <th>购买日期</th>
-                <th>数量</th>
-                <th>总价</th>
-                <th>状态</th>
-                <th>操作</th>
+                <th>Event Name</th>
+                <th>Customer</th>
+                <th>Email</th>
+                <th>Purchase Date</th>
+                <th>Quantity</th>
+                <th>Total Price</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -136,9 +136,9 @@ const TicketManagement = () => {
                     <td>{ticket.totalPrice}</td>
                     <td>
                       <span className={`${styles.status} ${styles[ticket.status]}`}>
-                        {ticket.status === 'active' && '有效'}
-                        {ticket.status === 'used' && '已使用'}
-                        {ticket.status === 'cancelled' && '已取消'}
+                        {ticket.status === 'active' && 'Active'}
+                        {ticket.status === 'used' && 'Used'}
+                        {ticket.status === 'cancelled' && 'Cancelled'}
                       </span>
                     </td>
                     <td className={styles.actions}>
@@ -148,13 +148,13 @@ const TicketManagement = () => {
                             onClick={() => handleStatusChange(ticket.id, 'used')}
                             className={styles.useBtn}
                           >
-                            标记已用
+                            Mark Used
                           </button>
                           <button 
                             onClick={() => handleStatusChange(ticket.id, 'cancelled')}
                             className={styles.cancelBtn}
                           >
-                            取消
+                            Cancel
                           </button>
                         </>
                       )}
@@ -163,7 +163,7 @@ const TicketManagement = () => {
                           onClick={() => handleStatusChange(ticket.id, 'active')}
                           className={styles.restoreBtn}
                         >
-                          恢复
+                          Restore
                         </button>
                       )}
                       {ticket.status === 'cancelled' && (
@@ -171,7 +171,7 @@ const TicketManagement = () => {
                           onClick={() => handleStatusChange(ticket.id, 'active')}
                           className={styles.restoreBtn}
                         >
-                          恢复
+                          Restore
                         </button>
                       )}
                     </td>
@@ -180,7 +180,7 @@ const TicketManagement = () => {
               ) : (
                 <tr>
                   <td colSpan="9" className={styles.noTickets}>
-                    没有找到符合条件的票务
+                    No tickets found matching your criteria
                   </td>
                 </tr>
               )}

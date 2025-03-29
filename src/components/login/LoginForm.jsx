@@ -7,14 +7,14 @@ const LoginForm = ({ onLogin }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // 这里可以添加表单验证
+    // Form validation can be added here
     onLogin({ email, password })
   }
 
   return (
     <form onSubmit={handleSubmit}>
       <div className={styles.formGroup}>
-        <label htmlFor="email">邮箱</label>
+        <label htmlFor="email">Email</label>
         <input
           type="email"
           id="email"
@@ -24,7 +24,7 @@ const LoginForm = ({ onLogin }) => {
         />
       </div>
       <div className={styles.formGroup}>
-        <label htmlFor="password">密码</label>
+        <label htmlFor="password">Password</label>
         <input
           type="password"
           id="password"
@@ -33,7 +33,7 @@ const LoginForm = ({ onLogin }) => {
           required
         />
       </div>
-      <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>登录</button>
+      <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Login</button>
     </form>
   )
 }

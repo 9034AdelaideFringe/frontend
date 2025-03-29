@@ -2,7 +2,7 @@ import React from 'react'
 import EventCard from './EventCard'
 import styles from './EventList.module.css'
 
-const EventList = ({ events, title = "活动列表" }) => {
+const EventList = ({ events, title = "Event List" }) => {
   return (
     <section className={styles.section}>
       {title && <h2 className={styles.title}>{title}</h2>}
