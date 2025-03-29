@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import EventList from '../utils/EventList'
+import CountdownTimer from '../components/common/CountdownTimer'
 import { getFeaturedEvents } from '../services/eventService'
 import styles from './HomePage.module.css'
 
@@ -26,7 +27,10 @@ const HomePage = () => {
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <h1>Welcome to Adelaide Fringe</h1>
-          <p>Discover amazing events and performances.</p>
+          <h2>Let’s start:</h2>
+          
+          <CountdownTimer />
+          
           <div className={styles.actionButtons}>
             <Link to="/events" className={styles.btnPrimary}>Browse All Events</Link>
           </div>

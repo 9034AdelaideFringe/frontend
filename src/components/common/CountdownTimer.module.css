@@ -1,0 +1,115 @@
+.countdownContainer {
+  margin: 30px auto 40px;
+  max-width: 400px;
+}
+
+.countdownTimer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.01);
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.countdownTimer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent, 
+    rgba(255, 51, 102, 0.1), 
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: glowEffect 3s linear infinite;
+}
+
+@keyframes glowEffect {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.timeUnit {
+  text-align: center;
+  min-width: 80px;
+}
+
+.timeValue {
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 51, 102, 0.7);
+  font-family: 'Courier New', monospace;
+  position: relative;
+}
+
+.timeLabel {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  margin-top: 5px;
+}
+
+.timeSeparator {
+  font-size: 3.5rem;
+  color: #ff3366;
+  margin: 0 15px;
+  font-weight: bold;
+  animation: pulsate 1.5s infinite ease-in-out;
+  text-shadow: 0 0 10px rgba(255, 51, 102, 0.7);
+  line-height: 1;
+  align-self: flex-start;
+  padding-top: 5px;
+}
+
+@keyframes pulsate {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .timeValue {
+    font-size: 2.8rem;
+  }
+  
+  .timeSeparator {
+    font-size: 2.8rem;
+    margin: 0 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .timeValue {
+    font-size: 2.2rem;
+  }
+  
+  .timeUnit {
+    min-width: 60px;
+  }
+  
+  .timeSeparator {
+    font-size: 2.2rem;
+    margin: 0 8px;
+  }
+  
+  .timeLabel {
+    font-size: 0.8rem;
+  }
+}

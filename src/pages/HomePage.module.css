@@ -5,36 +5,105 @@
 }
 
 .hero {
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('/hero-image.jpg');
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)), 
+              url('https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60');
   background-size: cover;
   background-position: center;
   color: white;
   text-align: center;
-  padding: 100px 20px;
-  border-radius: 8px;
-  margin: 20px 0;
+  padding: 80px 20px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* First ::before for the gradient overlay */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(255, 230, 240, 0.7) 0%, transparent 30%),
+    radial-gradient(circle at 80% 70%, rgba(230, 255, 250, 0.5) 0%, transparent 30%);
+  z-index: 1;
+}
+
+/* Add a pattern overlay for texture */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  z-index: 1;
+  opacity: 0.5;
+}
+
+/* Add floating blob decoration */
+.heroContent::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23ffffff' d='M45.7,-53.8C59.1,-43.3,69.7,-28.7,73.7,-12.2C77.7,4.3,75.3,22.8,65.8,35.4C56.3,48,39.9,54.9,23.4,60.1C6.9,65.3,-9.8,68.9,-25.4,65.3C-41.1,61.6,-55.9,50.6,-65.3,35.4C-74.8,20.1,-79,0.5,-76,-17.8C-73.1,-36.1,-63,-53.1,-48.3,-63.3C-33.7,-73.4,-14.5,-76.6,1,-77.9C16.5,-79.1,32.3,-64.4,45.7,-53.8Z' transform='translate(100 100)' stroke-width='0' opacity='0.1'/%3E%3C/svg%3E");
+  z-index: 0;
+  animation: float 25s infinite ease-in-out;
+  opacity: 0.5;
+  pointer-events: none;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
 }
 
 .heroContent {
   max-width: 800px;
   margin: 0 auto;
+  position: relative;
+  z-index: 2;
 }
 
 .hero h1 {
   font-size: 2.5rem;
   margin-bottom: 16px;
+  color: #333;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .hero p {
   font-size: 1.2rem;
-  margin-bottom: 32px;
-  opacity: 0.9;
+  margin-bottom: 25px;
+  color: #444;
+  font-weight: 500;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-15px) scale(1.05) rotate(2deg);
+  }
+  50% {
+    transform: translateY(0) scale(1.1) rotate(5deg);
+  }
+  75% {
+    transform: translateY(15px) scale(1.05) rotate(3deg);
+  }
 }
 
 .actionButtons {
   display: flex;
   gap: 16px;
   justify-content: center;
+  position: relative;
+  z-index: 2;
 }
 
 .btnPrimary {
@@ -42,14 +111,21 @@
   background-color: #ff3366;
   color: white;
   padding: 12px 24px;
-  border-radius: 4px;
+  border-radius: 30px;
   text-decoration: none;
   font-weight: 600;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4);
 }
 
 .btnPrimary:hover {
   background-color: #e62c5d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 51, 102, 0.5);
+}
+
+.btnPrimary:active {
+  transform: translateY(0);
 }
 
 .loading {
