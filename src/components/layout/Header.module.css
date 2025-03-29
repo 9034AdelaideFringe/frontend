@@ -73,7 +73,7 @@
   padding: 16px;
   display: none;
   flex-direction: column;
-  min-width: 150px;
+  min-width: 180px;
   z-index: 100;
   margin-top: 8px;
 }
@@ -96,4 +96,11 @@
   padding: 8px 12px;
   margin-bottom: 16px;
   font-size: 0.9rem;
+}
+
+.menuLink {
+  display: block;
+  text-align: center;
+  margin-bottom: 8px;
+  text-decoration: none;
 }

@@ -1,0 +1,217 @@
+.userLayout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* User Header */
+.userHeader {
+  background-color: #ff3366;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.headerContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+  flex-direction: row;
+}
+
+.userNav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.userNav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+}
+
+.userNav li {
+  margin: 0;
+}
+
+.userNav a {
+  display: block;
+  padding: 0 15px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  height: 70px;
+  line-height: 70px;
+  position: relative;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.userNav a:hover {
+  color: white;
+}
+
+.userNav a.active {
+  color: white;
+}
+
+.userNav a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: transparent;
+  transition: background-color 0.3s ease;
+}
+
+.userNav a.active::after {
+  background-color: white;
+}
+
+.userNav a:hover::after {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  min-width: 200px;
+  justify-content: flex-end;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.logoutBtn, .backToSite {
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.logoutBtn {
+  background-color: white;
+  border: 1px solid white;
+  color: #ff3366;
+}
+
+.logoutBtn:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.backToSite {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.backToSite:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-color: white;
+}
+
+/* Content Area */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f6f6f9;
+  overflow: hidden;
+}
+
+.contentHeader {
+  background-color: white;
+  padding: 20px 30px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.contentHeader h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.contentBody {
+  padding: 30px;
+  flex: 1;
+  overflow-y: auto;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .headerContainer {
+    display: flow;
+    height: auto;
+    padding: 10px 20px;
+  }
+  
+  .userNav {
+    order: 3;
+    width: 100%;
+    margin: 10px 0;
+  }
+  
+  .userNav ul {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .userNav a {
+    height: 50px;
+    line-height: 50px;
+  }
+  
+  .headerRight {
+    min-width: auto;
+    width: 100%;
+    justify-content: center;
+    order: 2;
+  }
+}
+
+@media (max-width: 576px) {
+  .userNav ul {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .userNav a {
+    text-align: center;
+  }
+  
+  .headerRight {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .actionButtons {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .contentBody {
+    padding: 15px;
+  }
+}

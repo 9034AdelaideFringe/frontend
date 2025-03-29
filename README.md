@@ -1,6 +1,6 @@
 # Adelaide Fringe React Application
 
-A web application for the Adelaide Fringe festival that allows users to browse events, view event details, and manage user authentication. The application also includes an admin panel for event and ticket management.
+A web application for the Adelaide Fringe festival that allows users to browse events, view event details, and manage user authentication. The application also includes an admin panel for event and ticket management and a user dashboard for personal account management.
 
 ## Features
 
@@ -9,6 +9,11 @@ A web application for the Adelaide Fringe festival that allows users to browse e
 - View featured events on homepage
 - View detailed information about specific events
 - User authentication (login/register)
+- Personal dashboard with:
+  - Overview of upcoming tickets
+  - Ticket management
+  - Profile settings
+  - Favorite events
 - Responsive design
 
 ### Admin Features

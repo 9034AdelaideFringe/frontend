@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from '../components/layout/MainLayout'
 import AdminLayout from '../components/layout/AdminLayout'
+import UserLayout from '../components/layout/UserLayout'
 import HomePage from '../pages/HomePage'
 import EventsPage from '../pages/EventsPage'
 import EventDetailPage from '../pages/EventDetailPage'
@@ -10,6 +11,10 @@ import EventManagement from '../pages/admin/EventManagement'
 import CreateEvent from '../pages/admin/CreateEvent'
 import EditEvent from '../pages/admin/EditEvent'
 import TicketManagement from '../pages/admin/TicketManagement'
+import UserDashboard from '../pages/user/UserDashboard'
+import UserTickets from '../pages/user/UserTickets'
+import UserProfile from '../pages/user/UserProfile'
+import UserFavorites from '../pages/user/UserFavorites'
 import { isAuthenticated, getCurrentUser } from '../services/authService'
 
 // Admin route guard component
@@ -30,6 +35,16 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+// User route guard component
+const UserRoute = ({ children }) => {
+  if (!isAuthenticated()) {
+    // Not logged in, redirect to home
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+};
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -38,6 +53,21 @@ const AppRoutes = () => {
         <Route index element={<HomePage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="events/:id" element={<EventDetailPage />} />
+      </Route>
+      
+      {/* User Routes */}
+      <Route 
+        path="/user"
+        element={
+          <UserRoute>
+            <UserLayout />
+          </UserRoute>
+        }
+      >
+        <Route index element={<UserDashboard />} />
+        <Route path="tickets" element={<UserTickets />} />
+        <Route path="profile" element={<UserProfile />} />
+        <Route path="favorites" element={<UserFavorites />} />
       </Route>
       
       {/* Admin Routes */}

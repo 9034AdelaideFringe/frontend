@@ -1,0 +1,247 @@
+.userDashboard {
+  width: 100%;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.welcomeSection {
+  margin-bottom: 30px;
+}
+
+.welcomeCard {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+}
+
+.welcomeCard h2 {
+  margin: 0 0 10px;
+  font-size: 1.6rem;
+  color: #333;
+}
+
+.welcomeCard p {
+  margin: 0;
+  color: #666;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.viewAllLink {
+  color: #ff3366;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.viewAllLink:hover {
+  text-decoration: underline;
+}
+
+.ticketsSection, 
+.recommendationsSection,
+.quickActionsSection {
+  margin-bottom: 30px;
+}
+
+/* Tickets Grid */
+.ticketsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.ticketCard {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ticketDetails {
+  flex: 1;
+}
+
+.ticketDetails h3 {
+  margin: 0 0 15px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.ticketInfo p {
+  margin: 5px 0;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.viewTicketBtn {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #ff3366;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  text-align: center;
+  transition: background-color 0.2s;
+  margin-top: 15px;
+  font-weight: 500;
+}
+
+.viewTicketBtn:hover {
+  background-color: #e62c5d;
+}
+
+/* Recommendations Grid */
+.recommendationsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.recommendationCard {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.eventImage {
+  height: 150px;
+  overflow: hidden;
+}
+
+.eventImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.recommendationCard:hover .eventImage img {
+  transform: scale(1.05);
+}
+
+.eventDetails {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.eventDetails h3 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+}
+
+.eventDetails p {
+  margin: 0 0 15px;
+  color: #666;
+  font-size: 0.9rem;
+  flex-grow: 1;
+}
+
+.viewEventBtn {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: transparent;
+  color: #ff3366;
+  border: 1px solid #ff3366;
+  border-radius: 4px;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.viewEventBtn:hover {
+  background-color: #ff3366;
+  color: white;
+}
+
+/* Quick Actions */
+.actionButtons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  background-color: #f5f5f5;
+  color: #333;
+  border-radius: 8px;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.actionButton:hover {
+  background-color: #ff3366;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  background-color: white;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.emptyState p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.browseBtn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ff3366;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.browseBtn:hover {
+  background-color: #e62c5d;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ticketsGrid,
+  .recommendationsGrid,
+  .actionButtons {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+}

@@ -16,7 +16,7 @@ const Header = () => {
   const [registerError, setRegisterError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   
-  // 页面加载时检查登录状态
+  // Check login status on page load
   useEffect(() => {
     const checkAuth = () => {
       const auth = isAuthenticated();
@@ -29,7 +29,7 @@ const Header = () => {
     checkAuth();
   }, []);
 
-  // 获取用户首字母
+  // Get user's initial
   const getUserInitial = () => {
     if (!user || !user.name) return '?';
     return user.name.charAt(0).toUpperCase();
@@ -44,11 +44,11 @@ const Header = () => {
         setUser(response.user);
         setIsLoggedIn(true);
         setIsLoginModalOpen(false);
-        console.log('登录成功:', response.user);
+        console.log('Login successful:', response.user);
       })
       .catch(error => {
-        setLoginError(error.message || '登录失败，请检查您的凭据');
-        console.error('登录失败:', error);
+        setLoginError(error.message || 'Login failed, please check your credentials');
+        console.error('Login failed:', error);
       })
       .finally(() => {
         setIsLoading(false);
@@ -64,11 +64,11 @@ const Header = () => {
         setUser(response.user);
         setIsLoggedIn(true);
         setIsRegisterModalOpen(false);
-        console.log('注册成功:', response.user);
+        console.log('Registration successful:', response.user);
       })
       .catch(error => {
-        setRegisterError(error.message || '注册失败，请稍后再试');
-        console.error('注册失败:', error);
+        setRegisterError(error.message || 'Registration failed, please try again later');
+        console.error('Registration failed:', error);
       })
       .finally(() => {
         setIsLoading(false);
@@ -80,10 +80,10 @@ const Header = () => {
       .then(() => {
         setUser(null);
         setIsLoggedIn(false);
-        console.log('已登出');
+        console.log('Logged out');
       })
       .catch(error => {
-        console.error('登出错误:', error);
+        console.error('Logout error:', error);
       });
   };
 
@@ -99,11 +99,25 @@ const Header = () => {
               </div>
               <div className={styles.userDropdown}>
                 <span className={styles.userName}>{user?.name}</span>
+                {user?.role === 'admin' && (
+                  <Link 
+                    to="/admin" 
+                    className={`${formStyles.btn} ${formStyles.btnSecondary} ${styles.menuLink}`}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+                <Link 
+                  to="/user" 
+                  className={`${formStyles.btn} ${formStyles.btnSecondary} ${styles.menuLink}`}
+                >
+                  My Account
+                </Link>
                 <button 
                   className={`${formStyles.btn} ${formStyles.btnSecondary}`}
                   onClick={handleLogout}
                 >
-                  LOGOUT
+                  Logout
                 </button>
               </div>
             </div>
@@ -117,7 +131,7 @@ const Header = () => {
                 }}
                 disabled={isLoading}
               >
-                LOGIN
+                Login
               </button>
               <button 
                 className={`${formStyles.btn} ${formStyles.btnPrimary}`}
@@ -127,28 +141,28 @@ const Header = () => {
                 }}
                 disabled={isLoading}
               >
-                REGISTER
+                Register
               </button>
             </>
           )}
         </div>
       </div>
 
-      {/* 登录模态窗口 */}
+      {/* Login Modal */}
       <Modal 
         isOpen={isLoginModalOpen} 
         onClose={() => setIsLoginModalOpen(false)}
-        title="LOGIN"
+        title="Login"
       >
         {loginError && <div className={styles.errorMessage}>{loginError}</div>}
         <LoginForm onLogin={handleLogin} />
       </Modal>
 
-      {/* 注册模态窗口 */}
+      {/* Register Modal */}
       <Modal 
         isOpen={isRegisterModalOpen} 
         onClose={() => setIsRegisterModalOpen(false)}
-        title="REGISTER"
+        title="Register"
       >
         {registerError && <div className={styles.errorMessage}>{registerError}</div>}
         <RegisterForm onRegister={handleRegister} />
