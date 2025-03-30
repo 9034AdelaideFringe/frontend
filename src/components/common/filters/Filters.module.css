@@ -1,0 +1,85 @@
+.filter {
+  flex: 1;
+}
+
+.filterTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+/* Checkbox styles */
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.checkbox {
+  margin-right: 8px;
+}
+
+/* Date filter styles */
+.dateInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dateInput {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Price filter styles */
+.priceInputs {
+  display: flex;
+  gap: 15px;
+}
+
+.priceField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.priceInput {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Search filter styles */
+.searchInput {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.searchInput:focus {
+  border-color: #ff3366;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 51, 102, 0.2);
+}
