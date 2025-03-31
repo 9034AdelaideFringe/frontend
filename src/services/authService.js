@@ -144,3 +144,30 @@ export const isAuthenticated = () => {
   const user = getCurrentUser();
   return !!token && !!user;
 };
+
+export const signin = async ({email, password}) => {
+  const url = import.meta.env.VITE_API
+  console.log(url);
+  const user = {email, password}
+
+  const response = await fetch(`${url}/login`, {
+    method: 'POST',
+    body: JSON.stringify(user)
+  })
+
+  if(!response.ok){
+    console.error('login failed');
+    throw new Error("login failed");
+      
+  }
+
+  const result = await response.json()
+
+  if(result.error){
+    throw new Error(result.error)
+  }
+
+  console.log(result);
+  
+
+}
