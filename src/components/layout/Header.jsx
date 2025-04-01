@@ -6,6 +6,7 @@ import RegisterForm from '../login/RegisterForm'
 import { login, register, logout, isAuthenticated, getCurrentUser } from '../../services/authService'
 import styles from './Header.module.css'
 import formStyles from '../login/Form.module.css'
+import { signin } from '../../services/authService'
 
 const Header = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
@@ -68,24 +69,26 @@ const Header = () => {
     setShowDropdown(!showDropdown);
   };
 
-  const handleLogin = (credentials) => {
+  const handleLogin = async (credentials) => {
     setIsLoading(true);
     setLoginError('');
+
+    await signin(credentials)
     
-    login(credentials)
-      .then(response => {
-        setUser(response.user);
-        setIsLoggedIn(true);
-        setIsLoginModalOpen(false);
-        console.log('Login successful:', response.user);
-      })
-      .catch(error => {
-        setLoginError(error.message || 'Login failed, please check your credentials');
-        console.error('Login failed:', error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    // login(credentials)
+    //   .then(response => {
+    //     setUser(response.user);
+    //     setIsLoggedIn(true);
+    //     setIsLoginModalOpen(false);
+    //     console.log('Login successful:', response.user);
+    //   })
+    //   .catch(error => {
+    //     setLoginError(error.message || 'Login failed, please check your credentials');
+    //     console.error('Login failed:', error);
+    //   })
+    //   .finally(() => {
+    //     setIsLoading(false);
+    //   });
   };
 
   const handleRegister = (userData) => {
