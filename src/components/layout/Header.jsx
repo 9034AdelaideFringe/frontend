@@ -73,11 +73,12 @@ const Header = () => {
     setLoginError('');
     
     login(credentials)
-      .then(response => {
-        setUser(response.user);
+      .then(data => {
+        // 直接使用登录返回的数据，而不是尝试访问data.user
+        setUser(data);
         setIsLoggedIn(true);
         setIsLoginModalOpen(false);
-        console.log('Login successful:', response.user);
+        console.log('Login successful:', data);
       })
       .catch(error => {
         setLoginError(error.message || 'Login failed, please check your credentials');
@@ -141,7 +142,7 @@ const Header = () => {
                 ref={dropdownRef}
               >
                 <span className={styles.userName}>{user?.name}</span>
-                {user?.role === 'admin' ? (
+                {user?.role === 'ADMIN' || user?.role === 'admin' ? (
                   <Link 
                     to="/admin" 
                     className={`${formStyles.btn} ${formStyles.btnSecondary} ${styles.menuLink}`}

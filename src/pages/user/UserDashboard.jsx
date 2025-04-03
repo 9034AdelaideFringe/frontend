@@ -63,8 +63,7 @@ const UserDashboard = () => {
       {/* Welcome section */}
       <section className={styles.welcomeSection}>
         <div className={styles.welcomeCard}>
-          <h2>Welcome back, {user?.name || 'Guest'}</h2>
-          <p>Here's what's happening with your Adelaide Fringe experience.</p>
+          <h2>Welcome back, {user?.name || 'girl? or boy? whatever!'}</h2>
         </div>
       </section>
       

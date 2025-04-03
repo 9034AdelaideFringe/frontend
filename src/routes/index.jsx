@@ -20,18 +20,28 @@ import { isAuthenticated, getCurrentUser } from '../services/authService'
 // Admin route guard component
 const AdminRoute = ({ children }) => {
   const user = getCurrentUser();
-  const isAdmin = user && user.role === 'admin';
+  
+  // Debug information
+  console.log("AdminRoute check - Current user:", user);
+  console.log("AdminRoute check - User role:", user?.role);
+  console.log("AdminRoute check - isAuthenticated:", isAuthenticated());
+  
+  // 从用户数据中提取角色信息，并检查是否为ADMIN
+  const isAdmin = user && (user.role === 'ADMIN' || user.role === 'admin');
+  
+  console.log("Is admin user:", isAdmin);
   
   if (!isAuthenticated()) {
-    // Not logged in, redirect to login
+    console.log("Not authenticated, redirecting to home");
     return <Navigate to="/" replace />;
   }
   
   if (!isAdmin) {
-    // Logged in but not admin, redirect to home
+    console.log("Not admin, redirecting to home");
     return <Navigate to="/" replace />;
   }
   
+  console.log("Admin access granted");
   return children;
 };
 

@@ -26,16 +26,13 @@ export const login = ({ email, password }) => {
       return response.json();
     })
     .then(data => {
-      // 从响应中提取JWT token (从cookie中获取)
-      // 注意：由于HttpOnly cookie，JS无法直接访问，
-      // 但我们可以从响应中提取用户数据
-
-      // 用户数据已经是完整对象，不需要嵌套在user属性中
+      // 数据直接从后端返回，包含用户的所有信息（包括role）
+      // 将整个用户对象存储在localStorage中
       localStorage.setItem('user', JSON.stringify(data));
-      
-      // 由于JWT存储在HttpOnly cookie中，我们不需要手动存储token
-      // 只需跟踪用户是否已登录
       localStorage.setItem('isLoggedIn', 'true');
+      
+      // 在控制台输出用户角色，用于调试
+      console.log('用户角色:', data.role);
       
       return data;
     });
@@ -183,4 +180,23 @@ export const handleApiError = (error, operation = '操作') => {
   
   // 后备错误消息
   return `${operation}失败，请重试。`;
+};
+
+/**
+ * 检查当前用户是否是管理员
+ * @returns {boolean} 是否管理员
+ */
+export const isAdmin = () => {
+  const user = getCurrentUser();
+  // 考虑到角色字段可能是大写或小写
+  return user && (user.role === 'ADMIN' || user.role === 'admin' || user.role === 'Administrator');
+};
+
+/**
+ * 获取当前用户角色
+ * @returns {string|null} 用户角色
+ */
+export const getUserRole = () => {
+  const user = getCurrentUser();
+  return user ? user.role : null;
 };
