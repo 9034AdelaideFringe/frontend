@@ -1,5 +1,5 @@
 // Use the Vite development proxy
-const API_URL = '/api';
+const API_URL = import.meta.env.VITE_APP_API_URL || '/api';
 
 /**
  * Login with real backend
