@@ -16,7 +16,10 @@ export default async function handler(req, res) {
         ...req.headers,
         host: new URL(backendBase).hostname,
       },
-      body: ['GET', 'HEAD'].includes(req.method) ? undefined : req.body,
+      body: ['GET', 'HEAD'].includes(req.method)
+        ? undefined
+        : JSON.stringify(req.body),
+      credentials: 'include', // 重要！允许接收和发送cookies
     })
 
     const contentType = response.headers.get('content-type')
@@ -30,6 +33,8 @@ export default async function handler(req, res) {
       res.send(text)
     }
   } catch (error) {
+    console.log(error)
+
     res.status(500).json({ error: 'Proxy failed', message: error.message })
   }
 }
