@@ -1,23 +1,31 @@
-// api/proxy.js
-// 该服务为 vercel serve跨域处理
-import { createProxyMiddleware } from 'http-proxy-middleware'
+export default async function handler(req, res) {
+  const { path = [] } = req.query
 
-module.exports = (req, res) => {
-  let target = ''
-  // 代理目标地址
-  // 这里使用 backend 主要用于区分 vercel serverless 的 api 路径
-  // target 替换为你跨域请求的服务器 如： http://gmall-h5-api.atguigu.cn
-  if (req.url.startsWith('/api')) {
-    target = process.env.APP_API_URL || 'unknow'
+  const backendBase = process.env.APP_API_URL // from Vercel env
+  const targetPath = Array.isArray(path) ? path.join('/') : path
+  const targetUrl = `${backendBase}${targetPath}`
+
+  try {
+    const response = await fetch(targetUrl, {
+      method: req.method,
+      headers: {
+        ...req.headers,
+        host: new URL(backendBase).hostname,
+      },
+      body: ['GET', 'HEAD'].includes(req.method) ? undefined : req.body,
+    })
+
+    const contentType = response.headers.get('content-type')
+    res.status(response.status)
+
+    if (contentType?.includes('application/json')) {
+      const json = await response.json()
+      res.json(json)
+    } else {
+      const text = await response.text()
+      res.send(text)
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Proxy failed', message: error.message })
   }
-  // 创建代理对象并转发请求
-  createProxyMiddleware({
-    target,
-    changeOrigin: true,
-    pathRewrite: {
-      // 通过路径重写，去除请求路径中的 `/api`
-      // 如果开启了,那么 /api/user/login 将被转发到 http://gmall-h5-api.atguigu.cn/user/login
-      //'^/api/': '/',
-    },
-  })(req, res)
 }
