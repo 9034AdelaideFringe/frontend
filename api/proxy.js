@@ -1,11 +1,14 @@
 export default async function handler(req, res) {
+  console.log(666, req)
   const { path = [] } = req.query
 
   const backendBase = process.env.APP_API_URL // from Vercel env
   const targetPath = Array.isArray(path) ? path.join('/') : path
   const targetUrl = `${backendBase}${targetPath}`
+  console.log('backendBase', backendBase)
 
   try {
+    console.log('targetUrl', targetUrl)
     const response = await fetch(targetUrl, {
       method: req.method,
       headers: {
