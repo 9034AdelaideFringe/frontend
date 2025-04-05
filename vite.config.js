@@ -1,53 +1,68 @@
-import { defineConfig, loadEnv } from 'vite'
-import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
+import { defineConfig, loadEnv } from "vite";
+import react from "@vitejs/plugin-react";
+import { resolve } from "path";
 
 export default ({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
-  const env = loadEnv(mode, process.cwd(), '')
-  
+  const env = loadEnv(mode, process.cwd(), "");
+
   // Default API URL if not provided in environment variables
-  const apiUrl = env.VITE_APP_API_URL || ''
-  
+  const apiUrl = env.VITE_APP_API_URL || "";
+
   return defineConfig({
     plugins: [react()],
     css: {
       postcss: {
-        plugins: []
+        plugins: [],
       },
       modules: {
-        localsConvention: 'camelCaseOnly',
-        generateScopedName: mode === 'development'
-          ? '[local]_[hash:base64:5]'
-          : '[hash:base64:5]'
-      }
+        localsConvention: "camelCaseOnly",
+        generateScopedName:
+          mode === "development"
+            ? "[local]_[hash:base64:5]"
+            : "[hash:base64:5]",
+      },
     },
     resolve: {
       alias: {
-        '@': resolve(__dirname, 'src')
-      }
+        "@": resolve(__dirname, "src"),
+      },
     },
     define: {
       // Make environment variables available to client-side code
-      '__APP_ENV__': JSON.stringify(mode),
-      '__API_URL__': JSON.stringify(apiUrl)
+      __APP_ENV__: JSON.stringify(mode),
+      __API_URL__: JSON.stringify(apiUrl),
     },
     server: {
       hmr: {
-        overlay: false
+        overlay: false,
       },
       fs: {
         strict: true,
-        allow: ['.']
+        allow: ["."],
       },
       proxy: {
-        '/api': {
+        "/api": {
           target: apiUrl,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '')
-        }
-      }
-    }
-  })
-}
+          rewrite: (path) => path.replace(/^\/api/, ""),
+        },
+      },
+    },
+    // Vitest 配置
+    test: {
+      globals: true,
+      environment: "happy-dom",
+      setupFiles: "./src/setupTests.js",
+      include: ["**/*.{test,spec}.{js,jsx}"],
+      coverage: {
+        provider: "v8",
+        reporter: ["text", "html", "json", "lcov"],
+        exclude: ["node_modules/", "src/setupTests.js"],
+      },
+      reporters: ["default", "junit"],
+      outputFile: "junit.xml",
+    },
+  });
+};

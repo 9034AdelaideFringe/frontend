@@ -5,6 +5,7 @@ A web application for the Adelaide Fringe festival that allows users to browse e
 ## Features
 
 ### User Features
+
 - Browse all events
 - View featured events on homepage
 - View detailed information about specific events
@@ -17,6 +18,7 @@ A web application for the Adelaide Fringe festival that allows users to browse e
 - Responsive design
 
 ### Admin Features
+
 - Dashboard with event statistics and quick actions
 - Event management (create, edit, delete events)
 - Ticket management (view, mark as used/cancelled)
@@ -28,6 +30,8 @@ A web application for the Adelaide Fringe festival that allows users to browse e
 - [React Router](https://reactrouter.com/) - For navigation between pages
 - [Vite](https://vitejs.dev/) - Build tool and development server
 - [CSS Modules](https://github.com/css-modules/css-modules) - For component-scoped styling
+- [Vitest](https://vitest.dev/) - Testing framework
+- [GitHub Actions](https://github.com/features/actions) - CI/CD
 
 ## Project Structure
 
@@ -64,17 +68,20 @@ my-react-app/
 ### Installation
 
 1. Clone the repository
+
    ```
    git clone <repository-url>
    cd my-react-app
    ```
 
 2. Install dependencies
+
    ```
    npm install
    ```
 
 3. Start the development server
+
    ```
    npm run dev
    ```
@@ -102,10 +109,12 @@ The build artifacts will be stored in the `dist/` directory, ready to be deploye
 The application provides two types of users:
 
 ### Regular User
+
 - Email: test@example.com
 - Password: password123
 
 ### Admin User
+
 - Email: admin@example.com
 - Password: admin123
 
@@ -118,3 +127,43 @@ This project is currently in development.
 ## License
 
 This project is licensed under the MIT License.
+
+## CI/CD
+
+### CI/CD 流程
+
+项目使用 GitHub Actions 实现自动化测试和部署。详细信息请参阅 [CICD_README.md](./CICD_README.md) 文件。
+
+### CI 流程概述
+
+1. 推送代码到 `main` 或 `develop` 分支时自动触发测试
+2. 创建 PR 时自动运行测试并部署到预览环境
+3. 合并到 `develop` 分支后自动部署到开发环境
+4. 合并到 `main` 分支后自动部署到生产环境
+
+## Testing
+
+This project uses Vitest for unit and integration testing, with coverage reporting configured.
+
+### Testing Commands
+
+```bash
+# Run all tests with coverage report
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate test coverage report
+npm run test:coverage
+
+# Start test UI
+npm run test:ui
+```
+
+### Testing Guidelines
+
+1. Component tests should be placed in the same directory as the component, named as `*.test.{js,jsx,ts,tsx}`
+2. Test files should include multiple test cases covering the main functionality and edge cases
+3. Use `@testing-library/react` to test component behavior
+4. Use `vi.mock()` to mock external dependencies
