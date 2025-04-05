@@ -1,9 +1,10 @@
 export default async function handler(req, res) {
   console.log(666, req)
-  const { path = [] } = req.query
+  const { path = [] } = req.url
 
   const backendBase = process.env.APP_API_URL // from Vercel env
-  const targetPath = Array.isArray(path) ? path.join('/') : path
+  const targetPath = removeApiPrefix(req.url) // 去掉 '/api'
+
   const targetUrl = `${backendBase}${targetPath}`
   console.log('backendBase', backendBase)
 
@@ -31,4 +32,7 @@ export default async function handler(req, res) {
   } catch (error) {
     res.status(500).json({ error: 'Proxy failed', message: error.message })
   }
+}
+function removeApiPrefix(url) {
+  return url.replace(/^\/api/, '') // 使用正则表达式替换
 }
