@@ -1,5 +1,16 @@
-// Use the Vite development proxy
-const API_URL = import.meta.env.VITE_APP_API_URL || '/api';
+// Determine the base URL based on environment
+const API_BASE = import.meta.env.MODE === 'development' 
+  ? '/api'  // Use proxy in development
+  : import.meta.env.VITE_APP_API_URL; // Use full URL in production
+
+/**
+ * Creates a full API URL based on the environment
+ * @param {string} endpoint - The API endpoint
+ * @returns {string} The complete URL
+ */
+const apiUrl = (endpoint) => {
+  return `${API_BASE}${endpoint}`;
+};
 
 /**
  * Login with real backend
@@ -9,7 +20,7 @@ const API_URL = import.meta.env.VITE_APP_API_URL || '/api';
  * @returns {Promise} Login result
  */
 export const login = ({ email, password }) => {
-  return fetch(`${API_URL}/login`, {
+  return fetch(apiUrl('/login'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -44,7 +55,7 @@ export const login = ({ email, password }) => {
  * @returns {Promise} Registration result
  */
 export const register = ({ name, email, password }) => {
-  return fetch(`${API_URL}/signup`, {
+  return fetch(apiUrl('/signup'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -92,7 +103,7 @@ export const getCurrentUser = () => {
  * Logout
  */
 export const logout = () => {
-  return fetch(`${API_URL}/logout`, {
+  return fetch(apiUrl('/logout'), {
     method: 'POST',
     credentials: 'include', // 重要！包含cookies
   })
@@ -133,7 +144,7 @@ export const authenticatedRequest = (url, options = {}) => {
     credentials: 'include', // 包含cookies
   };
   
-  return fetch(`${API_URL}${url}`, authOptions)
+  return fetch(apiUrl(url), authOptions)
     .then(response => {
       if (response.status === 401) {
         // Token expired or invalid, logout

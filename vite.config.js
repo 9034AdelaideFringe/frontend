@@ -1,41 +1,53 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
-export default defineConfig({
-  plugins: [react()],
-  css: {
-    postcss: {
-      plugins: []
+export default ({ mode }) => {
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  const env = loadEnv(mode, process.cwd(), '')
+  
+  // Default API URL if not provided in environment variables
+  const apiUrl = env.VITE_APP_API_URL || ''
+  
+  return defineConfig({
+    plugins: [react()],
+    css: {
+      postcss: {
+        plugins: []
+      },
+      modules: {
+        localsConvention: 'camelCaseOnly',
+        generateScopedName: mode === 'development'
+          ? '[local]_[hash:base64:5]'
+          : '[hash:base64:5]'
+      }
     },
-    modules: {
-      // 在开发模式下保留原始类名（添加后缀）
-      localsConvention: 'camelCaseOnly',
-      generateScopedName: process.env.NODE_ENV === 'development'
-        ? '[local]_[hash:base64:5]'
-        : '[hash:base64:5]'
-    }
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
-    }
-  },
-  server: {
-    hmr: {
-      overlay: false
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, 'src')
+      }
     },
-    fs: {
-      strict: true,
-      allow: ['.']
+    define: {
+      // Make environment variables available to client-side code
+      '__APP_ENV__': JSON.stringify(mode),
+      '__API_URL__': JSON.stringify(apiUrl)
     },
-    proxy: {
-      '/api': {
-        target: 'http://23.22.158.203:8080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+    server: {
+      hmr: {
+        overlay: false
+      },
+      fs: {
+        strict: true,
+        allow: ['.']
+      },
+      proxy: {
+        '/api': {
+          target: apiUrl,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, '')
+        }
       }
     }
-  },
-  configFile: resolve(__dirname, 'vite.config.js')
-})
+  })
+}
