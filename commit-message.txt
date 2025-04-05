@@ -1,0 +1,10 @@
+feat(ci/cd): 添加CI/CD和测试配置
+
+添加GitHub Actions工作流配置，实现自动化测试和部署流程:
+- 创建测试工作流文件 (.github/workflows/test.yml)
+- 创建部署工作流文件 (.github/workflows/deploy.yml)
+- 配置Vitest测试环境和覆盖率报告
+- 更新测试设置和环境配置
+- 添加CI/CD文档和说明
+
+关联: #123 

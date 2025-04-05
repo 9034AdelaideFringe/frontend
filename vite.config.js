@@ -2,7 +2,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
-import "@testing-library/jest-dom";
 
 export default defineConfig({
   plugins: [react()],
@@ -47,10 +46,13 @@ export default defineConfig({
     globals: true,
     environment: "happy-dom",
     setupFiles: "./src/setupTests.js",
-    css: true,
+    include: ["**/*.{test,spec}.{js,jsx}"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "json", "html"],
+      reporter: ["text", "html", "json", "lcov"],
+      exclude: ["node_modules/", "src/setupTests.js"],
     },
+    reporters: ["default", "junit"],
+    outputFile: "junit.xml",
   },
 });

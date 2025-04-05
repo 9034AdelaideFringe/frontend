@@ -7,7 +7,7 @@
     "dev": "vite",
     "build:dev": "vite build --mode development",
     "build:prod": "vite build",
-    "test": "vitest run",
+    "test": "vitest run --coverage",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui"
