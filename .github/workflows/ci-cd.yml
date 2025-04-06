@@ -1,0 +1,83 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches:
+      - main
+      - test
+      - dev
+  pull_request:
+    branches:
+      - main
+      - test
+      - dev
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm run test
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/dev'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: amondnet/vercel-action@master
+        with:
+          vercel-cli: vercel
+          vercel-args: "--prod --yes"
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID}}
+          vercel-project-id: ${{ secrets.PROJECT_ID_DEV}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-test:
+    if: github.ref == 'refs/heads/test'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: amondnet/vercel-action@master
+        with:
+          vercel-cli: vercel
+          vercel-args: "--prod --yes"
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID}}
+          vercel-project-id: ${{ secrets.PROJECT_ID_TEST}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: amondnet/vercel-action@master
+        with:
+          vercel-cli: vercel
+          vercel-args: "--prod --yes"
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID}}
+          vercel-project-id: ${{ secrets.PROJECT_ID_PROD}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
