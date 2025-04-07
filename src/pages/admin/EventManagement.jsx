@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getAllEvents } from '../../services/eventService'
+import { getAllEvents, deleteEvent } from '../../services/eventService'
 import styles from './EventManagement.module.css'
 
 const EventManagement = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
+    setLoading(true);
     getAllEvents()
       .then(data => {
         setEvents(data);
@@ -16,20 +18,28 @@ const EventManagement = () => {
       })
       .catch(error => {
         console.error('Error fetching events:', error);
+        alert('Error loading events: ' + (error.message || 'Please try again'));
         setLoading(false);
       });
-  }, []);
+  }, [refreshTrigger]);
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-      // This should call the actual delete API
-      console.log('Deleting event ID:', id);
-      // Temporarily remove from UI
-      setEvents(events.filter(event => event.id !== id));
+      try {
+        setLoading(true);
+        await deleteEvent(id);
+        // 刷新事件列表
+        setRefreshTrigger(prev => prev + 1);
+        alert('Event deleted successfully');
+      } catch (error) {
+        console.error('Error deleting event:', error);
+        alert('Error deleting event: ' + (error.message || 'Please try again'));
+        setLoading(false);
+      }
     }
   };
 
-  // Filter events
+  // 根据搜索关键词过滤事件
   const filteredEvents = events.filter(event => 
     event.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -61,6 +71,7 @@ const EventManagement = () => {
                 <th>Event Name</th>
                 <th>Date</th>
                 <th>Venue</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -68,10 +79,11 @@ const EventManagement = () => {
               {filteredEvents.length > 0 ? (
                 filteredEvents.map(event => (
                   <tr key={event.id}>
-                    <td>{event.id}</td>
+                    <td>{event.id.substring(0, 8)}...</td>
                     <td>{event.title}</td>
                     <td>{event.date}</td>
                     <td>{event.venue}</td>
+                    <td>{event.status}</td>
                     <td className={styles.actions}>
                       <Link 
                         to={`/admin/events/edit/${event.id}`}
@@ -90,7 +102,7 @@ const EventManagement = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className={styles.noEvents}>
+                  <td colSpan="6" className={styles.noEvents}>
                     No events found matching your criteria
                   </td>
                 </tr>

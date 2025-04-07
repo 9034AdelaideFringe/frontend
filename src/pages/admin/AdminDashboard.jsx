@@ -13,24 +13,27 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get event data to calculate statistics
+    // 获取事件数据计算统计信息
     getAllEvents()
       .then(events => {
-        // In a real application, these might come from different API calls
+        // 在实际应用中，这些可能来自不同的API调用
         const today = new Date();
         const upcoming = events.filter(event => {
-          const eventDate = new Date(event.date);
-          return eventDate > today;
+          const eventStartDate = new Date(event.startRaw);
+          return eventStartDate > today;
         });
 
         setStats({
           totalEvents: events.length,
           upcomingEvents: upcoming.length,
-          activeTickets: Math.floor(Math.random() * 500) // Mock data
+          activeTickets: Math.floor(Math.random() * 500) // 模拟数据
         });
 
-        // Get recently created events (simply taking the first 3 here)
-        setRecentEvents(events.slice(0, 3));
+        // 获取最近创建的事件（按创建时间排序）
+        const sortedEvents = [...events].sort((a, b) => 
+          new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setRecentEvents(sortedEvents.slice(0, 5));
         setLoading(false);
       })
       .catch(error => {
@@ -83,6 +86,7 @@ const AdminDashboard = () => {
                   <th>Event Name</th>
                   <th>Date</th>
                   <th>Venue</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -92,12 +96,20 @@ const AdminDashboard = () => {
                     <td>{event.title}</td>
                     <td>{event.date}</td>
                     <td>{event.venue}</td>
+                    <td>{event.status}</td>
                     <td className={styles.actions}>
                       <Link 
                         to={`/admin/events/edit/${event.id}`}
-                        className={styles.editBtn}
+                        className={styles.actionLink}
                       >
                         Edit
+                      </Link>
+                      <Link 
+                        to={`/events/${event.id}`}
+                        className={styles.actionLink}
+                        target="_blank"
+                      >
+                        View
                       </Link>
                     </td>
                   </tr>

@@ -58,10 +58,10 @@ const Header = () => {
     };
   }, [showDropdown]);
 
-  // Get user's initial
+  // 简化版，只使用邮箱首字母
   const getUserInitial = () => {
-    if (!user || !user.name) return '?';
-    return user.name.charAt(0).toUpperCase();
+    if (!user || !user.email) return '?';
+    return user.email.charAt(0).toUpperCase();
   };
 
   const toggleDropdown = () => {

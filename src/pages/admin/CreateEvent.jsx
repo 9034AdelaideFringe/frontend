@@ -1,18 +1,20 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { createEvent } from '../../services/eventService'
 import styles from './CreateEvent.module.css'
 
 const CreateEvent = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
-    date: '',
-    time: '',
+    startDate: '',
+    endDate: '',
     venue: '',
+    location: 'Adelaide',
+    capacity: '100',
     price: '',
-    abstract: '',
     description: '',
-    image: null
+    status: 'DRAFT'
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,24 +34,16 @@ const CreateEvent = () => {
     }
   };
 
-  const handleFileChange = (e) => {
-    setFormData({
-      ...formData,
-      image: e.target.files[0]
-    });
-  };
-
   const validate = () => {
     const newErrors = {};
-
+    
     // Required fields
     if (!formData.title) newErrors.title = 'Event name is required';
-    if (!formData.date) newErrors.date = 'Date is required';
-    if (!formData.time) newErrors.time = 'Time is required';
+    if (!formData.startDate) newErrors.startDate = 'Start date is required';
+    if (!formData.endDate) newErrors.endDate = 'End date is required';
     if (!formData.venue) newErrors.venue = 'Venue is required';
     if (!formData.price) newErrors.price = 'Price is required';
     if (!formData.description) newErrors.description = 'Event description is required';
-    if (!formData.abstract) newErrors.abstract = 'Event abstract is required';
 
     return newErrors;
   };
@@ -67,16 +61,13 @@ const CreateEvent = () => {
     setIsSubmitting(true);
     
     try {
-      // Call API to create event here
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('Submitted event data:', formData);
+      // 调用真实API创建活动
+      await createEvent(formData);
       alert('Event created successfully!');
       navigate('/admin/events');
     } catch (error) {
       console.error('Error creating event:', error);
-      alert('Error creating event, please try again');
+      alert('Error creating event: ' + (error.message || 'Please try again'));
     } finally {
       setIsSubmitting(false);
     }
@@ -100,31 +91,29 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="date">Event Date</label>
+            <label htmlFor="startDate">Start Date & Time</label>
             <input
-              id="date"
-              name="date"
-              type="text"
-              placeholder="YYYY-MM-DD"
-              value={formData.date}
+              id="startDate"
+              name="startDate"
+              type="datetime-local"
+              value={formData.startDate}
               onChange={handleInputChange}
-              className={errors.date ? styles.inputError : ''}
+              className={errors.startDate ? styles.inputError : ''}
             />
-            {errors.date && <span className={styles.error}>{errors.date}</span>}
+            {errors.startDate && <span className={styles.error}>{errors.startDate}</span>}
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="time">Event Time</label>
+            <label htmlFor="endDate">End Date & Time</label>
             <input
-              id="time"
-              name="time"
-              type="text"
-              placeholder="HH:MM"
-              value={formData.time}
+              id="endDate"
+              name="endDate"
+              type="datetime-local"
+              value={formData.endDate}
               onChange={handleInputChange}
-              className={errors.time ? styles.inputError : ''}
+              className={errors.endDate ? styles.inputError : ''}
             />
-            {errors.time && <span className={styles.error}>{errors.time}</span>}
+            {errors.endDate && <span className={styles.error}>{errors.endDate}</span>}
           </div>
 
           <div className={styles.formGroup}>
@@ -141,12 +130,38 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="price">Price Range</label>
+            <label htmlFor="location">Location</label>
+            <input
+              id="location"
+              name="location"
+              type="text"
+              value={formData.location}
+              onChange={handleInputChange}
+              className={errors.location ? styles.inputError : ''}
+            />
+            {errors.location && <span className={styles.error}>{errors.location}</span>}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="capacity">Capacity</label>
+            <input
+              id="capacity"
+              name="capacity"
+              type="number"
+              value={formData.capacity}
+              onChange={handleInputChange}
+              className={errors.capacity ? styles.inputError : ''}
+            />
+            {errors.capacity && <span className={styles.error}>{errors.capacity}</span>}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="price">Price</label>
             <input
               id="price"
               name="price"
               type="text"
-              placeholder="e.g., 40-120"
+              placeholder="e.g., 40.00"
               value={formData.price}
               onChange={handleInputChange}
               className={errors.price ? styles.inputError : ''}
@@ -155,27 +170,19 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="image">Event Image</label>
-            <input
-              id="image"
-              name="image"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-          </div>
-
-          <div className={styles.formGroupFull}>
-            <label htmlFor="abstract">Event Abstract</label>
-            <textarea
-              id="abstract"
-              name="abstract"
-              rows="3"
-              value={formData.abstract}
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
               onChange={handleInputChange}
-              className={errors.abstract ? styles.inputError : ''}
-            />
-            {errors.abstract && <span className={styles.error}>{errors.abstract}</span>}
+              className={errors.status ? styles.inputError : ''}
+            >
+              <option value="DRAFT">Draft</option>
+              <option value="PUBLISHED">Published</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+            {errors.status && <span className={styles.error}>{errors.status}</span>}
           </div>
 
           <div className={styles.formGroupFull}>

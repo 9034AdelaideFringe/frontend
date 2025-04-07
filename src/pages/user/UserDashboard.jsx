@@ -4,16 +4,18 @@ import { getCurrentUser } from '../../services/authService'
 import { getFeaturedEvents } from '../../services/eventService'
 import styles from './UserDashboard.module.css'
 
-// Mock user tickets data
+// 临时使用模拟用户票据数据
 const mockUserTickets = [
   {
     id: '1',
     eventId: '1',
     eventName: 'Circus Performance',
-    date: '2025-03-10',
-    venue: 'Adelaide Arts Centre',
+    date: '2025-02-20',
+    time: '19:00',
+    venue: 'Adelaide Festival Centre',
     quantity: 2,
-    purchaseDate: '2025-01-15',
+    totalPrice: '$140.00',
+    purchaseDate: '2024-12-15',
     status: 'active'
   },
   {
@@ -21,9 +23,11 @@ const mockUserTickets = [
     eventId: '3',
     eventName: 'Contemporary Art Exhibition',
     date: '2025-03-05',
-    venue: 'Adelaide Museum of Modern Art',
+    time: '14:00',
+    venue: 'Art Gallery of South Australia',
     quantity: 1,
-    purchaseDate: '2025-01-20',
+    totalPrice: '$25.00',
+    purchaseDate: '2024-12-18',
     status: 'active'
   }
 ];
@@ -35,14 +39,14 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get user info and data
+    // 获取用户信息和数据
     const currentUser = getCurrentUser();
     setUser(currentUser);
     
-    // In a real app, we'd fetch the user's tickets from an API
+    // 在真实应用中，我们会从API获取用户的票据
     setUpcomingTickets(mockUserTickets);
     
-    // Get recommended events
+    // 获取推荐事件
     getFeaturedEvents()
       .then(events => {
         setRecommendations(events);
@@ -60,60 +64,54 @@ const UserDashboard = () => {
 
   return (
     <div className={styles.userDashboard}>
-      {/* Welcome section */}
+      {/* 欢迎部分 */}
       <section className={styles.welcomeSection}>
         <div className={styles.welcomeCard}>
-          <h2>Welcome back, {user?.name || 'girl? or boy? whatever!'}</h2>
+          <h1>Welcome, {user?.name || 'Friend'}!</h1>
+          <p>Here you can manage your tickets and discover upcoming events.</p>
         </div>
       </section>
       
-      {/* Upcoming tickets */}
-      <section className={styles.ticketsSection}>
-        <div className={styles.sectionHeader}>
-          <h2>Your Upcoming Events</h2>
-          <Link to="/user/tickets" className={styles.viewAllLink}>View All</Link>
-        </div>
-        
+      {/* 即将到来的票据 */}
+      <section className={styles.upcomingTicketsSection}>
+        <h2>Your Upcoming Events</h2>
         {upcomingTickets.length > 0 ? (
-          <div className={styles.ticketsGrid}>
+          <div className={styles.ticketsList}>
             {upcomingTickets.map(ticket => (
               <div key={ticket.id} className={styles.ticketCard}>
+                <h3>{ticket.eventName}</h3>
                 <div className={styles.ticketDetails}>
-                  <h3>{ticket.eventName}</h3>
-                  <div className={styles.ticketInfo}>
-                    <p><strong>Date:</strong> {ticket.date}</p>
-                    <p><strong>Venue:</strong> {ticket.venue}</p>
-                    <p><strong>Quantity:</strong> {ticket.quantity}</p>
-                  </div>
+                  <p><strong>Date:</strong> {ticket.date}</p>
+                  <p><strong>Time:</strong> {ticket.time}</p>
+                  <p><strong>Venue:</strong> {ticket.venue}</p>
+                  <p><strong>Quantity:</strong> {ticket.quantity}</p>
                 </div>
-                <Link to={`/user/tickets/${ticket.id}`} className={styles.viewTicketBtn}>
-                  View Ticket
+                <Link to={`/user/tickets`} className={styles.viewBtn}>
+                  View All Tickets
                 </Link>
               </div>
             ))}
           </div>
         ) : (
-          <div className={styles.emptyState}>
-            <p>You don't have any upcoming events.</p>
-            <Link to="/events" className={styles.browseBtn}>Browse Events</Link>
+          <div className={styles.noTickets}>
+            <p>You don't have any upcoming tickets.</p>
+            <Link to="/events" className={styles.browseBtn}>
+              Browse Events
+            </Link>
           </div>
         )}
       </section>
       
-      {/* Recommended events */}
+      {/* 推荐部分 */}
       <section className={styles.recommendationsSection}>
-        <div className={styles.sectionHeader}>
-          <h2>Recommended For You</h2>
-          <Link to="/events" className={styles.viewAllLink}>View All Events</Link>
-        </div>
-        
-        <div className={styles.recommendationsGrid}>
+        <h2>Recommended for You</h2>
+        <div className={styles.recommendationsList}>
           {recommendations.map(event => (
-            <div key={event.id} className={styles.recommendationCard}>
+            <div key={event.id} className={styles.eventCard}>
               <div className={styles.eventImage}>
                 <img src={event.image} alt={event.title} />
               </div>
-              <div className={styles.eventDetails}>
+              <div className={styles.eventContent}>
                 <h3>{event.title}</h3>
                 <p>{event.date} | {event.venue}</p>
                 <Link to={`/events/${event.id}`} className={styles.viewEventBtn}>
@@ -125,7 +123,7 @@ const UserDashboard = () => {
         </div>
       </section>
       
-      {/* Quick actions */}
+      {/* 快速操作 */}
       <section className={styles.quickActionsSection}>
         <h2>Quick Actions</h2>
         <div className={styles.actionButtons}>

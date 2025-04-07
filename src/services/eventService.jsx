@@ -1,88 +1,366 @@
-// Mock event data
-const events = [
-  {
-    id: '1',
-    title: 'Circus Performance',
-    abstract: 'World-class acrobatic troupe brings thrilling circus performances including aerial acts, magic shows and more.',
-    image: 'https://images.unsplash.com/photo-1553481187-be93c21490a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
-    description: 'This is a visual feast not to be missed! The world-class acrobatic troupe will present a series of thrilling circus performances, including aerial acts, magic shows, and clown performances. Suitable for the whole family, guaranteed to leave you amazed!',
-    date: '2025-03-10',
-    time: '19:30',
-    venue: 'Adelaide Arts Centre',
-    price: '40-120'
-  },
-  {
-    id: '2',
-    title: 'Jazz Festival',
-    abstract: 'A collection of jazz masters from around the world bringing an auditory feast.',
-    image: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
-    description: 'This jazz festival brings together jazz masters from around the world for an unforgettable auditory feast. Whether you\'re a seasoned jazz enthusiast or a newcomer, you\'ll find performances to enjoy. Live band performances and improvisation will let you experience the charm of jazz music!',
-    date: '2025-03-15',
-    time: '18:00',
-    venue: 'Adelaide Botanic Garden',
-    price: '55-95'
-  },
-  {
-    id: '3',
-    title: 'Contemporary Art Exhibition',
-    abstract: 'Showcasing avant-garde works from local and international artists exploring modern social issues.',
-    image: 'https://images.unsplash.com/photo-1594796582908-71d3b16c8afd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
-    description: 'This contemporary art exhibition showcases avant-garde works by local and international artists with themes centered around exploring various issues in modern society. The exhibition includes installations, multimedia works, paintings, and sculptures. There\'s a special interactive area where visitors can participate in artistic creation.',
-    date: '2025-03-01 - 2025-03-20',
-    time: '10:00 - 18:00',
-    venue: 'Adelaide Museum of Modern Art',
-    price: '25'
-  },
-  {
-    id: '4',
-    title: 'Theatre Performance "Nightfall"',
-    abstract: 'Award-winning theatre company presents a moving drama about family and memory.',
-    image: 'https://images.unsplash.com/photo-1503095396549-807759245b35?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
-    description: 'An award-winning theatre company presents a moving drama about family and memory. The story depicts how a family faces loss and reconnection. The cast includes several internationally renowned actors, and the stage design is innovative and unique, providing audiences with both visual and emotional impacts.',
-    date: '2025-03-08',
-    time: '19:00',
-    venue: 'Royal Theatre',
-    price: '35-85'
-  },
-  {
-    id: '5',
-    title: 'Street Food Festival',
-    abstract: 'Taste foods from around the world and experience different cultural culinary journeys.',
-    image: 'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
-    description: 'At this street food festival, you can taste foods from around the world and experience a culinary journey through different cultures. With over 50 stalls offering various foods, beverages, and desserts. There will also be live music performances and cooking demonstrations to enhance your enjoyment while savoring delicious food.',
-    date: '2025-03-12 - 2025-03-14',
-    time: '11:00 - 22:00',
-    venue: 'Victoria Square',
-    price: 'Free entry, food costs vary'
-  },
-  {
-    id: '6',
-    title: 'Comedy Night',
-    abstract: 'A night of non-stop laughter with performances by several famous stand-up comedians.',
-    image: 'https://images.unsplash.com/photo-1527224857830-43a7acc85260?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
-    description: 'Get ready to laugh all night long! This comedy night will feature several famous stand-up comedians taking turns to deliver their latest and funniest routines. From satirical commentaries on current events to amusing anecdotes about daily life, there will be continuous laughter guaranteed to make your stomach hurt from laughing.',
-    date: '2025-03-18',
-    time: '20:00',
-    venue: 'Laugh Factory Club',
-    price: '30'
-  }
+import { authenticatedRequest } from './authService';
+
+// 预定义的活动图片数组
+const EVENT_IMAGES = [
+  'https://images.unsplash.com/photo-1603190287605-e6ade32fa852?auto=format&fit=crop&q=80&w=800&h=600',
+  'https://images.unsplash.com/photo-1549451371-64aa98a6f660?auto=format&fit=crop&q=80&w=800&h=600',
+  'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&q=80&w=800&h=600',
+  'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&q=80&w=800&h=600',
+  'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=800&h=600',
+  'https://images.unsplash.com/photo-1509824227185-9c5a01ceba0d?auto=format&fit=crop&q=80&w=800&h=600',
+  'https://images.unsplash.com/photo-1603228254119-e6a4d095dc59?auto=format&fit=crop&q=80&w=800&h=600',
+  'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800&h=600',
+  'https://images.unsplash.com/photo-1599639668273-17601acd5eea?auto=format&fit=crop&q=80&w=800&h=600',
+  'https://images.unsplash.com/photo-1603318275937-5a67aa22de7e?auto=format&fit=crop&q=80&w=800&h=600',
 ];
 
-// Get all events
-export const getAllEvents = () => {
-  return Promise.resolve(events);
+// 类别特定的图片映射
+const CATEGORY_IMAGES = {
+  music: [
+    'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800&h=600',
+    'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&q=80&w=800&h=600',
+    'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=800&h=600',
+  ],
+  comedy: [
+    'https://images.unsplash.com/photo-1527224857830-43a7acc85260?auto=format&fit=crop&q=80&w=800&h=600',
+    'https://images.unsplash.com/photo-1585647347483-22b66260dfff?auto=format&fit=crop&q=80&w=800&h=600',
+  ],
+  theater: [
+    'https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&q=80&w=800&h=600',
+    'https://images.unsplash.com/photo-1610890690846-5149750c8634?auto=format&fit=crop&q=80&w=800&h=600',
+  ],
+  art: [
+    'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&q=80&w=800&h=600',
+    'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=800&h=600',
+  ],
+  dance: [
+    'https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?auto=format&fit=crop&q=80&w=800&h=600',
+    'https://images.unsplash.com/photo-1535525153412-5a42439a210d?auto=format&fit=crop&q=80&w=800&h=600',
+  ],
+  festival: [
+    'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=800&h=600',
+    'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&q=80&w=800&h=600',
+  ],
 };
 
-// Get featured events (here simply returning the first 3 as an example)
-export const getFeaturedEvents = () => {
-  return Promise.resolve(events.slice(0, 3));
-};
-
-// Get a single event by ID
-export const getEventById = (id) => {
-  const event = events.find(event => event.id === id);
-  if (event) {
-    return Promise.resolve(event);
+/**
+ * 基于事件标题和描述获取合适的图片URL
+ * @param {Object} event - 事件对象
+ * @returns {string} 图片URL
+ */
+const getEventImage = (event) => {
+  // 将标题和描述转为小写以便搜索关键词
+  const titleLower = (event.title || '').toLowerCase();
+  const descLower = (event.des || '').toLowerCase();
+  const textToSearch = titleLower + ' ' + descLower;
+  
+  // 尝试根据关键词匹配类别
+  if (textToSearch.includes('music') || textToSearch.includes('concert') || textToSearch.includes('band')) {
+    return getRandomImage(CATEGORY_IMAGES.music);
+  } else if (textToSearch.includes('comedy') || textToSearch.includes('laugh')) {
+    return getRandomImage(CATEGORY_IMAGES.comedy);
+  } else if (textToSearch.includes('theatre') || textToSearch.includes('theater') || textToSearch.includes('play')) {
+    return getRandomImage(CATEGORY_IMAGES.theater);
+  } else if (textToSearch.includes('art') || textToSearch.includes('exhibition') || textToSearch.includes('gallery')) {
+    return getRandomImage(CATEGORY_IMAGES.art);
+  } else if (textToSearch.includes('dance') || textToSearch.includes('ballet') || textToSearch.includes('choreography')) {
+    return getRandomImage(CATEGORY_IMAGES.dance);
+  } else if (textToSearch.includes('festival') || textToSearch.includes('celebration')) {
+    return getRandomImage(CATEGORY_IMAGES.festival);
   }
-  return Promise.reject(new Error('Event not found'));
+  
+  // 如果没有匹配到特定类别，则使用基于ID的一致性随机选择
+  return getConsistentRandomImage(event.id);
+};
+
+/**
+ * 从数组中随机获取一张图片
+ * @param {Array} imageArray - 图片URL数组
+ * @returns {string} 随机图片URL
+ */
+const getRandomImage = (imageArray) => {
+  const randomIndex = Math.floor(Math.random() * imageArray.length);
+  return imageArray[randomIndex];
+};
+
+/**
+ * 基于ID获取一致的随机图片（同一事件每次都会得到相同的图片）
+ * @param {string} id - 事件ID
+ * @returns {string} 图片URL
+ */
+const getConsistentRandomImage = (id) => {
+  // 使用ID的哈希来确定索引，这样同一ID总是获得相同的图片
+  const numericHash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const index = numericHash % EVENT_IMAGES.length;
+  return EVENT_IMAGES[index];
+};
+
+/**
+ * 将API数据属性映射成前端需要的格式
+ * @param {Object} apiEvent - API返回的原始事件数据
+ * @returns {Object} 格式化后的事件数据
+ */
+const mapEventData = (apiEvent) => {
+  return {
+    id: apiEvent.id,
+    title: apiEvent.title || 'Untitled Event',
+    // 提取描述的第一句作为摘要
+    abstract: apiEvent.des ? (apiEvent.des.split('.')[0] + '.') : 'No description available.',
+    // 使用我们的随机图片生成策略
+    image: getEventImage(apiEvent),
+    description: apiEvent.des || 'No description available.',
+    // 格式化日期
+    date: formatDateRange(apiEvent.start, apiEvent.end),
+    // 从日期时间中提取时间部分
+    time: formatTimeRange(apiEvent.start, apiEvent.end),
+    venue: apiEvent.venue || 'TBA',
+    // 格式化价格
+    price: apiEvent.price ? `$${apiEvent.price}` : 'Free',
+    // 添加额外属性
+    location: apiEvent.location || '',
+    capacity: apiEvent.capacity || '0',
+    status: apiEvent.status || 'DRAFT',
+    // 添加原始时间戳
+    createdAt: apiEvent.createdAt,
+    updatedAt: apiEvent.updatedAt,
+    startRaw: apiEvent.start,
+    endRaw: apiEvent.end
+  };
+};
+
+/**
+ * 格式化日期范围
+ * @param {string} start - 开始日期时间
+ * @param {string} end - 结束日期时间
+ * @returns {string} 格式化的日期范围
+ */
+const formatDateRange = (start, end) => {
+  if (!start) return 'Date TBA';
+  
+  const startDate = new Date(start);
+  // 以YYYY-MM-DD格式显示日期
+  const formattedStart = startDate.toISOString().split('T')[0];
+  
+  if (!end) return formattedStart;
+  
+  const endDate = new Date(end);
+  const formattedEnd = endDate.toISOString().split('T')[0];
+  
+  // 如果开始和结束日期相同，只显示一个日期
+  if (formattedStart === formattedEnd) {
+    return formattedStart;
+  }
+  
+  // 否则显示日期范围
+  return `${formattedStart} - ${formattedEnd}`;
+};
+
+/**
+ * 格式化时间范围
+ * @param {string} start - 开始日期时间
+ * @param {string} end - 结束日期时间
+ * @returns {string} 格式化的时间范围
+ */
+const formatTimeRange = (start, end) => {
+  if (!start) return 'Time TBA';
+  
+  const startDate = new Date(start);
+  // 以HH:MM格式显示时间
+  const startTime = startDate.toTimeString().substring(0, 5);
+  
+  if (!end) return startTime;
+  
+  const endDate = new Date(end);
+  const endTime = endDate.toTimeString().substring(0, 5);
+  
+  // 显示时间范围
+  return `${startTime} - ${endTime}`;
+};
+
+// 添加一个内存缓存来存储所有事件，避免重复请求
+let eventsCache = [];
+let lastFetchTime = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 缓存有效期：5分钟
+
+/**
+ * 获取所有活动
+ * @param {boolean} [forceRefresh=false] - 是否强制刷新缓存
+ * @returns {Promise<Array>} 格式化后的事件列表
+ */
+export const getAllEvents = async (forceRefresh = false) => {
+  const now = Date.now();
+  
+  // 如果缓存有效且不需要强制刷新，直接返回缓存数据
+  if (!forceRefresh && eventsCache.length > 0 && (now - lastFetchTime) < CACHE_TTL) {
+    return eventsCache;
+  }
+  
+  try {
+    const response = await fetch('/api/event');
+    const result = await response.json();
+    
+    if (result.message === 'ok' && Array.isArray(result.data)) {
+      // 将API数据映射成前端需要的格式
+      eventsCache = result.data.map(mapEventData);
+      lastFetchTime = now;
+      return eventsCache;
+    } else {
+      console.error('Invalid response format from API:', result);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    throw error;
+  }
+};
+
+/**
+ * 获取精选活动（使用真实数据的前3个）
+ * @returns {Promise<Array>} 精选事件列表
+ */
+export const getFeaturedEvents = async () => {
+  try {
+    const allEvents = await getAllEvents();
+    // 按创建时间排序，获取最新的3个活动
+    return allEvents
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 3);
+  } catch (error) {
+    console.error('Error fetching featured events:', error);
+    throw error;
+  }
+};
+
+/**
+ * 通过ID获取单个活动（从缓存中查找）
+ * @param {string} id - 活动ID
+ * @returns {Promise<Object>} 格式化后的事件对象
+ */
+export const getEventById = async (id) => {
+  try {
+    // 先尝试从现有缓存中查找
+    if (eventsCache.length > 0) {
+      const cachedEvent = eventsCache.find(event => event.id === id);
+      if (cachedEvent) {
+        return cachedEvent;
+      }
+    }
+    
+    // 如果缓存中没有找到或缓存为空，则获取所有事件
+    const allEvents = await getAllEvents();
+    
+    // 再次从获取的所有事件中查找
+    const event = allEvents.find(event => event.id === id);
+    
+    if (event) {
+      return event;
+    } else {
+      throw new Error(`Event with ID ${id} not found`);
+    }
+  } catch (error) {
+    console.error(`Error fetching event with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * 创建新活动（管理员功能）
+ * @param {Object} eventData - 事件数据
+ * @returns {Promise<Object>} API响应
+ */
+export const createEvent = async (eventData) => {
+  // 将前端数据格式转换为API期望的格式
+  const apiEventData = {
+    title: eventData.title,
+    des: eventData.description,
+    start: eventData.startDate || new Date().toISOString(),
+    end: eventData.endDate || new Date().toISOString(),
+    venue: eventData.venue,
+    location: eventData.location || 'Adelaide',
+    capacity: eventData.capacity || '100',
+    price: eventData.price || '0.00',
+    status: 'DRAFT'
+  };
+
+  return authenticatedRequest('/event', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(apiEventData)
+  });
+};
+
+/**
+ * 更新活动（管理员功能）
+ * @param {string} id - 活动ID
+ * @param {Object} eventData - 更新的事件数据
+ * @returns {Promise<Object>} API响应
+ */
+export const updateEvent = async (id, eventData) => {
+  try {
+    // 将前端表单数据格式转换为API期望的格式
+    const apiEventData = {
+      id: id, // 添加ID字段
+      title: eventData.title,
+      des: eventData.description,
+      start: eventData.startDate,
+      end: eventData.endDate,
+      venue: eventData.venue,
+      location: eventData.location || 'Adelaide',
+      capacity: eventData.capacity || '100',
+      price: eventData.price || '0.00',
+      status: eventData.status || 'DRAFT'
+    };
+
+    console.log('正在发送更新数据:', apiEventData);
+
+    // 使用authenticatedRequest发送PUT请求到/event/update端点
+    const response = await fetch('/api/event/update', {
+      method: 'POST', // 使用POST而不是PUT
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(apiEventData),
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Error: ${response.status} ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (jsonError) {
+        console.error('无法解析错误响应:', jsonError);
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    // 尝试解析响应
+    try {
+      const result = await response.json();
+      console.log('更新成功,响应:', result);
+      return result;
+    } catch (jsonError) {
+      // 如果响应不是JSON格式但状态码成功，则返回成功状态
+      console.log('响应不是JSON格式，但请求成功');
+      return { success: true, message: 'Event updated successfully' };
+    }
+  } catch (error) {
+    console.error('Update event error:', error);
+    throw error;
+  }
+};
+
+/**
+ * 删除活动（管理员功能）
+ * @param {string} id - 活动ID
+ * @returns {Promise<Object>} API响应
+ */
+export const deleteEvent = async (id) => {
+  return authenticatedRequest(`/event/${id}`, {
+    method: 'DELETE'
+  });
 };
