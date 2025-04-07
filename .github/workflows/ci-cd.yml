@@ -38,7 +38,6 @@ jobs:
 
   deploy-dev:
     if: github.ref == 'refs/heads/dev'
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
