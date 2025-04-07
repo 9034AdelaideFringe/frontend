@@ -26,25 +26,36 @@ export const login = ({ email, password }) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ email, password }),
-    credentials: "include", // 重要！允许接收和发送cookies
+    credentials: "include", // 允许接收和发送cookies
   })
     .then((response) => {
+      // 首先检查响应状态
       if (!response.ok) {
+        // 如果响应不是2xx, 尝试解析错误
         return response.json().then((err) => {
           throw err;
         });
       }
+      
+      // 成功响应，解析JSON数据
       return response.json();
     })
     .then((data) => {
-      // 数据直接从后端返回，包含用户的所有信息（包括role）
-      // 将整个用户对象存储在localStorage中
+      // 检查返回的数据是否包含错误信息
+      if (data.error || data.message === "error") {
+        throw new Error(data.error || "Login failed");
+      }
+      
+      // 检查返回的数据是否包含必要的用户信息
+      if (!data || !data.email) {
+        throw new Error("Invalid user data received");
+      }
+      
+      // 成功登录，保存用户信息
       localStorage.setItem("user", JSON.stringify(data));
       localStorage.setItem("isLoggedIn", "true");
-
-      // 在控制台输出用户角色，用于调试
       console.log("用户角色:", data.role);
-
+      
       return data;
     });
 };
