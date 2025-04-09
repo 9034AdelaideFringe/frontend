@@ -360,7 +360,66 @@ export const updateEvent = async (id, eventData) => {
  * @returns {Promise<Object>} API响应
  */
 export const deleteEvent = async (id) => {
-  return authenticatedRequest(`/event/${id}`, {
-    method: 'DELETE'
-  });
+  try {
+    console.log(`尝试删除ID为 ${id} 的事件`);
+    
+    // 使用POST请求，将ID放在请求体中
+    const response = await fetch('/api/event', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+      credentials: 'include' // 确保包含cookie进行认证
+    });
+    
+    if (!response.ok) {
+      let errorMessage = `Error: ${response.status} ${response.statusText}`;
+      
+      try {
+        const errorText = await response.text();
+        console.log('删除失败的响应内容:', errorText);
+        
+        // 尝试解析为JSON，如果可能的话
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorMessage;
+        } catch (jsonError) {
+          // 如果不是JSON，使用原始文本
+          if (errorText) {
+            errorMessage = `Error: ${errorText}`;
+          }
+        }
+      } catch (e) {
+        console.error('无法读取错误响应:', e);
+      }
+      
+      throw new Error(errorMessage);
+    }
+    
+    // 尝试解析响应为JSON，如果失败则返回成功状态
+    try {
+      const result = await response.json();
+      console.log('删除成功,响应:', result);
+      
+      // 如果有缓存，从缓存中移除已删除的事件
+      if (typeof eventsCache !== 'undefined' && Array.isArray(eventsCache)) {
+        eventsCache = eventsCache.filter(event => event.id !== id);
+      }
+      
+      return result;
+    } catch (jsonError) {
+      console.log('响应不是JSON格式，但请求成功');
+      
+      // 如果有缓存，从缓存中移除已删除的事件
+      if (typeof eventsCache !== 'undefined' && Array.isArray(eventsCache)) {
+        eventsCache = eventsCache.filter(event => event.id !== id);
+      }
+      
+      return { success: true, message: 'Event deleted successfully' };
+    }
+  } catch (error) {
+    console.error('Delete event error:', error);
+    throw error;
+  }
 };

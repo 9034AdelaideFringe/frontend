@@ -66,6 +66,12 @@ export const login = ({ email, password }) => {
  * @returns {Promise} Registration result
  */
 export const register = ({ name, email, password }) => {
+    // 检查密码是否符合要求
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return Promise.reject(new Error("Password must be at least 8 characters long and include both letters and numbers."));
+    }
+    
   return fetch(apiUrl("/signup"), {
     method: "POST",
     headers: {
