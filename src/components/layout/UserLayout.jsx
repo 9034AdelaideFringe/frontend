@@ -1,6 +1,7 @@
 import React from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { logout, getCurrentUser } from '../../services/authService'
+import CartIcon from '../cart/CartIcon' // CartIcon导入
 import styles from './UserLayout.module.css'
 
 const UserLayout = () => {
@@ -57,6 +58,10 @@ const UserLayout = () => {
           
           <div className={styles.headerRight}>
             <div className={styles.actionButtons}>
+              {/* 修改购物车图标链接 */}
+              <Link to="/user/cart" className={styles.cartButton}>
+                <CartIcon />
+              </Link>
               <Link to="/" className={styles.backToSite}>
                 Back to Site
               </Link>
@@ -75,6 +80,7 @@ const UserLayout = () => {
             {pathname === '/user/tickets' && 'My Tickets'}
             {pathname === '/user/profile' && 'Profile Settings'}
             {pathname === '/user/favorites' && 'My Favorites'}
+            {pathname === '/user/cart' && 'Shopping Cart'} {/* 添加购物车标题 */}
           </h1>
         </div>
         <div className={styles.contentBody}>

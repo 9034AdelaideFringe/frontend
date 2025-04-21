@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { getEventById } from '../services/eventService'
-import styles from './EventDetailPage.module.css'
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { getEventById } from '../services/eventService';
+import { addToCart } from '../services/cartService';
+import TicketSelector from '../components/tickets/TicketSelector';
+import styles from './EventDetailPage.module.css';
 
 const EventDetailPage = () => {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showTicketSelector, setShowTicketSelector] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Get event details
@@ -21,6 +25,30 @@ const EventDetailPage = () => {
         setLoading(false);
       });
   }, [id]);
+
+  const handleAddToCart = (cartItem) => {
+    addToCart(cartItem)
+      .then(() => {
+        alert('Item added to cart successfully!');
+        setShowTicketSelector(false);
+      })
+      .catch(error => {
+        console.error('Error adding to cart:', error);
+        alert('Failed to add item to cart. Please try again.');
+      });
+  };
+
+  const handleBuyNow = (cartItem) => {
+    addToCart(cartItem)
+      .then(() => {
+        // Navigate to cart page for checkout
+        navigate('/user/cart');
+      })
+      .catch(error => {
+        console.error('Error processing purchase:', error);
+        alert('Failed to process purchase. Please try again.');
+      });
+  };
 
   if (loading) {
     return <div className={styles.loading}>Loading...</div>;
@@ -68,14 +96,29 @@ const EventDetailPage = () => {
         </div>
         
         <div className={styles.actions}>
-          <button className={styles.btnPrimary}>Buy Tickets</button>
-          <Link to="/events" className={styles.btnSecondary}>
-            Back to Events
-          </Link>
+          {showTicketSelector ? (
+            <TicketSelector 
+              event={event} 
+              onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
+            />
+          ) : (
+            <>
+              <button 
+                className={styles.btnPrimary}
+                onClick={() => setShowTicketSelector(true)}
+              >
+                Buy Tickets
+              </button>
+              <Link to="/events" className={styles.btnSecondary}>
+                Back to Events
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default EventDetailPage
+export default EventDetailPage;

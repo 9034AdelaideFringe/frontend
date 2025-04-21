@@ -215,3 +215,18 @@
     padding: 15px;
   }
 }
+
+/* 在现有样式中添加 */
+
+.cartButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin-right: 10px;
+  transition: transform 0.2s;
+}
+
+.cartButton:hover {
+  transform: scale(1.1);
+}

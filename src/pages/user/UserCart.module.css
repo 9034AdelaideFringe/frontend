@@ -1,0 +1,256 @@
+.cartPage {
+  width: 100%;
+}
+
+.cartItems {
+  margin-bottom: 30px;
+}
+
+.cartItem {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.itemImage {
+  width: 120px;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 4px;
+  margin-right: 20px;
+}
+
+.itemImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.itemDetails {
+  flex: 1;
+}
+
+.itemDetails h3 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+}
+
+.itemInfo {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.itemInfo p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.itemQuantity {
+  display: flex;
+  align-items: center;
+  margin: 0 20px;
+}
+
+.itemQuantity button {
+  width: 30px;
+  height: 30px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.itemQuantity button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.itemQuantity span {
+  margin: 0 10px;
+  font-size: 1rem;
+  min-width: 20px;
+  text-align: center;
+}
+
+.itemPrice {
+  margin-right: 20px;
+  text-align: right;
+}
+
+.itemPrice p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.totalPrice {
+  font-size: 1.1rem !important;
+  font-weight: 500;
+  color: #333 !important;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: #ff3366;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: underline;
+}
+
+.cartSummary {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.summaryDetails {
+  margin-bottom: 20px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.summaryRow.total {
+  border-bottom: none;
+  font-weight: 700;
+  font-size: 1.2rem;
+  padding-top: 15px;
+  margin-top: 5px;
+  border-top: 2px solid #eee;
+}
+
+.checkoutActions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.continueShoppingBtn, .checkoutBtn {
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.continueShoppingBtn {
+  background-color: white;
+  border: 1px solid #333;
+  color: #333;
+  text-decoration: none;
+}
+
+.continueShoppingBtn:hover {
+  background-color: #f5f5f5;
+}
+
+.checkoutBtn {
+  background-color: #ff3366;
+  border: 1px solid #ff3366;
+  color: white;
+  flex: 1;
+  margin-left: 15px;
+}
+
+.checkoutBtn:hover {
+  background-color: #e62c5d;
+}
+
+.checkoutBtn:disabled {
+  background-color: #ccc;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 1.2rem;
+}
+
+.emptyCart {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.emptyCart p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.browseBtn {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #ff3366;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.browseBtn:hover {
+  background-color: #e62c5d;
+}
+
+@media (max-width: 768px) {
+  .cartItem {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .itemImage {
+    width: 100%;
+    height: 140px;
+    margin-bottom: 15px;
+    margin-right: 0;
+  }
+  
+  .itemDetails {
+    margin-bottom: 15px;
+    width: 100%;
+  }
+  
+  .itemQuantity, .itemPrice {
+    margin: 10px 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .removeBtn {
+    align-self: flex-end;
+    margin-top: 10px;
+  }
+  
+  .checkoutActions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .continueShoppingBtn, .checkoutBtn {
+    margin: 0;
+    width: 100%;
+  }
+}
