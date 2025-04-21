@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from '../components/layout/MainLayout'
 import AdminLayout from '../components/layout/AdminLayout'
@@ -15,33 +15,58 @@ import UserDashboard from '../pages/user/UserDashboard'
 import UserTickets from '../pages/user/UserTickets'
 import UserProfile from '../pages/user/UserProfile'
 import UserFavorites from '../pages/user/UserFavorites'
-import { isAuthenticated, getCurrentUser } from '../services/authService'
+import Modal from '../components/login/modal'
+import AdminLoginForm from '../components/login/AdminLoginForm'
+import { isAuthenticated, getCurrentUser, login } from '../services/authService'
+import AdminLoginPage from '../pages/admin/AdminLoginPage';
 
 // Admin route guard component
 const AdminRoute = ({ children }) => {
+  const [showAdminLogin, setShowAdminLogin] = useState(false)
+  const [loginError, setLoginError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  
   const user = getCurrentUser();
-  
-  // Debug information
-  console.log("AdminRoute check - Current user:", user);
-  console.log("AdminRoute check - User role:", user?.role);
-  console.log("AdminRoute check - isAuthenticated:", isAuthenticated());
-  
-  // 从用户数据中提取角色信息，并检查是否为ADMIN
   const isAdmin = user && (user.role === 'ADMIN' || user.role === 'admin');
   
-  console.log("Is admin user:", isAdmin);
+  const handleAdminLogin = (credentials) => {
+    setIsLoading(true);
+    setLoginError('');
+    
+    login(credentials)
+      .then(data => {
+        if (data.role === 'ADMIN' || data.role === 'admin') {
+          // 登录成功且是管理员，刷新页面重新检查权限
+          window.location.reload();
+        } else {
+          setLoginError('You do not have admin privileges');
+        }
+      })
+      .catch(error => {
+        setLoginError(error.message || 'Login failed. Please check your credentials');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
   
-  if (!isAuthenticated()) {
-    console.log("Not authenticated, redirecting to home");
-    return <Navigate to="/" replace />;
+  if (!isAuthenticated() || !isAdmin) {
+    // 显示管理员登录模态框
+    return (
+      <>
+        <Modal 
+          isOpen={true} 
+          onClose={() => window.location.href = '/'}
+          title="Admin Login"
+        >
+          {loginError && <div style={{color: '#e53e3e', marginBottom: '10px'}}>{loginError}</div>}
+          {isLoading && <div>Loading...</div>}
+          <AdminLoginForm onLogin={handleAdminLogin} />
+        </Modal>
+      </>
+    );
   }
   
-  if (!isAdmin) {
-    console.log("Not admin, redirecting to home");
-    return <Navigate to="/" replace />;
-  }
-  
-  console.log("Admin access granted");
   return children;
 };
 
@@ -63,6 +88,7 @@ const AppRoutes = () => {
         <Route index element={<HomePage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="events/:id" element={<EventDetailPage />} />
+        <Route path="admin-login" element={<AdminLoginPage />} />
       </Route>
       
       {/* User Routes */}
