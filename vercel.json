@@ -1,8 +1,9 @@
 {
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/proxy"
-    }
+    { "source": "/api/(.*)", "destination": "/api/proxy" }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
