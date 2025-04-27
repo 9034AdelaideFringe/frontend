@@ -18,6 +18,8 @@
   --radius-lg: 0.75rem;
   --radius-full: 9999px;
   --transition: all 0.2s ease;
+  --chart-ticket-color: #6366f1;
+  --chart-revenue-color: #f43f5e;
 }
 
 .dashboard {
@@ -91,130 +93,316 @@
   border-radius: var(--radius-full);
 }
 
-/* Quick Actions */
-.quickActions {
-  margin-bottom: 2.5rem;
-}
-
-.actionButtons {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.actionButton {
-  padding: 0.75rem 1.25rem;
-  background: var(--primary-gradient);
-  color: white;
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  font-weight: 500;
-  transition: var(--transition);
-  box-shadow: var(--shadow-sm);
-}
-
-.actionButton:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Recent Events Table */
-.recentEvents {
+/* Analytics Section */
+.analyticsSection {
   background-color: var(--bg-white);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   box-shadow: var(--shadow-md);
   margin-bottom: 2rem;
-  overflow-x: auto;
 }
 
-.table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.table th,
-.table td {
-  padding: 1rem;
-  text-align: left;
-}
-
-.table th {
-  background-color: rgba(241, 245, 249, 0.6);
-  font-weight: 600;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.table tr {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  transition: var(--transition);
-}
-
-.table tr:hover {
-  background-color: rgba(241, 245, 249, 0.3);
-}
-
-.table tbody tr:last-child {
-  border-bottom: none;
-}
-
-.table th:first-child {
-  border-top-left-radius: var(--radius-md);
-}
-
-.table th:last-child {
-  border-top-right-radius: var(--radius-md);
-}
-
-/* Actions */
-.actions {
+.analyticHeader {
   display: flex;
-  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-.actionLink {
-  padding: 0.375rem 0.75rem;
-  border-radius: var(--radius-full);
+.timeFilter {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.timeFilterBtn {
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-light);
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
-  text-decoration: none;
+  color: var(--text-secondary);
+  cursor: pointer;
   transition: var(--transition);
 }
 
-.actionLink:first-child {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #16a34a;
+.timeFilterBtn:hover {
+  background-color: #e2e8f0;
 }
 
-.actionLink:first-child:hover {
-  background-color: rgba(34, 197, 94, 0.2);
+.timeFilterBtn.active {
+  background: var(--primary-gradient);
+  color: white;
+  border-color: transparent;
 }
 
-.actionLink:last-child {
-  background-color: rgba(99, 102, 241, 0.1);
-  color: var(--primary);
+.analyticCharts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
 }
 
-.actionLink:last-child:hover {
-  background-color: rgba(99, 102, 241, 0.2);
+.chartBox {
+  background-color: var(--bg-light);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.chartTitle {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+/* Venue Heat Map */
+.chartContainer {
+  position: relative;
+  margin-top: 1rem;
+}
+
+.venueHeatMap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.venueBar {
+  display: grid;
+  grid-template-columns: 180px 1fr 100px;
+  gap: 1rem;
+  align-items: center;
+}
+
+.venueName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.venueBarContainer {
+  height: 24px;
+  background-color: #e2e8f0;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.venueBarFill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.venueCount {
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.venueRevenue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Line Chart */
+.chartLegend {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.ticketDot {
+  width: 10px;
+  height: 10px;
+  background-color: var(--chart-ticket-color);
+  border-radius: 50%;
+}
+
+.revenueDot {
+  width: 10px;
+  height: 10px;
+  background-color: var(--chart-revenue-color);
+  border-radius: 50%;
+}
+
+.lineChartContainer {
+  display: flex;
+  height: 300px;
+  position: relative;
+  margin-top: 1rem;
+}
+
+.yAxis {
+  display: none; /* 隐藏原有的Y轴容器 */
+}
+
+.yAxisLeft, .yAxisRight {
+  width: 60px;
+  height: 100%;
+  position: relative;
+}
+
+.yAxisLeft {
+  border-right: 1px dashed #e2e8f0;
+}
+
+.yAxisRight {
+  border-left: 1px dashed #e2e8f0;
+}
+
+.yAxisTickets, .yAxisRevenue {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 0;
+  position: relative;
+}
+
+.yAxisTickets {
+  border-right: 1px dashed #e2e8f0;
+}
+
+.yAxisLabel {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-align: right;
+  padding-right: 5px;
+}
+
+.yAxisTitle {
+  position: absolute;
+  top: -25px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+  width: 100%;
+}
+
+.lineChart {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  border-left: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 10px 10px 30px 0;
+}
+
+.chartGrid {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.gridLine {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background-color: #f0f0f0;
+  left: 0;
+}
+
+.chartSvg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.ticketLine {
+  fill: none;
+  stroke: var(--chart-ticket-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.revenueLine {
+  fill: none;
+  stroke: var(--chart-revenue-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.xAxis {
+  position: absolute;
+  bottom: -30px;
+  left: 0;
+  width: 100%;
+  display: flex;
+}
+
+.xAxisLabel {
+  position: absolute;
+  transform: translateX(-50%) rotate(-45deg);
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 /* Responsive Design */
+@media (min-width: 992px) {
+  .analyticCharts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .actionButtons {
+  .analyticHeader {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .timeFilter {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .venueBar {
+    grid-template-columns: 120px 1fr 80px;
+  }
+
+  .yAxis {
+    width: 80px;
+  }
+
+  .yAxisLeft, .yAxisRight {
+    width: 40px;
   }
   
-  .actionButton {
-    text-align: center;
+  .yAxisLabel {
+    font-size: 8px;
   }
 }
 
@@ -222,9 +410,34 @@
   .statsGrid {
     grid-template-columns: 1fr;
   }
-  
-  .table th, 
-  .table td {
-    padding: 0.75rem 0.5rem;
+
+  .timeFilter {
+    flex-direction: column;
   }
+
+  .timeFilterBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .venueBar {
+    grid-template-columns: 100px 1fr;
+  }
+
+  .venueRevenue {
+    display: none;
+  }
+}
+
+/* 确保noData样式存在 */
+.noData {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-secondary);
+  font-style: italic;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: var(--radius-md);
+  border: 1px dashed #e2e8f0;
 }

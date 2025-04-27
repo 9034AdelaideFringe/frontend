@@ -1,4 +1,4 @@
-import { mockUserTickets } from './ticketsMock';
+import { mockUserTickets, getAllTicketsData } from './ticketsMock';
 import { mockTicketTypes } from './ticketTypesMock';
 
 // 存储本地票据状态，允许在应用中进行修改
@@ -122,4 +122,197 @@ export const getTicketTypesByEventId = (eventId) => {
   }
   
   return Promise.resolve([...ticketTypes]);
+};
+
+/**
+ * 获取票务分析数据
+ * @param {string} timeRange - 'week', 'month', 'year'
+ * @returns {Promise<Object>} 分析数据
+ */
+export const getTicketAnalytics = (timeRange = 'month') => {
+  const allTickets = getAllTicketsData();
+  const filteredTickets = filterTicketsByTimeRange(allTickets, timeRange);
+  
+  const venueData = calculateVenueData(filteredTickets);
+  const salesData = calculateSalesTimeData(filteredTickets, timeRange);
+  const stats = calculateTicketStats(allTickets);
+  
+  return Promise.resolve({
+    venueData,
+    salesData,
+    stats
+  });
+};
+
+/**
+ * 根据时间范围过滤票据
+ * @private
+ */
+const filterTicketsByTimeRange = (tickets, timeRange) => {
+  const now = new Date();
+  let startDate;
+  
+  switch(timeRange) {
+    case 'week':
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 7);
+      break;
+    case 'month':
+      startDate = new Date(now);
+      startDate.setMonth(now.getMonth() - 1);
+      break;
+    case 'year':
+      startDate = new Date(now);
+      startDate.setFullYear(now.getFullYear() - 1);
+      break;
+    default:
+      startDate = new Date(now);
+      startDate.setMonth(now.getMonth() - 1);
+  }
+  
+  return tickets.filter(ticket => {
+    const purchaseDate = new Date(ticket.purchaseDate);
+    return purchaseDate >= startDate && purchaseDate <= now;
+  });
+};
+
+/**
+ * 计算场馆数据
+ * @private
+ */
+const calculateVenueData = (tickets) => {
+  // 按场馆进行分组
+  const venueMap = {};
+  
+  tickets.forEach(ticket => {
+    if (!venueMap[ticket.venue]) {
+      venueMap[ticket.venue] = {
+        venue: ticket.venue,
+        count: 0,
+        revenue: 0
+      };
+    }
+    
+    venueMap[ticket.venue].count += ticket.quantity;
+    
+    // 只计算active和used状态的票据收入
+    if (ticket.status === 'active' || ticket.status === 'used') {
+      venueMap[ticket.venue].revenue += ticket.totalPrice;
+    }
+  });
+  
+  // 转换为数组并排序
+  return Object.values(venueMap)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8); // 只返回前8个场馆
+};
+
+/**
+ * 计算销售时间序列数据
+ * @private
+ */
+const calculateSalesTimeData = (tickets, timeRange) => {
+  const now = new Date();
+  let intervals;
+  let dateFormat;
+  
+  switch(timeRange) {
+    case 'week':
+      intervals = 7; // 每天一个数据点
+      dateFormat = 'day';
+      break;
+    case 'month':
+      intervals = 30; // 每天一个数据点
+      dateFormat = 'day';
+      break;
+    case 'year':
+      intervals = 12; // 每月一个数据点
+      dateFormat = 'month';
+      break;
+    default:
+      intervals = 30;
+      dateFormat = 'day';
+  }
+  
+  // 创建时间区间
+  const buckets = [];
+  for (let i = 0; i < intervals; i++) {
+    const date = new Date();
+    if (dateFormat === 'day') {
+      date.setDate(now.getDate() - (intervals - 1) + i);
+      buckets.push({
+        date,
+        label: `Day ${i + 1}`, // 简化标签
+        tickets: 0,
+        revenue: 0
+      });
+    } else {
+      date.setMonth(now.getMonth() - (intervals - 1) + i);
+      buckets.push({
+        date,
+        label: `Month ${i + 1}`, // 简化标签
+        tickets: 0,
+        revenue: 0
+      });
+    }
+  }
+  
+  // 将票据分配到对应的时间桶
+  tickets.forEach(ticket => {
+    const purchaseDate = new Date(ticket.purchaseDate);
+    let bucketIndex = -1;
+    
+    if (dateFormat === 'day') {
+      // 查找对应的日期桶
+      for (let i = 0; i < buckets.length; i++) {
+        const bucketDate = buckets[i].date;
+        if (purchaseDate.getDate() === bucketDate.getDate() &&
+            purchaseDate.getMonth() === bucketDate.getMonth() &&
+            purchaseDate.getFullYear() === bucketDate.getFullYear()) {
+          bucketIndex = i;
+          break;
+        }
+      }
+    } else {
+      // 查找对应的月份桶
+      for (let i = 0; i < buckets.length; i++) {
+        const bucketDate = buckets[i].date;
+        if (purchaseDate.getMonth() === bucketDate.getMonth() &&
+            purchaseDate.getFullYear() === bucketDate.getFullYear()) {
+          bucketIndex = i;
+          break;
+        }
+      }
+    }
+    
+    if (bucketIndex !== -1) {
+      buckets[bucketIndex].tickets += ticket.quantity;
+      // 只计算active和used状态的票据收入
+      if (ticket.status === 'active' || ticket.status === 'used') {
+        buckets[bucketIndex].revenue += ticket.totalPrice;
+      }
+    }
+  });
+  
+  // 提取标签、票数和收入数组
+  return {
+    labels: buckets.map(bucket => bucket.label),
+    tickets: buckets.map(bucket => bucket.tickets),
+    revenues: buckets.map(bucket => bucket.revenue)
+  };
+};
+
+/**
+ * 计算票务统计数据
+ * @private
+ */
+const calculateTicketStats = (tickets) => {
+  const activeTickets = tickets.filter(t => t.status === 'active');
+  
+  return {
+    activeTickets: activeTickets.reduce((sum, t) => sum + t.quantity, 0),
+    totalRevenue: tickets
+      .filter(t => t.status === 'active' || t.status === 'used')
+      .reduce((sum, t) => sum + t.totalPrice, 0)
+  };
 };

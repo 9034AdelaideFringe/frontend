@@ -1,3 +1,132 @@
+// 生成额外的票务数据，以提供更丰富的分析数据
+const generateAdditionalTickets = () => {
+  const venues = [
+    'Adelaide Arts Centre',
+    'Adelaide Botanic Garden', 
+    'Adelaide Museum of Modern Art',
+    'Royal Theatre',
+    'Laugh Factory Club',
+    'Adelaide Convention Centre',
+    'Elder Park',
+    'Royal Adelaide Show',
+    'Adelaide Festival Centre',
+    'Lion Arts Factory',
+    'Adelaide Oval',
+    'Thebarton Theatre'
+  ];
+  
+  const eventNames = [
+    'Circus Performance',
+    'Jazz Festival',
+    'Contemporary Art Exhibition',
+    'Theatre Performance "Nightfall"',
+    'Comedy Night',
+    'Dance Festival',
+    'Digital Art Showcase', 
+    'Classical Music Concert',
+    'Street Food Festival',
+    'Poetry Slam',
+    'International Film Festival',
+    'Magic Show Extravaganza'
+  ];
+  
+  const ticketTypes = [
+    'Standard',
+    'VIP Package',
+    'Student Entry',
+    'Premium Seating',
+    'Family Pack',
+    'Early Bird',
+    'Guided Tour',
+    'Standard Entry',
+    'Front Row Seats',
+    'Group Discount',
+    'Child (5-16)',
+    'Concession'
+  ];
+  
+  const additionalTickets = [];
+  
+  // 为每个场馆生成更多的票据，以便获得更加丰富的数据
+  for (let i = 0; i < 60; i++) {
+    const venueIndex = Math.floor(Math.random() * venues.length);
+    const eventIndex = Math.floor(Math.random() * eventNames.length);
+    const ticketTypeIndex = Math.floor(Math.random() * ticketTypes.length);
+    const eventId = (eventIndex + 1).toString();
+    
+    // 生成随机日期
+    const generateDate = () => {
+      // 生成过去一年内的日期，确保有足够的历史数据
+      const now = new Date();
+      const daysAgo = Math.floor(Math.random() * 365);
+      const date = new Date();
+      date.setDate(now.getDate() - daysAgo);
+      return date;
+    };
+    
+    // 生成未来日期
+    const generateFutureDate = (fromDate) => {
+      const date = new Date(fromDate);
+      const daysAhead = Math.floor(Math.random() * 90) + 5;
+      date.setDate(date.getDate() + daysAhead);
+      return date;
+    };
+    
+    const purchaseDate = generateDate();
+    const eventDate = generateFutureDate(purchaseDate);
+    const lastRefundDate = new Date(eventDate);
+    lastRefundDate.setDate(eventDate.getDate() - 7); // 活动前7天可退款
+    
+    // 确定票务状态
+    const determineStatus = () => {
+      const now = new Date();
+      if (eventDate < now) {
+        return Math.random() > 0.3 ? 'used' : 'expired';
+      }
+      
+      return Math.random() > 0.1 ? 'active' : 'cancelled'; // 10%的退款率
+    };
+    
+    const status = determineStatus();
+    
+    // 创建扫描日期 (如果票已使用)
+    let scanDate = null;
+    if (status === 'used') {
+      const scanDateTime = new Date(eventDate);
+      scanDateTime.setHours(Math.floor(Math.random() * 3) + 17); // 5PM-8PM
+      scanDateTime.setMinutes(Math.floor(Math.random() * 60));
+      scanDate = scanDateTime.toISOString();
+    }
+    
+    // 生成随机数量和价格
+    const quantity = Math.floor(Math.random() * 5) + 1;
+    const pricePerTicket = Math.floor(Math.random() * 90) + 10; // $10-$100
+    
+    additionalTickets.push({
+      id: `ticket-${2000 + i}`,
+      eventId,
+      eventName: `${eventNames[eventIndex]}`,
+      date: eventDate.toISOString().split('T')[0],
+      time: `${Math.floor(Math.random() * 12) + 1}:00 ${Math.random() > 0.5 ? 'PM' : 'AM'}`,
+      venue: venues[venueIndex],
+      ticketType: ticketTypes[ticketTypeIndex],
+      quantity,
+      pricePerTicket,
+      totalPrice: pricePerTicket * quantity,
+      purchaseDate: purchaseDate.toISOString().split('T')[0],
+      status,
+      qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ticket-${2000 + i}`,
+      expiryDate: eventDate.toISOString().split('T')[0],
+      lastRefundDate: lastRefundDate.toISOString().split('T')[0],
+      scanDate,
+      orderId: `order-${6000 + Math.floor(i/2)}` // 平均每个订单2张票
+    });
+  }
+  
+  return additionalTickets;
+};
+
+// 基础票据数据
 export const mockUserTickets = [
   {
     id: 'ticket-1001',
@@ -108,5 +237,10 @@ export const mockUserTickets = [
     expiryDate: '2025-04-20',
     lastRefundDate: '2025-04-13',
     orderId: 'order-5006'
-  }
+  },
+  // 添加更多模拟数据以丰富分析
+  ...generateAdditionalTickets()
 ];
+
+// 导出单独的函数来获取票务数据
+export const getAllTicketsData = () => mockUserTickets;
