@@ -90,7 +90,6 @@ function MyTickets() {
                 <div className={styles.ticketContent}>
                   <div className={styles.ticketHeader}>
                     <h3 className={styles.ticketTitle}>{ticket.eventName}</h3>
-                    <span className={`${styles.ticketStatus} ${styles.statusActive}`}>Valid</span>
                   </div>
                   <div className={styles.ticketDetails}>
                     <div className={styles.detailItem}>
@@ -142,7 +141,6 @@ function MyTickets() {
                 <div className={styles.ticketContent}>
                   <div className={styles.ticketHeader}>
                     <h3 className={styles.ticketTitle}>{ticket.eventName}</h3>
-                    <span className={`${styles.ticketStatus} ${styles.statusUsed}`}>Used</span>
                   </div>
                   <div className={styles.ticketDetails}>
                     <div className={styles.detailItem}>

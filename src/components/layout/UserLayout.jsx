@@ -74,15 +74,6 @@ const UserLayout = () => {
       </header>
       
       <main className={styles.content}>
-        <div className={styles.contentHeader}>
-          <h1>
-            {pathname === '/user' && 'User Dashboard'}
-            {pathname === '/user/tickets' && 'My Tickets'}
-            {pathname === '/user/profile' && 'Profile Settings'}
-            {pathname === '/user/favorites' && 'My Favorites'}
-            {pathname === '/user/cart' && 'Shopping Cart'} {/* 添加购物车标题 */}
-          </h1>
-        </div>
         <div className={styles.contentBody}>
           <Outlet />
         </div>

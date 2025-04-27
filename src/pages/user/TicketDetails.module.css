@@ -3,7 +3,7 @@
   border-radius: 10px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
   width: 100%;
-  max-width: 500px;
+  max-width: 800px;
   padding: 25px;
   position: relative;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -74,8 +74,22 @@
   background-color: #9E9E9E;
 }
 
+/* New layout with horizontal arrangement */
+.ticketContent {
+  display: flex;
+  gap: 37px;
+}
+
 .ticketInfo {
-  margin-bottom: 25px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rightColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .infoRow {
@@ -106,7 +120,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .qrInstruction {
@@ -117,7 +131,6 @@
 }
 
 .qrCode {
-  padding: 15px;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -200,10 +213,28 @@
   text-align: center;
 }
 
-/* 响应式设计 */
+/* Responsive design */
+@media (max-width: 768px) {
+  .ticketDetails {
+    max-width: 95%;
+  }
+  
+  .ticketContent {
+    flex-direction: column;
+  }
+  
+  .rightColumn {
+    order: -1; /* Show QR code first on mobile */
+  }
+  
+  .qrCodeSection {
+    margin-bottom: 20px;
+  }
+}
+
 @media (max-width: 576px) {
   .ticketDetails {
-    width: 90%;
+    width: 95%;
     padding: 20px 15px;
     max-width: none;
   }
