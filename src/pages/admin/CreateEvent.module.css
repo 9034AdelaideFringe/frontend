@@ -1,14 +1,52 @@
+:root {
+  --primary: #6366f1;
+  --primary-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --secondary: #f43f5e;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --bg-light: #f8fafc;
+  --bg-white: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 9999px;
+  --transition: all 0.2s ease;
+}
+
 .createEvent {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 24px;
+  background-color: var(--bg-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 2rem;
+}
+
+.createEvent h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  position: relative;
+  display: inline-block;
+  margin-bottom: 2rem;
+}
+
+.createEvent h2::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-full);
 }
 
 .formGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
 .formGroup {
@@ -24,96 +62,115 @@
 
 .formGroup label,
 .formGroupFull label {
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
+  font-size: 0.95rem;
 }
 
 .formGroup input,
 .formGroup select,
 .formGroupFull textarea {
-  padding: 10px 12px;
+  padding: 0.75rem 1rem;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
-  transition: border-color 0.2s;
+  transition: var(--transition);
 }
 
 .formGroup input:focus,
 .formGroup select:focus,
 .formGroupFull textarea:focus {
-  border-color: #ff3366;
+  border-color: var(--primary);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 51, 102, 0.2);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 .inputError {
-  border-color: #f44336 !important;
+  border-color: var(--secondary) !important;
 }
 
 .error {
-  color: #f44336;
+  color: var(--secondary);
   font-size: 0.85rem;
-  margin-top: 4px;
+  margin-top: 0.25rem;
 }
 
 .formActions {
   display: flex;
   justify-content: flex-end;
-  gap: 16px;
-  margin-top: 24px;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
 .submitBtn, .cancelBtn {
-  padding: 10px 24px;
-  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
   border: none;
+  font-size: 0.95rem;
 }
 
 .submitBtn {
-  background-color: #ff3366;
+  background: var(--primary-gradient);
   color: white;
+  box-shadow: var(--shadow-sm);
 }
 
 .submitBtn:hover {
-  background-color: #e62c5d;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.submitBtn:disabled {
+  background: linear-gradient(135deg, #a5a6f6, #b292f8);
+  cursor: not-allowed;
+  transform: none;
 }
 
 .cancelBtn {
   background-color: #f2f2f2;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .cancelBtn:hover {
   background-color: #e5e5e5;
 }
 
-.currentImage {
-  margin-bottom: 10px;
+.cancelBtn:disabled {
+  cursor: not-allowed;
 }
 
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-}
-
+/* Ticket Types Section */
 .ticketTypesSection {
-  margin-top: 40px;
-  padding: 20px;
-  background-color: #f7f9fc;
-  border-radius: 8px;
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  background-color: var(--bg-light);
+  border-radius: var(--radius-lg);
   border: 1px solid #e0e4e8;
 }
 
 .ticketTypesSection h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
   margin-top: 0;
-  margin-bottom: 20px;
-  color: #333;
-  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.ticketTypesSection h3::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 30px;
+  height: 3px;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-full);
 }
 
 .noTicketTypes {
@@ -224,8 +281,17 @@
   .formGrid {
     grid-template-columns: 1fr;
   }
-
-  .typeFormRow {
-    grid-template-columns: 1fr;
+  
+  .formActions {
+    flex-direction: column-reverse;
+  }
+  
+  .submitBtn, .cancelBtn {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .createEvent {
+    padding: 1.5rem;
   }
 }

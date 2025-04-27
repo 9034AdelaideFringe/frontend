@@ -110,7 +110,6 @@ const TicketTypeManager = ({ ticketTypes, onChange }) => {
 
   return (
     <div className={styles.ticketTypeManager}>
-      <h3>Ticket Types</h3>
       
       {/* 已添加的票种列表 */}
       {ticketTypes.length > 0 ? (

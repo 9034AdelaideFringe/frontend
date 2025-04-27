@@ -70,15 +70,6 @@ const AdminLayout = () => {
       </header>
       
       <main className={styles.content}>
-        <div className={styles.contentHeader}>
-          <h1>
-            {pathname === '/admin' && 'Admin Dashboard'}
-            {pathname === '/admin/events' && 'Event Management'}
-            {pathname === '/admin/events/create' && 'Create New Event'}
-            {pathname.includes('/admin/events/edit') && 'Edit Event'}
-            {pathname === '/admin/tickets' && 'Ticket Management'}
-          </h1>
-        </div>
         <div className={styles.contentBody}>
           <Outlet />
         </div>

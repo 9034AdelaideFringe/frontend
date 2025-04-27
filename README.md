@@ -15,13 +15,27 @@ A web application for the Adelaide Fringe festival that allows users to browse e
   - Ticket management
   - Profile settings
   - Favorite events
+- Complete ticket purchase workflow:
+  - Select event and ticket types
+  - Add tickets to cart
+  - View and manage shopping cart
+  - Checkout process
+- Ticket management features:
+  - View active, used, and canceled tickets
+  - Access digital tickets with QR codes
+  - Download ticket information
+  - Request refunds within eligible period
 - Responsive design
 
 ### Admin Features
 
 - Dashboard with event statistics and quick actions
 - Event management (create, edit, delete events)
-- Ticket management (view, mark as used/cancelled)
+- Advanced ticket management:
+  - Create and edit multiple ticket types per event
+  - Set pricing and availability for each ticket type
+  - View ticket sales and usage statistics
+- Customer order management
 - Responsive admin interface
 
 ## Tech Stack
@@ -130,16 +144,16 @@ This project is licensed under the MIT License.
 
 ## CI/CD
 
-### CI/CD 流程
+### CI/CD Workflow
 
-项目使用 GitHub Actions 实现自动化测试和部署。详细信息请参阅 [CICD_README.md](./CICD_README.md) 文件。
+The project uses GitHub Actions for automated testing and deployment. For more details, refer to the [CICD_README.md](./CICD_README.md) file.
 
-### CI 流程概述
+### CI Workflow Overview
 
-1. 推送代码到 `main` 或 `develop` 分支时自动触发测试
-2. 创建 PR 时自动运行测试并部署到预览环境
-3. 合并到 `develop` 分支后自动部署到开发环境
-4. 合并到 `main` 分支后自动部署到生产环境
+1. Automatically triggers tests when code is pushed to the `main` or `develop` branches.
+2. Runs tests and deploys to a preview environment when a pull request (PR) is created.
+3. Automatically deploys to the development environment after merging into the `develop` branch.
+4. Automatically deploys to the production environment after merging into the `main` branch.
 
 ## Testing
 
@@ -167,3 +181,57 @@ npm run test:ui
 2. Test files should include multiple test cases covering the main functionality and edge cases
 3. Use `@testing-library/react` to test component behavior
 4. Use `vi.mock()` to mock external dependencies
+
+## Database Schema
+
+The application is built on a comprehensive database structure supporting ticket management, shopping cart functionality, and user authentication:
+
+### Core Entities
+
+- **Users**: Authentication and user profile information
+- **Events**: Event details, venue information, and scheduling
+- **TicketTypes**: Different ticket categories with pricing for each event
+- **Tickets**: Individual digital tickets with QR codes and validity information
+- **Cart**: Shopping cart items for users during the purchase process
+- **Orders**: Completed transactions and purchase history
+
+### Key Relationships
+
+- Events have multiple ticket types (standard, VIP, student, etc.)
+- Users can have multiple tickets and orders
+- Orders can contain multiple tickets
+- Tickets link to specific events and have status tracking (active, used, cancelled, expired)
+
+## Key Workflows
+
+### Ticket Purchase Flow
+
+1. User browses events and selects an event of interest
+2. User chooses ticket type and quantity
+3. User adds tickets to shopping cart
+4. User proceeds to checkout and completes payment
+5. System generates digital tickets with unique QR codes
+6. User receives confirmation and can access tickets in dashboard
+
+### Ticket Management Flow
+
+1. User can view all purchased tickets in "My Tickets" section
+2. Active tickets display QR codes for venue entry
+3. Users can download ticket PDFs or request refunds if eligible
+4. Tickets automatically update status based on event date
+
+## Development Roadmap
+
+### Current Phase
+
+- Ticket type management implementation
+- Shopping cart functionality
+- User ticket dashboard
+- Refund processing
+
+### Upcoming Features
+
+- Mobile ticket display optimization
+- Email notifications for purchases and refunds
+- Social sharing integration
+- Event recommendations based on user preferences
