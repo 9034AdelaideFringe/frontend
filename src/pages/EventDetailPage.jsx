@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getEventById } from '../services/eventService';
 import { addToCart } from '../services/cartService';
-import TicketSelector from '../components/tickets/TicketSelector';
+import TicketSelector from '../pages/user/tickets/TicketSelector'; // Assuming you have a TicketSelector component
 import styles from './EventDetailPage.module.css';
 
 const EventDetailPage = () => {

@@ -1,0 +1,124 @@
+.ticketTypeManager {
+  margin-bottom: 30px;
+}
+
+.ticketTypesList {
+  margin-bottom: 20px;
+}
+
+.noTickets {
+  color: #666;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
+.ticketTypeItem {
+  background-color: white;
+  border: 1px solid #e0e4e8;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.ticketTypeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.ticketTypeHeader h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1rem;
+}
+
+.removeTypeBtn {
+  background-color: #ff3366;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.removeTypeBtn:hover {
+  background-color: #e62c5d;
+}
+
+.ticketTypeForm {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.typeFormRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.typeFormGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.typeFormGroup label {
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.typeFormGroup input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.addTicketTypeForm {
+  background-color: white;
+  border: 1px solid #e0e4e8;
+  border-radius: 6px;
+  padding: 20px;
+}
+
+.addTicketTypeForm h4 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1rem;
+}
+
+.addTicketTypeBtn {
+  margin-top: 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.addTicketTypeBtn:hover {
+  background-color: #43a047;
+}
+
+.inputError {
+  border-color: #ff3366 !important;
+}
+
+.error {
+  color: #ff3366;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .typeFormRow {
+    grid-template-columns: 1fr;
+  }
+}

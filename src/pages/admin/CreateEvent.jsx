@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createEvent } from '../../services/eventService'
 import styles from './CreateEvent.module.css'
+import TicketTypeManager from './TicketTypeManager';
 
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -14,10 +15,21 @@ const CreateEvent = () => {
     capacity: '100',
     price: '',
     description: '',
-    status: 'DRAFT'
+    status: 'DRAFT',
+    // 新增票种数组
+    ticketTypes: []
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 新增票种表单状态
+  const [newTicketType, setNewTicketType] = useState({
+    name: '',
+    description: '',
+    price: '',
+    availableQuantity: ''
+  });
+  const [ticketTypeErrors, setTicketTypeErrors] = useState({});
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -34,6 +46,116 @@ const CreateEvent = () => {
     }
   };
 
+  // 处理新票种表单变化
+  const handleTicketTypeChange = (e) => {
+    const { name, value } = e.target;
+    setNewTicketType({
+      ...newTicketType,
+      [name]: value
+    });
+    
+    // 清除错误
+    if (ticketTypeErrors[name]) {
+      setTicketTypeErrors({
+        ...ticketTypeErrors,
+        [name]: null
+      });
+    }
+  };
+
+  // 添加票种
+  const addTicketType = () => {
+    // 验证票种表单
+    const typeErrors = validateTicketType();
+    if (Object.keys(typeErrors).length > 0) {
+      setTicketTypeErrors(typeErrors);
+      return;
+    }
+
+    // 创建新票种对象并添加到表单数据中
+    const newType = {
+      id: `temp-${Date.now()}`,
+      name: newTicketType.name,
+      description: newTicketType.description,
+      price: parseFloat(newTicketType.price),
+      availableQuantity: parseInt(newTicketType.availableQuantity),
+    };
+
+    setFormData({
+      ...formData,
+      ticketTypes: [...formData.ticketTypes, newType]
+    });
+
+    // 重置新票种表单
+    setNewTicketType({
+      name: '',
+      description: '',
+      price: '',
+      availableQuantity: ''
+    });
+  };
+
+  // 验证票种表单
+  const validateTicketType = () => {
+    const errors = {};
+    
+    if (!newTicketType.name.trim()) {
+      errors.name = 'Ticket name is required';
+    }
+    
+    if (!newTicketType.description.trim()) {
+      errors.description = 'Description is required';
+    }
+    
+    if (!newTicketType.price) {
+      errors.price = 'Price is required';
+    } else if (isNaN(parseFloat(newTicketType.price)) || parseFloat(newTicketType.price) <= 0) {
+      errors.price = 'Price must be a valid positive number';
+    }
+    
+    if (!newTicketType.availableQuantity) {
+      errors.availableQuantity = 'Quantity is required';
+    } else if (
+      isNaN(parseInt(newTicketType.availableQuantity)) || 
+      parseInt(newTicketType.availableQuantity) <= 0
+    ) {
+      errors.availableQuantity = 'Quantity must be a valid positive number';
+    }
+    
+    return errors;
+  };
+
+  // 更新票种
+  const updateTicketType = (index, field, value) => {
+    const updatedTypes = [...formData.ticketTypes];
+    
+    if (field === 'price') {
+      updatedTypes[index][field] = parseFloat(value);
+    } else if (field === 'availableQuantity') {
+      updatedTypes[index][field] = parseInt(value);
+    } else {
+      updatedTypes[index][field] = value;
+    }
+    
+    setFormData({
+      ...formData,
+      ticketTypes: updatedTypes
+    });
+  };
+
+  // 删除票种
+  const removeTicketType = (index) => {
+    if (window.confirm('Are you sure you want to remove this ticket type?')) {
+      const updatedTypes = [...formData.ticketTypes];
+      updatedTypes.splice(index, 1);
+      
+      setFormData({
+        ...formData,
+        ticketTypes: updatedTypes
+      });
+    }
+  };
+
   const validate = () => {
     const newErrors = {};
     
@@ -42,8 +164,12 @@ const CreateEvent = () => {
     if (!formData.startDate) newErrors.startDate = 'Start date is required';
     if (!formData.endDate) newErrors.endDate = 'End date is required';
     if (!formData.venue) newErrors.venue = 'Venue is required';
-    if (!formData.price) newErrors.price = 'Price is required';
     if (!formData.description) newErrors.description = 'Event description is required';
+    
+    // 验证至少有一个票种
+    if (formData.ticketTypes.length === 0) {
+      newErrors.ticketTypes = 'At least one ticket type is required';
+    }
 
     return newErrors;
   };
@@ -61,7 +187,7 @@ const CreateEvent = () => {
     setIsSubmitting(true);
     
     try {
-      // 调用真实API创建活动
+      // 调用真实API创建活动，包括票种信息
       await createEvent(formData);
       alert('Event created successfully!');
       navigate('/admin/events');
@@ -73,8 +199,16 @@ const CreateEvent = () => {
     }
   };
 
+  const handleTicketTypesChange = (newTicketTypes) => {
+    setFormData({
+      ...formData,
+      ticketTypes: newTicketTypes
+    });
+  };
+
   return (
     <div className={styles.createEvent}>
+      <h2>Create New Event</h2>
       <form onSubmit={handleSubmit}>
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
@@ -156,20 +290,6 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="price">Price</label>
-            <input
-              id="price"
-              name="price"
-              type="text"
-              placeholder="e.g., 40.00"
-              value={formData.price}
-              onChange={handleInputChange}
-              className={errors.price ? styles.inputError : ''}
-            />
-            {errors.price && <span className={styles.error}>{errors.price}</span>}
-          </div>
-
-          <div className={styles.formGroup}>
             <label htmlFor="status">Status</label>
             <select
               id="status"
@@ -197,6 +317,19 @@ const CreateEvent = () => {
             />
             {errors.description && <span className={styles.error}>{errors.description}</span>}
           </div>
+        </div>
+
+        {/* 票种管理部分 */}
+        <div className={styles.ticketTypesSection}>
+          <h3>Ticket Types</h3>
+          {errors.ticketTypes && (
+            <p className={styles.error}>{errors.ticketTypes}</p>
+          )}
+          
+          <TicketTypeManager
+            ticketTypes={formData.ticketTypes}
+            onChange={handleTicketTypesChange}
+          />
         </div>
 
         <div className={styles.formActions}>

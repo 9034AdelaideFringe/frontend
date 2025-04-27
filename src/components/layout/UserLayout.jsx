@@ -1,7 +1,7 @@
 import React from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { logout, getCurrentUser } from '../../services/authService'
-import CartIcon from '../cart/CartIcon' // CartIcon导入
+import CartIcon from '../../pages/user/CartIcon' // CartIcon导入
 import styles from './UserLayout.module.css'
 
 const UserLayout = () => {
