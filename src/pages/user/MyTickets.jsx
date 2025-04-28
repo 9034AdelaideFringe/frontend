@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getUserTickets } from '../../services/ticketService';
-import TicketDetails from './TicketDetails';
+import { getUserTickets, refundTicket as refundTicketApi } from '../../services/ticketService';
+import TicketDetails from './tickets/TicketDetails';
+import RefundConfirmModal from './tickets/RefundConfirmModal';
 import styles from './MyTickets.module.css';
 
 function MyTickets() {
@@ -8,6 +9,8 @@ function MyTickets() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [ticketToRefund, setTicketToRefund] = useState(null);
+  const [refundSuccess, setRefundSuccess] = useState(null);
   
   useEffect(() => {
     fetchTickets();
@@ -27,11 +30,46 @@ function MyTickets() {
     }
   };
   
-  const handleTicketRefund = async (ticketId) => {
-    // Close details modal
-    setSelectedTicket(null);
-    // Reload ticket list
-    fetchTickets();
+  // Check if ticket is refundable
+  const isRefundable = (ticket) => {
+    if (ticket.status !== 'active') return false;
+    
+    const today = new Date();
+    const lastRefundDate = new Date(ticket.lastRefundDate);
+    return today <= lastRefundDate;
+  };
+  
+  // Open refund modal from ticket list
+  const openRefundModal = (ticket, e) => {
+    e.stopPropagation(); // Prevent opening ticket details
+    setTicketToRefund(ticket);
+  };
+  
+  // Handle refund from ticket details view
+  const handleTicketRefund = (ticket) => {
+    setTicketToRefund(ticket);
+  };
+  
+  // Close refund modal
+  const closeRefundModal = () => {
+    setTicketToRefund(null);
+  };
+  
+  // Process ticket refund
+  const handleRefundConfirm = async (ticketId) => {
+    try {
+      await refundTicketApi(ticketId);
+      setRefundSuccess(`Ticket for ${ticketToRefund.eventName} has been successfully refunded.`);
+      closeRefundModal();
+      fetchTickets(); // Refresh ticket list
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => {
+        setRefundSuccess(null);
+      }, 5000);
+    } catch (err) {
+      throw err; // Let RefundConfirmModal handle the error
+    }
   };
   
   // Open ticket details modal
@@ -73,6 +111,12 @@ function MyTickets() {
   
   return (
     <div className={styles.container}>
+      {refundSuccess && (
+        <div className={styles.successMessage}>
+          {refundSuccess}
+        </div>
+      )}
+      
       {activeTickets.length > 0 && (
         <>
           <div className={styles.sectionHeader}>
@@ -111,7 +155,17 @@ function MyTickets() {
                   </div>
                   <div className={styles.ticketActions}>
                     <div className={styles.quantity}>Quantity: {ticket.quantity || 1}</div>
-                    <button className={styles.btnSecondary}>Review</button>
+                    <div className={styles.actionButtons}>
+                      {isRefundable(ticket) && (
+                        <button 
+                          className={styles.refundBtn}
+                          onClick={(e) => openRefundModal(ticket, e)}
+                        >
+                          Refund
+                        </button>
+                      )}
+                      <button className={styles.viewBtn}>View</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -297,9 +351,19 @@ function MyTickets() {
               ticket={selectedTicket}
               onClose={closeTicketDetails}
               onRefund={handleTicketRefund}
+              isRefundable={isRefundable(selectedTicket)}
             />
           </div>
         </div>
+      )}
+      
+      {/* Refund confirmation modal */}
+      {ticketToRefund && (
+        <RefundConfirmModal
+          ticket={ticketToRefund}
+          onClose={closeRefundModal}
+          onConfirm={handleRefundConfirm}
+        />
       )}
     </div>
   );

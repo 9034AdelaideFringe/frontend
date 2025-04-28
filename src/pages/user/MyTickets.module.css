@@ -173,6 +173,60 @@
   font-weight: 500;
 }
 
+/* 按钮容器样式 */
+.actionButtons {
+  display: flex;
+  gap: 10px; /* 按钮之间的间距 */
+  align-items: center;
+}
+
+/* View 按钮样式 */
+.viewBtn {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.viewBtn:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.viewBtn:active {
+  transform: translateY(0);
+}
+
+/* Refund 按钮样式 */
+.refundBtn {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.refundBtn:hover {
+  background-color: rgba(244, 67, 54, 0.2);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.refundBtn:active {
+  transform: translateY(0);
+}
+
 .btnSecondary {
   background: var(--primary-gradient);
   color: white;

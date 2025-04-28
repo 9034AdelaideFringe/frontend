@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { refundTicket, downloadTicket } from '../../services/ticketService';
+import { refundTicket, downloadTicket } from '../../../services/ticketService';
 import styles from './TicketDetails.module.css';
 
 function TicketDetails({ ticket, onClose, onRefund }) {

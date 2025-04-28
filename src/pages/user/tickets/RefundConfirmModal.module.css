@@ -1,0 +1,91 @@
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  padding: 1.5rem;
+}
+
+.title {
+  margin-top: 0;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+}
+
+.content {
+  margin-bottom: 1.5rem;
+}
+
+.warning {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.ticketInfo {
+  background-color: #f5f5f5;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-top: 1rem;
+}
+
+.ticketInfo p {
+  margin: 0.5rem 0;
+}
+
+.error {
+  color: #d32f2f;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.cancelBtn, .confirmBtn {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.cancelBtn {
+  background-color: #e0e0e0;
+}
+
+.confirmBtn {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.cancelBtn:hover {
+  background-color: #d5d5d5;
+}
+
+.confirmBtn:hover {
+  background-color: #b71c1c;
+}
+
+.cancelBtn:disabled, .confirmBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
