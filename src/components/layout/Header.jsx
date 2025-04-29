@@ -3,17 +3,21 @@ import { Link } from 'react-router-dom'
 import Modal from '../login/modal'
 import LoginForm from '../login/LoginForm'
 import RegisterForm from '../login/RegisterForm'
-import { login, register, logout, isAuthenticated, getCurrentUser } from '../../services/authService'
+import ForgotPasswordForm from '../login/ForgotPasswordForm'
+import { login, register, requestPasswordReset, logout, isAuthenticated, getCurrentUser } from '../../services/authService'
 import styles from './Header.module.css'
 import formStyles from '../login/Form.module.css'
 
 const Header = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
+  const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [user, setUser] = useState(null)
   const [loginError, setLoginError] = useState('')
   const [registerError, setRegisterError] = useState('')
+  const [forgotPasswordError, setForgotPasswordError] = useState('')
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
   
@@ -121,6 +125,33 @@ const Header = () => {
         console.error('Logout error:', error);
       });
   };
+  
+  // 添加忘记密码处理函数
+  const handleForgotPassword = () => {
+    console.log('Forgot password clicked');
+    setIsLoginModalOpen(false);
+    
+    // 使用setTimeout确保登录模态框已关闭
+    setTimeout(() => {
+      setForgotPasswordError('');
+      setForgotPasswordSuccess('');
+      setIsForgotPasswordModalOpen(true);
+    }, 100);
+  };
+  
+  // 处理忘记密码提交
+  const handleForgotPasswordSubmit = async ({ email }) => {
+    try {
+      setIsLoading(true);
+      setForgotPasswordError('');
+      await requestPasswordReset(email);
+      setForgotPasswordSuccess('A password reset link has been sent to your email address.');
+    } catch (err) {
+      setForgotPasswordError(err.message || 'Failed to send reset link. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <header className={styles.header}>
@@ -201,7 +232,26 @@ const Header = () => {
         title="Login"
       >
         {loginError && <div className={styles.errorMessage}>{loginError}</div>}
-        <LoginForm onLogin={handleLogin} />
+        <LoginForm 
+          onLogin={handleLogin}
+          onForgotPassword={handleForgotPassword}
+          isModal={true}
+        />
+        <div className={formStyles.formFooter}>
+          <p>
+            Don't have an account?{' '}
+            <button 
+              className={formStyles.linkButton}
+              onClick={() => {
+                setIsLoginModalOpen(false);
+                setRegisterError('');
+                setIsRegisterModalOpen(true);
+              }}
+            >
+              Register here
+            </button>
+          </p>
+        </div>
       </Modal>
 
       {/* Register Modal */}
@@ -212,6 +262,57 @@ const Header = () => {
       >
         {registerError && <div className={styles.errorMessage}>{registerError}</div>}
         <RegisterForm onRegister={handleRegister} />
+        <div className={formStyles.formFooter}>
+          <p>
+            Already have an account?{' '}
+            <button 
+              className={formStyles.linkButton}
+              onClick={() => {
+                setIsRegisterModalOpen(false);
+                setLoginError('');
+                setIsLoginModalOpen(true);
+              }}
+            >
+              Login here
+            </button>
+          </p>
+        </div>
+      </Modal>
+
+      {/* 忘记密码模态框 */}
+      <Modal 
+        isOpen={isForgotPasswordModalOpen} 
+        onClose={() => setIsForgotPasswordModalOpen(false)}
+        title="Forgot Password"
+      >
+        {forgotPasswordError && <div className={styles.errorMessage}>{forgotPasswordError}</div>}
+        {forgotPasswordSuccess ? (
+          <div className={formStyles.successMessage}>
+            <p>{forgotPasswordSuccess}</p>
+            <button 
+              className={`${formStyles.btn} ${formStyles.btnPrimary}`}
+              onClick={() => setIsForgotPasswordModalOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          <>
+            <ForgotPasswordForm onSubmit={handleForgotPasswordSubmit} />
+            <div className={formStyles.formFooter}>
+              <button 
+                className={formStyles.linkButton}
+                onClick={() => {
+                  setIsForgotPasswordModalOpen(false);
+                  setLoginError('');
+                  setIsLoginModalOpen(true);
+                }}
+              >
+                Back to Login
+              </button>
+            </div>
+          </>
+        )}
       </Modal>
     </header>
   )

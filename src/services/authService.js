@@ -232,3 +232,67 @@ export const getUserRole = () => {
   const user = getCurrentUser();
   return user ? user.role : null;
 };
+
+/**
+ * 发送密码重置请求
+ * @param {string} email - 用户的电子邮件地址
+ * @returns {Promise<void>}
+ */
+export const requestPasswordReset = async (email) => {
+  // 在实际应用中，这里应该调用后端 API 发送重置密码邮件
+  // 这里使用模拟延时来模拟 API 调用
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      console.log(`Password reset email sent to: ${email}`);
+      
+      // 模拟检查邮箱是否存在的逻辑
+      // 比如，假设 'nonexistent@example.com' 是一个不存在的邮箱
+      if (email === 'nonexistent@example.com') {
+        reject(new Error('Email address not found'));
+      } else {
+        // 成功发送重置邮件
+        resolve();
+      }
+    }, 1000);
+  });
+};
+
+/**
+ * 验证重置令牌的有效性
+ * @param {string} token - 重置密码的令牌
+ * @returns {Promise<boolean>}
+ */
+export const verifyResetToken = async (token) => {
+  // 在实际应用中，这里应该调用后端 API 验证令牌
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // 假设只有特定令牌有效
+      if (token && token !== 'invalid-token') {
+        resolve(true);
+      } else {
+        reject(new Error('Invalid or expired reset token'));
+      }
+    }, 500);
+  });
+};
+
+/**
+ * 使用令牌重置密码
+ * @param {string} token - 重置密码的令牌
+ * @param {string} newPassword - 新密码
+ * @returns {Promise<void>}
+ */
+export const resetPassword = async (token, newPassword) => {
+  // 在实际应用中，这里应该调用后端 API 重置密码
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // 假设只有特定令牌有效
+      if (token && token !== 'invalid-token') {
+        console.log(`Password reset with token: ${token}, new password length: ${newPassword.length}`);
+        resolve();
+      } else {
+        reject(new Error('Invalid or expired reset token'));
+      }
+    }, 1000);
+  });
+};

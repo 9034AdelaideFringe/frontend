@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import styles from './Form.module.css'
 
-const LoginForm = ({ onLogin }) => {
+const LoginForm = ({ onLogin, onForgotPassword, isModal = false }) => {
+  // 添加调试日志
+  console.log('LoginForm rendering:', { isModal, hasOnForgotPassword: !!onForgotPassword });
+  
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -32,6 +36,28 @@ const LoginForm = ({ onLogin }) => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        <div className={styles.forgotPasswordLink}>
+          {isModal ? (
+            <button 
+              type="button"
+              className={styles.linkButton}
+              onClick={(e) => {
+                e.preventDefault();
+                console.log('Forgot password button clicked in LoginForm');
+                console.log('onForgotPassword is:', typeof onForgotPassword);
+                if (typeof onForgotPassword === 'function') {
+                  onForgotPassword();
+                } else {
+                  console.error('onForgotPassword is not a function');
+                }
+              }}
+            >
+              Forgot password?
+            </button>
+          ) : (
+            <Link to="/forgot-password" className={styles.link}>Forgot password?</Link>
+          )}
+        </div>
       </div>
       <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Login</button>
     </form>

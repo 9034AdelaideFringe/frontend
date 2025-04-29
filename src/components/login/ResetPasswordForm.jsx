@@ -1,84 +1,58 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
-import ResetPasswordForm from '../components/login/ResetPasswordForm'
-import { resetPassword, verifyResetToken } from '../services/authService'
-import styles from '../components/login/Form.module.css'
+import React, { useState } from 'react'
+import styles from './Form.module.css'
 
-const ResetPasswordPage = () => {
-  const { token } = useParams()
-  const navigate = useNavigate()
-  
-  const [isValidToken, setIsValidToken] = useState(false)
-  const [isVerifying, setIsVerifying] = useState(true)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState('')
+const ResetPasswordForm = ({ onSubmit }) => {
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
-  // Verify token when component mounts
-  useEffect(() => {
-    const checkToken = async () => {
-      try {
-        await verifyResetToken(token)
-        setIsValidToken(true)
-      } catch (err) {
-        setError('Invalid or expired reset link. Please request a new one.')
-      } finally {
-        setIsVerifying(false)
-      }
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    
+    // Password validation
+    if (password !== confirmPassword) {
+      setPasswordError('Passwords do not match')
+      return
     }
     
-    checkToken()
-  }, [token])
-
-  const handleSubmit = async ({ password }) => {
-    try {
-      await resetPassword(token, password)
-      setSuccess(true)
-      setError('')
-      
-      // Redirect to login page after 3 seconds
-      setTimeout(() => {
-        navigate('/')
-      }, 3000)
-    } catch (err) {
-      setError(err.message || 'Failed to reset password. Please try again.')
+    if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters long')
+      return
     }
-  }
-
-  if (isVerifying) {
-    return (
-      <div className={styles.authContainer}>
-        <div className={styles.authCard}>
-          <h2>Reset Password</h2>
-          <p className={styles.loading}>Verifying your reset link...</p>
-        </div>
-      </div>
-    )
+    
+    setPasswordError('')
+    onSubmit({ password })
   }
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authCard}>
-        <h2>Reset Password</h2>
-        
-        {!isValidToken ? (
-          <div className={styles.errorMessage}>
-            <p>{error}</p>
-            <Link to="/forgot-password" className={styles.link}>Request a new reset link</Link>
-          </div>
-        ) : success ? (
-          <div className={styles.successMessage}>
-            <p>Your password has been reset successfully!</p>
-            <p>You will be redirected to the login page shortly...</p>
-          </div>
-        ) : (
-          <>
-            {error && <div className={styles.errorMessage}>{error}</div>}
-            <ResetPasswordForm onSubmit={handleSubmit} token={token} />
-          </>
-        )}
+    <form onSubmit={handleSubmit}>
+      <div className={styles.formGroup}>
+        <label htmlFor="password">New Password</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength="6"
+        />
       </div>
-    </div>
+      <div className={styles.formGroup}>
+        <label htmlFor="confirmPassword">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+        />
+        {passwordError && <div className={styles.errorText}>{passwordError}</div>}
+      </div>
+      <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>
+        Reset Password
+      </button>
+    </form>
   )
 }
 
-export default ResetPasswordPage
+export default ResetPasswordForm

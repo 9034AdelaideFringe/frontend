@@ -23,12 +23,15 @@
 }
 
 .btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
-  border: none;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
 }
 
 .btnPrimary {
@@ -50,8 +53,127 @@
   background-color: #fff5f7;
 }
 
+.btnOutline {
+  background-color: transparent;
+  color: #ff3366;
+  border: 1px solid #ff3366;
+}
+
+.btnOutline:hover {
+  background-color: rgba(255, 51, 102, 0.05);
+}
+
 .errorText {
   color: #e53e3e;
   font-size: 0.85rem;
   margin-top: 4px;
+}
+
+/* 添加到现有样式底部 */
+
+.authContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: #f8f9fa;
+}
+
+.authCard {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.authTitle {
+  text-align: center;
+  color: #ff3366;
+  margin-bottom: 1.5rem;
+}
+
+.formToggle {
+  display: flex;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.toggleBtn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.activeBtn {
+  color: #ff3366;
+  border-bottom: 2px solid #ff3366;
+}
+
+.formFooter {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.link {
+  color: #ff3366;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.link:hover {
+  text-decoration: underline;
+  color: #e62c5d;
+}
+
+.successMessage {
+  background-color: #dcf8e6;
+  color: #0f783c;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.errorMessage {
+  background-color: #fee2e2;
+  color: #ef4444;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.loading {
+  text-align: center;
+  color: #64748b;
+}
+
+/* 添加到现有样式中 */
+
+.forgotPasswordLink {
+  text-align: right;
+  margin-top: 8px;
+  font-size: 0.85rem;
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #ff3366;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.linkButton:hover {
+  text-decoration: underline;
+  color: #e62c5d;
 }
