@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getEventById, updateEvent } from '../../services/eventService'
-import styles from './CreateEvent.module.css' // 重用创建事件的样式
+import TicketTypeManager from './TicketTypeManager';
+import styles from './CreateEvent.module.css' // Reusing create event styles
+import ImageUploader from '../../components/common/ImageUploader';
 
 const EditEvent = () => {
   const { id } = useParams();
@@ -9,33 +11,39 @@ const EditEvent = () => {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     title: '',
-    startDate: '',
-    endDate: '',
-    venue: '',
-    location: '',
-    capacity: '',
-    price: '',
     description: '',
-    status: 'DRAFT'
+    short_description: '',
+    image: '',
+    venueSeatingLayout: '',
+    date: '',
+    time: '',
+    end_time: '',
+    venue: '',
+    capacity: '',
+    category: '',
+    ticketTypes: []
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // 获取事件详情
+    // Fetch event details
     getEventById(id)
       .then(eventData => {
-        // 将API返回的数据映射到表单
+        // Map API data to form fields
         setFormData({
           title: eventData.title || '',
-          startDate: formatDateTimeForInput(eventData.startRaw) || '',
-          endDate: formatDateTimeForInput(eventData.endRaw) || '',
-          venue: eventData.venue || '',
-          location: eventData.location || '',
-          capacity: eventData.capacity || '',
-          price: eventData.price ? eventData.price.replace('$', '') : '',
           description: eventData.description || '',
-          status: eventData.status || 'DRAFT'
+          short_description: eventData.short_description || '',
+          image: eventData.image || '',
+          venueSeatingLayout: eventData.venueSeatingLayout || '',
+          date: eventData.date || '',
+          time: eventData.time || '',
+          end_time: eventData.end_time || '',
+          venue: eventData.venue || '',
+          capacity: eventData.capacity || '',
+          category: eventData.category || '',
+          ticketTypes: eventData.ticketTypes || []
         });
         setLoading(false);
       })
@@ -46,27 +54,13 @@ const EditEvent = () => {
       });
   }, [id, navigate]);
 
-  // 格式化日期时间为input[type="datetime-local"]所需的格式
-  const formatDateTimeForInput = (dateTimeString) => {
-    if (!dateTimeString) return '';
-    
-    try {
-      const date = new Date(dateTimeString);
-      // 转为YYYY-MM-DDTHH:MM格式
-      return date.toISOString().substring(0, 16);
-    } catch (e) {
-      console.error('Date formatting error:', e);
-      return '';
-    }
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value
     });
-    // 输入改变时清除对应的错误
+    // Clear corresponding error when input changes
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -75,16 +69,49 @@ const EditEvent = () => {
     }
   };
 
+  const handleImageUploaded = (imageUrl) => {
+    setFormData({
+      ...formData,
+      image: imageUrl
+    });
+    // Clear error if present
+    if (errors.image) {
+      setErrors({
+        ...errors,
+        image: null
+      });
+    }
+  };
+
+  const handleLayoutUploaded = (imageUrl) => {
+    setFormData({
+      ...formData,
+      venueSeatingLayout: imageUrl
+    });
+    // Clear error if present
+    if (errors.venueSeatingLayout) {
+      setErrors({
+        ...errors,
+        venueSeatingLayout: null
+      });
+    }
+  };
+
   const validate = () => {
     const newErrors = {};
     
-    // 必填字段验证
+    // Required fields validation
     if (!formData.title) newErrors.title = 'Event name is required';
-    if (!formData.startDate) newErrors.startDate = 'Start date is required';
-    if (!formData.endDate) newErrors.endDate = 'End date is required';
+    if (!formData.date) newErrors.date = 'Date is required';
+    if (!formData.time) newErrors.time = 'Start time is required';
     if (!formData.venue) newErrors.venue = 'Venue is required';
-    if (!formData.price) newErrors.price = 'Price is required';
+    if (!formData.capacity) newErrors.capacity = 'Capacity is required';
     if (!formData.description) newErrors.description = 'Event description is required';
+
+    // Ticket types validation - ensure at least one exists
+    if (formData.ticketTypes.length === 0) {
+      newErrors.ticketTypes = 'At least one ticket type is required';
+    }
 
     return newErrors;
   };
@@ -92,7 +119,7 @@ const EditEvent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // 验证表单
+    // Validate form
     const formErrors = validate();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
@@ -102,7 +129,7 @@ const EditEvent = () => {
     setIsSubmitting(true);
     
     try {
-      // 调用真实API更新事件
+      // Call API to update event
       await updateEvent(id, formData);
       alert('Event updated successfully!');
       navigate('/admin/events');
@@ -114,16 +141,24 @@ const EditEvent = () => {
     }
   };
 
+  const handleTicketTypesChange = (newTicketTypes) => {
+    setFormData({
+      ...formData,
+      ticketTypes: newTicketTypes
+    });
+  };
+
   if (loading) {
     return <div className={styles.loading}>Loading...</div>;
   }
 
   return (
     <div className={styles.createEvent}>
+      <h2>Edit Event</h2>
       <form onSubmit={handleSubmit}>
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
-            <label htmlFor="title">Event Name</label>
+            <label htmlFor="title">Event Name*</label>
             <input
               id="title"
               name="title"
@@ -136,33 +171,46 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="startDate">Start Date & Time</label>
+            <label htmlFor="date">Event Date*</label>
             <input
-              id="startDate"
-              name="startDate"
-              type="datetime-local"
-              value={formData.startDate}
+              id="date"
+              name="date"
+              type="date"
+              value={formData.date}
               onChange={handleInputChange}
-              className={errors.startDate ? styles.inputError : ''}
+              className={errors.date ? styles.inputError : ''}
             />
-            {errors.startDate && <span className={styles.error}>{errors.startDate}</span>}
+            {errors.date && <span className={styles.error}>{errors.date}</span>}
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="endDate">End Date & Time</label>
+            <label htmlFor="time">Start Time*</label>
             <input
-              id="endDate"
-              name="endDate"
-              type="datetime-local"
-              value={formData.endDate}
+              id="time"
+              name="time"
+              type="time"
+              value={formData.time}
               onChange={handleInputChange}
-              className={errors.endDate ? styles.inputError : ''}
+              className={errors.time ? styles.inputError : ''}
             />
-            {errors.endDate && <span className={styles.error}>{errors.endDate}</span>}
+            {errors.time && <span className={styles.error}>{errors.time}</span>}
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="venue">Venue</label>
+            <label htmlFor="end_time">End Time</label>
+            <input
+              id="end_time"
+              name="end_time"
+              type="time"
+              value={formData.end_time}
+              onChange={handleInputChange}
+              className={errors.end_time ? styles.inputError : ''}
+            />
+            {errors.end_time && <span className={styles.error}>{errors.end_time}</span>}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="venue">Venue*</label>
             <input
               id="venue"
               name="venue"
@@ -175,20 +223,7 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="location">Location</label>
-            <input
-              id="location"
-              name="location"
-              type="text"
-              value={formData.location}
-              onChange={handleInputChange}
-              className={errors.location ? styles.inputError : ''}
-            />
-            {errors.location && <span className={styles.error}>{errors.location}</span>}
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="capacity">Capacity</label>
+            <label htmlFor="capacity">Capacity*</label>
             <input
               id="capacity"
               name="capacity"
@@ -201,37 +236,59 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="price">Price</label>
+            <label htmlFor="category">Category</label>
             <input
-              id="price"
-              name="price"
+              id="category"
+              name="category"
               type="text"
-              placeholder="e.g., 40.00"
-              value={formData.price}
+              value={formData.category}
               onChange={handleInputChange}
-              className={errors.price ? styles.inputError : ''}
+              className={errors.category ? styles.inputError : ''}
             />
-            {errors.price && <span className={styles.error}>{errors.price}</span>}
+            {errors.category && <span className={styles.error}>{errors.category}</span>}
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="status">Status</label>
-            <select
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className={errors.status ? styles.inputError : ''}
-            >
-              <option value="DRAFT">Draft</option>
-              <option value="PUBLISHED">Published</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
-            {errors.status && <span className={styles.error}>{errors.status}</span>}
+            <label htmlFor="image">Event Image</label>
+            <ImageUploader
+              currentImageUrl={formData.image}
+              label="Browse Images"
+              onImageUploaded={handleImageUploaded}
+              placeholder="Select an image or enter URL"
+              id="event-image"
+            />
+            {errors.image && <span className={styles.error}>{errors.image}</span>}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="venueSeatingLayout">Venue Seating Layout</label>
+            <ImageUploader
+              currentImageUrl={formData.venueSeatingLayout}
+              label="Browse Layouts"
+              onImageUploaded={handleLayoutUploaded}
+              placeholder="Select a seating layout image or enter URL"
+              id="seating-layout"
+            />
+            {errors.venueSeatingLayout && <span className={styles.error}>{errors.venueSeatingLayout}</span>}
           </div>
 
           <div className={styles.formGroupFull}>
-            <label htmlFor="description">Event Description</label>
+            <label htmlFor="short_description">Short Description</label>
+            <textarea
+              id="short_description"
+              name="short_description"
+              rows="2"
+              placeholder="A brief summary of the event (max 500 characters)"
+              maxLength="500"
+              value={formData.short_description}
+              onChange={handleInputChange}
+              className={errors.short_description ? styles.inputError : ''}
+            />
+            {errors.short_description && <span className={styles.error}>{errors.short_description}</span>}
+          </div>
+
+          <div className={styles.formGroupFull}>
+            <label htmlFor="description">Event Description*</label>
             <textarea
               id="description"
               name="description"
@@ -242,6 +299,19 @@ const EditEvent = () => {
             />
             {errors.description && <span className={styles.error}>{errors.description}</span>}
           </div>
+        </div>
+
+        {/* Ticket Types Section */}
+        <div className={styles.ticketTypesSection}>
+          <h3>Ticket Types</h3>
+          {errors.ticketTypes && (
+            <p className={styles.error}>{errors.ticketTypes}</p>
+          )}
+          
+          <TicketTypeManager
+            ticketTypes={formData.ticketTypes}
+            onChange={handleTicketTypesChange}
+          />
         </div>
 
         <div className={styles.formActions}>

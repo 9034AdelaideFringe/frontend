@@ -3,33 +3,27 @@ import { useNavigate } from 'react-router-dom'
 import { createEvent } from '../../services/eventService'
 import styles from './CreateEvent.module.css'
 import TicketTypeManager from './TicketTypeManager';
+import ImageUploader from '../../components/common/ImageUploader';
 
 const CreateEvent = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
-    startDate: '',
-    endDate: '',
-    venue: '',
-    location: 'Adelaide',
-    capacity: '100',
-    price: '',
     description: '',
-    status: 'DRAFT',
-    // 新增票种数组
+    short_description: '',
+    image: '',
+    venueSeatingLayout: '',
+    date: '',
+    time: '',
+    end_time: '',
+    venue: '',
+    capacity: '100',
+    category: '',
+    // Note: Status is handled automatically based on date in the database
     ticketTypes: []
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 新增票种表单状态
-  const [newTicketType, setNewTicketType] = useState({
-    name: '',
-    description: '',
-    price: '',
-    availableQuantity: ''
-  });
-  const [ticketTypeErrors, setTicketTypeErrors] = useState({});
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -46,112 +40,30 @@ const CreateEvent = () => {
     }
   };
 
-  // 处理新票种表单变化
-  const handleTicketTypeChange = (e) => {
-    const { name, value } = e.target;
-    setNewTicketType({
-      ...newTicketType,
-      [name]: value
+  const handleImageUploaded = (imageUrl) => {
+    setFormData({
+      ...formData,
+      image: imageUrl
     });
-    
-    // 清除错误
-    if (ticketTypeErrors[name]) {
-      setTicketTypeErrors({
-        ...ticketTypeErrors,
-        [name]: null
+    // Clear error if present
+    if (errors.image) {
+      setErrors({
+        ...errors,
+        image: null
       });
     }
   };
 
-  // 添加票种
-  const addTicketType = () => {
-    // 验证票种表单
-    const typeErrors = validateTicketType();
-    if (Object.keys(typeErrors).length > 0) {
-      setTicketTypeErrors(typeErrors);
-      return;
-    }
-
-    // 创建新票种对象并添加到表单数据中
-    const newType = {
-      id: `temp-${Date.now()}`,
-      name: newTicketType.name,
-      description: newTicketType.description,
-      price: parseFloat(newTicketType.price),
-      availableQuantity: parseInt(newTicketType.availableQuantity),
-    };
-
+  const handleLayoutUploaded = (imageUrl) => {
     setFormData({
       ...formData,
-      ticketTypes: [...formData.ticketTypes, newType]
+      venueSeatingLayout: imageUrl
     });
-
-    // 重置新票种表单
-    setNewTicketType({
-      name: '',
-      description: '',
-      price: '',
-      availableQuantity: ''
-    });
-  };
-
-  // 验证票种表单
-  const validateTicketType = () => {
-    const errors = {};
-    
-    if (!newTicketType.name.trim()) {
-      errors.name = 'Ticket name is required';
-    }
-    
-    if (!newTicketType.description.trim()) {
-      errors.description = 'Description is required';
-    }
-    
-    if (!newTicketType.price) {
-      errors.price = 'Price is required';
-    } else if (isNaN(parseFloat(newTicketType.price)) || parseFloat(newTicketType.price) <= 0) {
-      errors.price = 'Price must be a valid positive number';
-    }
-    
-    if (!newTicketType.availableQuantity) {
-      errors.availableQuantity = 'Quantity is required';
-    } else if (
-      isNaN(parseInt(newTicketType.availableQuantity)) || 
-      parseInt(newTicketType.availableQuantity) <= 0
-    ) {
-      errors.availableQuantity = 'Quantity must be a valid positive number';
-    }
-    
-    return errors;
-  };
-
-  // 更新票种
-  const updateTicketType = (index, field, value) => {
-    const updatedTypes = [...formData.ticketTypes];
-    
-    if (field === 'price') {
-      updatedTypes[index][field] = parseFloat(value);
-    } else if (field === 'availableQuantity') {
-      updatedTypes[index][field] = parseInt(value);
-    } else {
-      updatedTypes[index][field] = value;
-    }
-    
-    setFormData({
-      ...formData,
-      ticketTypes: updatedTypes
-    });
-  };
-
-  // 删除票种
-  const removeTicketType = (index) => {
-    if (window.confirm('Are you sure you want to remove this ticket type?')) {
-      const updatedTypes = [...formData.ticketTypes];
-      updatedTypes.splice(index, 1);
-      
-      setFormData({
-        ...formData,
-        ticketTypes: updatedTypes
+    // Clear error if present
+    if (errors.venueSeatingLayout) {
+      setErrors({
+        ...errors,
+        venueSeatingLayout: null
       });
     }
   };
@@ -159,14 +71,15 @@ const CreateEvent = () => {
   const validate = () => {
     const newErrors = {};
     
-    // Required fields
+    // Required fields from database schema
     if (!formData.title) newErrors.title = 'Event name is required';
-    if (!formData.startDate) newErrors.startDate = 'Start date is required';
-    if (!formData.endDate) newErrors.endDate = 'End date is required';
+    if (!formData.date) newErrors.date = 'Date is required';
+    if (!formData.time) newErrors.time = 'Start time is required';
     if (!formData.venue) newErrors.venue = 'Venue is required';
+    if (!formData.capacity) newErrors.capacity = 'Capacity is required';
     if (!formData.description) newErrors.description = 'Event description is required';
     
-    // 验证至少有一个票种
+    // Validate at least one ticket type
     if (formData.ticketTypes.length === 0) {
       newErrors.ticketTypes = 'At least one ticket type is required';
     }
@@ -187,7 +100,7 @@ const CreateEvent = () => {
     setIsSubmitting(true);
     
     try {
-      // 调用真实API创建活动，包括票种信息
+      // Call API to create event with ticket types
       await createEvent(formData);
       alert('Event created successfully!');
       navigate('/admin/events');
@@ -212,7 +125,7 @@ const CreateEvent = () => {
       <form onSubmit={handleSubmit}>
         <div className={styles.formGrid}>
           <div className={styles.formGroup}>
-            <label htmlFor="title">Event Name</label>
+            <label htmlFor="title">Event Name*</label>
             <input
               id="title"
               name="title"
@@ -225,33 +138,46 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="startDate">Start Date & Time</label>
+            <label htmlFor="date">Event Date*</label>
             <input
-              id="startDate"
-              name="startDate"
-              type="datetime-local"
-              value={formData.startDate}
+              id="date"
+              name="date"
+              type="date"
+              value={formData.date}
               onChange={handleInputChange}
-              className={errors.startDate ? styles.inputError : ''}
+              className={errors.date ? styles.inputError : ''}
             />
-            {errors.startDate && <span className={styles.error}>{errors.startDate}</span>}
+            {errors.date && <span className={styles.error}>{errors.date}</span>}
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="endDate">End Date & Time</label>
+            <label htmlFor="time">Start Time*</label>
             <input
-              id="endDate"
-              name="endDate"
-              type="datetime-local"
-              value={formData.endDate}
+              id="time"
+              name="time"
+              type="time"
+              value={formData.time}
               onChange={handleInputChange}
-              className={errors.endDate ? styles.inputError : ''}
+              className={errors.time ? styles.inputError : ''}
             />
-            {errors.endDate && <span className={styles.error}>{errors.endDate}</span>}
+            {errors.time && <span className={styles.error}>{errors.time}</span>}
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="venue">Venue</label>
+            <label htmlFor="end_time">End Time</label>
+            <input
+              id="end_time"
+              name="end_time"
+              type="time"
+              value={formData.end_time}
+              onChange={handleInputChange}
+              className={errors.end_time ? styles.inputError : ''}
+            />
+            {errors.end_time && <span className={styles.error}>{errors.end_time}</span>}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="venue">Venue*</label>
             <input
               id="venue"
               name="venue"
@@ -264,20 +190,7 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="location">Location</label>
-            <input
-              id="location"
-              name="location"
-              type="text"
-              value={formData.location}
-              onChange={handleInputChange}
-              className={errors.location ? styles.inputError : ''}
-            />
-            {errors.location && <span className={styles.error}>{errors.location}</span>}
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="capacity">Capacity</label>
+            <label htmlFor="capacity">Capacity*</label>
             <input
               id="capacity"
               name="capacity"
@@ -290,23 +203,59 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="status">Status</label>
-            <select
-              id="status"
-              name="status"
-              value={formData.status}
+            <label htmlFor="category">Category</label>
+            <input
+              id="category"
+              name="category"
+              type="text"
+              value={formData.category}
               onChange={handleInputChange}
-              className={errors.status ? styles.inputError : ''}
-            >
-              <option value="DRAFT">Draft</option>
-              <option value="PUBLISHED">Published</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
-            {errors.status && <span className={styles.error}>{errors.status}</span>}
+              className={errors.category ? styles.inputError : ''}
+            />
+            {errors.category && <span className={styles.error}>{errors.category}</span>}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="image">Event Image</label>
+            <ImageUploader
+              currentImageUrl={formData.image}
+              label="Browse Images"
+              onImageUploaded={handleImageUploaded}
+              placeholder="Select an image or enter URL"
+              id="event-image"
+            />
+            {errors.image && <span className={styles.error}>{errors.image}</span>}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="venueSeatingLayout">Venue Seating Layout</label>
+            <ImageUploader
+              currentImageUrl={formData.venueSeatingLayout}
+              label="Browse Layouts"
+              onImageUploaded={handleLayoutUploaded}
+              placeholder="Select a seating layout image or enter URL"
+              id="seating-layout"
+            />
+            {errors.venueSeatingLayout && <span className={styles.error}>{errors.venueSeatingLayout}</span>}
           </div>
 
           <div className={styles.formGroupFull}>
-            <label htmlFor="description">Event Description</label>
+            <label htmlFor="short_description">Short Description</label>
+            <textarea
+              id="short_description"
+              name="short_description"
+              rows="2"
+              placeholder="A brief summary of the event (max 500 characters)"
+              maxLength="500"
+              value={formData.short_description}
+              onChange={handleInputChange}
+              className={errors.short_description ? styles.inputError : ''}
+            />
+            {errors.short_description && <span className={styles.error}>{errors.short_description}</span>}
+          </div>
+
+          <div className={styles.formGroupFull}>
+            <label htmlFor="description">Event Description*</label>
             <textarea
               id="description"
               name="description"
@@ -319,7 +268,7 @@ const CreateEvent = () => {
           </div>
         </div>
 
-        {/* 票种管理部分 */}
+        {/* Ticket Types Section */}
         <div className={styles.ticketTypesSection}>
           <h3>Ticket Types</h3>
           {errors.ticketTypes && (

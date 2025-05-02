@@ -1,0 +1,90 @@
+.imageUploader {
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.inputGroup {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.urlInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px 0 0 4px;
+  font-size: 14px;
+}
+
+.urlInput:focus {
+  outline: none;
+  border-color: #ff3366;
+  box-shadow: 0 0 0 2px rgba(255, 51, 102, 0.2);
+}
+
+.urlInput:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.browseButton {
+  padding: 8px 16px;
+  background-color: #ff3366;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.browseButton:hover {
+  background-color: #e62c5d;
+}
+
+.browseButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #d32f2f;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.previewContainer {
+  margin-top: 10px;
+  position: relative;
+  max-width: 300px;
+}
+
+.preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1px solid #eee;
+}
+
+.removeButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.removeButton:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.removeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
