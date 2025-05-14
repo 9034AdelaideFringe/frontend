@@ -214,19 +214,21 @@ const AdminDashboard = () => {
               ))}
             </div>
             
-            {/* 绘制票务折线 */}
-            <svg className={styles.chartSvg}>
+            // 绘制票务折线
+            <svg className={styles.chartSvg} viewBox="0 0 100 100" preserveAspectRatio="none">
               <polyline
-                points={tickets.map((count, index) => 
-                  `${(index / (tickets.length - 1)) * 100}% ${100 - ((count / maxTickets) * 100)}%`
-                ).join(' ')}
+                points={tickets.map((count, index) => {
+                  const x = (index / (tickets.length - 1)) * 100;
+                  const y = 100 - ((count / maxTickets) * 100);
+                  return `${x},${y}`;
+                }).join(' ')}
                 className={styles.ticketLine}
               />
               {tickets.map((count, index) => (
                 <circle
                   key={index}
-                  cx={`${(index / (tickets.length - 1)) * 100}%`}
-                  cy={`${100 - ((count / maxTickets) * 100)}%`}
+                  cx={index / (tickets.length - 1) * 100}
+                  cy={100 - ((count / maxTickets) * 100)}
                   r="4"
                   fill="var(--chart-ticket-color)"
                   stroke="white"
@@ -235,19 +237,21 @@ const AdminDashboard = () => {
               ))}
             </svg>
             
-            {/* 绘制收入折线 */}
-            <svg className={styles.chartSvg}>
+            // 绘制收入折线
+            <svg className={styles.chartSvg} viewBox="0 0 100 100" preserveAspectRatio="none">
               <polyline
-                points={revenues.map((revenue, index) => 
-                  `${(index / (revenues.length - 1)) * 100}% ${100 - ((revenue / maxRevenue) * 100)}%`
-                ).join(' ')}
+                points={revenues.map((revenue, index) => {
+                  const x = (index / (revenues.length - 1)) * 100;
+                  const y = 100 - ((revenue / maxRevenue) * 100);
+                  return `${x},${y}`;
+                }).join(' ')}
                 className={styles.revenueLine}
               />
               {revenues.map((revenue, index) => (
                 <circle
                   key={index}
-                  cx={`${(index / (revenues.length - 1)) * 100}%`}
-                  cy={`${100 - ((revenue / maxRevenue) * 100)}%`}
+                  cx={index / (revenues.length - 1) * 100}
+                  cy={100 - ((revenue / maxRevenue) * 100)}
                   r="4"
                   fill="var(--chart-revenue-color)"
                   stroke="white"

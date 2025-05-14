@@ -94,19 +94,33 @@ const Header = () => {
   };
 
   const handleRegister = (userData) => {
+    // 确保用户数据包含所有必要字段
+    if (!userData.name || !userData.email || !userData.password) {
+      setRegisterError('所有字段都是必填的');
+      return;
+    }
+    
+    console.log('注册数据:', userData); // 调试日志
+    
     setIsLoading(true);
     setRegisterError('');
     
-    register(userData)
+    // 确保直接传递正确格式的数据对象
+    const registrationData = {
+      name: userData.name,
+      email: userData.email,
+      password: userData.password
+    };
+    
+    register(registrationData)
       .then(response => {
-        setUser(response.user);
+        // 直接使用response，不假设它有user属性
+        setUser(response);
         setIsLoggedIn(true);
         setIsRegisterModalOpen(false);
-        console.log('Registration successful:', response.user);
       })
       .catch(error => {
         setRegisterError(error.message || 'Registration failed, please try again later');
-        console.error('Registration failed:', error);
       })
       .finally(() => {
         setIsLoading(false);

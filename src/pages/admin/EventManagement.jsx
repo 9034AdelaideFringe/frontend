@@ -12,8 +12,34 @@ const EventManagement = () => {
   useEffect(() => {
     setLoading(true);
     getAllEvents()
-      .then(data => {
-        setEvents(data);
+      .then(response => {
+        console.log("原始API响应:", response);
+        
+        // 处理可能的不同响应格式
+        let eventsData;
+        if (response && response.data && Array.isArray(response.data)) {
+          // 格式为 {data: [...事件数组], message: "ok"}
+          eventsData = response.data;
+        } else if (Array.isArray(response)) {
+          // 格式已经是数组
+          eventsData = response;
+        } else {
+          console.error("意外的API响应格式:", response);
+          eventsData = [];
+        }
+        
+        console.log("处理后的事件数据:", eventsData);
+        
+        // 确保每个事件对象都有event_id字段
+        const enhancedEvents = eventsData.map(event => {
+          // 如果没有event_id但有id，使用id作为event_id
+          if (!event.event_id && event.id) {
+            return { ...event, event_id: event.id };
+          }
+          return event;
+        });
+        
+        setEvents(enhancedEvents);
         setLoading(false);
       })
       .catch(error => {
@@ -22,8 +48,17 @@ const EventManagement = () => {
         setLoading(false);
       });
   }, [refreshTrigger]);
-
+  
   const handleDelete = async (id) => {
+    // 添加验证，确保ID不是undefined
+    if (!id) {
+      console.error("Cannot delete event: Event ID is undefined");
+      alert("Cannot delete this event: Missing event ID");
+      return;
+    }
+    
+    console.log(`Confirming deletion of event with ID: ${id}`);
+    
     if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
       try {
         setLoading(true);
@@ -41,7 +76,7 @@ const EventManagement = () => {
 
   // 根据搜索关键词过滤事件
   const filteredEvents = events.filter(event => 
-    event.title.toLowerCase().includes(searchTerm.toLowerCase())
+    event && event.title && event.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -78,21 +113,21 @@ const EventManagement = () => {
             <tbody>
               {filteredEvents.length > 0 ? (
                 filteredEvents.map(event => (
-                  <tr key={event.id}>
-                    <td>{event.id.substring(0, 8)}...</td>
+                  <tr key={event.event_id}>
+                    <td>{event.event_id ? `${event.event_id.substring(0, 8)}...` : 'No ID'}</td>
                     <td>{event.title}</td>
                     <td>{event.date}</td>
                     <td>{event.venue}</td>
                     <td>{event.status}</td>
                     <td className={styles.actions}>
                       <Link 
-                        to={`/admin/events/edit/${event.id}`}
+                        to={`/admin/events/edit/${event.event_id}`}
                         className={styles.editBtn}
                       >
                         Edit
                       </Link>
                       <button 
-                        onClick={() => handleDelete(event.id)}
+                        onClick={() => handleDelete(event.event_id)}
                         className={styles.deleteBtn}
                       >
                         Delete
