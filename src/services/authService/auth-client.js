@@ -1,7 +1,7 @@
 /**
  * Authentication API client
  */
-import { apiUrl } from './api-config';
+import { apiUrl, getAuthRequestOptions } from './api-config';
 import { handleApiError } from './error-handler';
 
 /**
@@ -16,15 +16,8 @@ export const authRequest = async (endpoint, options = {}) => {
     const url = apiUrl(endpoint);
     console.log("发送请求到:", url);
     
-    // 添加必要的头信息
-    const requestOptions = {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-      credentials: "include", // 包含认证信息
-    };
+    // 使用统一的认证请求选项
+    const requestOptions = getAuthRequestOptions(options);
     
     // 发送请求
     const response = await fetch(url, requestOptions);

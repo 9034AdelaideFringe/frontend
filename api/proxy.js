@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   console.log(666, req)
   const { path = [] } = req.url
 
-  const backendBase = process.env.APP_API_URL // from Vercel env
+  const backendBase = process.env.VITE_APP_API_URL// from Vercel env
   const targetPath = removeApiPrefix(req.url) // 去掉 '/api'
 
   const targetUrl = `${backendBase}${targetPath}`

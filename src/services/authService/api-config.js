@@ -1,13 +1,8 @@
-// 根据环境确定基础 URL
-const API_BASE = import.meta.env.VITE_APP_API_URL || "/api";
+// 重定向到共享配置
+import { buildApiUrl } from '../shared/apiConfig';
 
-export const apiUrl = (endpoint) => {
-  const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  
-  // 如果API_BASE是完整URL且不以/api结尾，添加/api前缀
-  if (API_BASE.startsWith('http') && !API_BASE.endsWith('/api')) {
-    return `${API_BASE}/api${path}`;
-  }
-  
-  return `${API_BASE}${path}`;
-};
+// 保留原始函数名称，但使用共享实现
+export const apiUrl = buildApiUrl;
+
+// 导出所有共享配置
+export * from '../shared/apiConfig';
