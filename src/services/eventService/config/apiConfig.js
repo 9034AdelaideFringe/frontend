@@ -11,23 +11,23 @@ export const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1603190287605-e6
  * @returns {string} 完整的API URL
  */
 export const getApiUrl = (endpoint) => {
-  // 确保endpoint以/开头
   const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   
-  // 调整API路径构建逻辑
+  console.log('API_BASE_URL:', API_BASE_URL); // 打印原始环境变量
+  
   let url;
   if (API_BASE_URL) {
     // 生产环境：使用完整URL
-    // 确保API_BASE_URL结尾没有斜杠
     const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
     url = `${baseUrl}${path}`;
+    console.log('构建的生产环境URL:', url);
   } else {
-    // 开发环境中，添加/api前缀，因为后端确实需要这个前缀
-    // 并且Vite代理现在已设置为保留这个前缀
-    url = `/api${path}`;  // 添加/api前缀
+    // 开发环境中，添加/api前缀
+    url = `/api${path}`;
+    console.log('构建的开发环境URL:', url);
   }
   
-  if (IS_DEV) console.log(`[API] 请求URL: ${url}`);
+  console.log(`最终API请求URL: ${url}`); // 始终打印最终URL
   return url;
 };
 
