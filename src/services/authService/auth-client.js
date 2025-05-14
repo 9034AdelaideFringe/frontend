@@ -11,41 +11,60 @@ import { handleApiError } from './error-handler';
  * @returns {Promise} API response
  */
 export const authRequest = async (endpoint, options = {}) => {
-  const defaultOptions = {
-    credentials: 'include', // Allow sending and receiving cookies
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-
-  const requestOptions = {
-    ...defaultOptions,
-    ...options,
-    headers: {
-      ...defaultOptions.headers,
-      ...options.headers,
-    },
-  };
-
   try {
-    const response = await fetch(apiUrl(endpoint), requestOptions);
+    // 构建 API URL
+    const url = apiUrl(endpoint);
+    console.log("发送请求到:", url);
     
-    // Handle non-2xx responses
+    // 添加必要的头信息
+    const requestOptions = {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+      credentials: "include", // 包含认证信息
+    };
+    
+    // 发送请求
+    const response = await fetch(url, requestOptions);
+    
+    // 检查响应状态
     if (!response.ok) {
-      const errorData = await response.json();
-      throw errorData;
+      console.error("请求失败:", response.status, response.statusText);
+      let errorMsg = `请求失败: ${response.status} ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || errorMsg;
+      } catch (e) {
+        // 忽略 JSON 解析错误
+      }
+      
+      throw new Error(errorMsg);
     }
     
-    // Parse JSON response
-    const data = await response.json();
+    // 检查内容类型，避免尝试解析非 JSON 数据
+    const contentType = response.headers.get('Content-Type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn("非 JSON 响应:", contentType);
+      const text = await response.text();
+      console.log("响应内容:", text);
+      return { message: "ok", text };
+    }
     
-    // Check for error messages in the response body
+    // 安全解析 JSON
+    const data = await response.json();
+    console.log("API 响应数据:", data);
+    
+    // 检查错误消息
     if (data.error || data.message === "error") {
       throw new Error(data.error || "Operation failed");
     }
     
     return data;
   } catch (error) {
+    console.error("请求处理错误:", error);
     throw error;
   }
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { getCurrentUser } from '../../services/authService'
-import { updateUserProfile } from '../../services/authService/user-service' // 假设我们有这个服务
+import { updateUserProfile } from '../../services/authService/user-service' 
 import styles from './UserProfile.module.css'
 
 const UserProfile = () => {
@@ -20,7 +20,7 @@ const UserProfile = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // 获取当前用户数据
+    // Get current user data
     const currentUser = getCurrentUser();
     if (currentUser) {
       setUser(currentUser);
@@ -41,27 +41,27 @@ const UserProfile = () => {
       [name]: value
     });
     
-    // 如果密码字段更新，清除密码错误
+    // Clear password errors if password fields are updated
     if (['newPassword', 'confirmPassword'].includes(name)) {
       setPasswordError('');
     }
   };
 
   const validatePasswords = () => {
-    // 仅在用户尝试更改密码时验证
+    // Validate only when user attempts to change password
     if (formData.newPassword || formData.confirmPassword) {
       if (!formData.currentPassword) {
-        setPasswordError('需要输入当前密码才能更改密码');
+        setPasswordError('Current password is required to change password');
         return false;
       }
       if (formData.newPassword !== formData.confirmPassword) {
-        setPasswordError('新密码不匹配');
+        setPasswordError('New passwords do not match');
         return false;
       }
-      // 确保密码符合要求：至少8个字符，包括字母和数字
+      // Ensure password meets requirements: at least 8 characters with letters and numbers
       const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
       if (!passwordRegex.test(formData.newPassword)) {
-        setPasswordError('密码必须至少8个字符，包含字母和数字');
+        setPasswordError('Password must be at least 8 characters and include letters and numbers');
         return false;
       }
     }
@@ -73,7 +73,7 @@ const UserProfile = () => {
     setSuccess('');
     setError('');
     
-    // 验证密码（如果尝试更改）
+    // Validate passwords (if attempting to change)
     if (!validatePasswords()) {
       return;
     }
@@ -81,30 +81,30 @@ const UserProfile = () => {
     setIsSubmitting(true);
     
     try {
-      // 准备要发送的数据
+      // Prepare data to send
       const updateData = {
         name: formData.name,
       };
       
-      // 如果尝试更改密码，添加密码字段
+      // Add password fields if attempting to change password
       if (formData.newPassword) {
         updateData.currentPassword = formData.currentPassword;
         updateData.newPassword = formData.newPassword;
       } else {
-        // 不更改密码时也需要提供当前密码用于验证
+        // Current password is still required for validation even if not changing password
         updateData.currentPassword = formData.currentPassword;
       }
       
       try {
-        // 调用API更新用户个人资料
+        // Call API to update user profile
         const updatedUser = await updateUserProfile(updateData);
         
-        // 更新本地用户信息
+        // Update local user information
         setUser(updatedUser);
         
-        setSuccess('个人资料更新成功！');
+        setSuccess('Profile updated successfully!');
         
-        // 更新成功后清除密码字段
+        // Clear password fields after successful update
         setFormData({
           ...formData,
           currentPassword: '',
@@ -112,19 +112,19 @@ const UserProfile = () => {
           confirmPassword: ''
         });
       } catch (apiError) {
-        // 检查错误是否包含"本地显示"关键词，表示本地已更新
-        if (apiError.message && apiError.message.includes('本地显示')) {
-          setSuccess('个人资料已在本地更新');
+        // Check if error contains "local display" keyword, indicating local updates
+        if (apiError.message && apiError.message.includes('local display')) {
+          setSuccess('Profile updated locally');
           setError(apiError.message);
           
-          // 仍更新UI显示，即使服务器保存失败
+          // Still update UI display, even if server save failed
           const updatedUser = {
             ...user,
             name: formData.name
           };
           setUser(updatedUser);
           
-          // 清除密码字段
+          // Clear password fields
           setFormData({
             ...formData,
             currentPassword: '',
@@ -132,18 +132,18 @@ const UserProfile = () => {
             confirmPassword: ''
           });
         } else {
-          setError(apiError.message || '更新个人资料失败，请重试。');
+          setError(apiError.message || 'Failed to update profile. Please try again.');
         }
       }
     } catch (err) {
-      setError(err.message || '更新个人资料失败，请重试。');
+      setError(err.message || 'Failed to update profile. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (loading) {
-    return <div className={styles.loading}>加载个人资料信息...</div>;
+    return <div className={styles.loading}>Loading profile information...</div>;
   }
 
   return (
@@ -154,11 +154,11 @@ const UserProfile = () => {
         
         <form onSubmit={handleSubmit}>
           <div className={styles.formSection}>
-            <h2>个人信息</h2>
+            <h2>Personal Information</h2>
             
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label htmlFor="name">姓名</label>
+                <label htmlFor="name">Name</label>
                 <input
                   type="text"
                   id="name"
@@ -170,7 +170,7 @@ const UserProfile = () => {
               </div>
               
               <div className={styles.formGroup}>
-                <label htmlFor="email">电子邮箱</label>
+                <label htmlFor="email">Email</label>
                 <input
                   type="email"
                   id="email"
@@ -180,13 +180,13 @@ const UserProfile = () => {
                   required
                   readOnly
                 />
-                <small>邮箱地址不能更改</small>
+                <small>Email address cannot be changed</small>
               </div>
             </div>
             
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label htmlFor="role">用户角色</label>
+                <label htmlFor="role">User Role</label>
                 <input
                   type="text"
                   id="role"
@@ -195,17 +195,17 @@ const UserProfile = () => {
                   readOnly
                   className={styles.readonlyField}
                 />
-                <small>角色由系统分配</small>
+                <small>Role is assigned by the system</small>
               </div>
             </div>
           </div>
           
           <div className={styles.formSection}>
-            <h2>修改密码</h2>
+            <h2>Change Password</h2>
             {passwordError && <div className={styles.passwordError}>{passwordError}</div>}
             
             <div className={styles.formGroup}>
-              <label htmlFor="currentPassword">当前密码</label>
+              <label htmlFor="currentPassword">Current Password</label>
               <input
                 type="password"
                 id="currentPassword"
@@ -218,7 +218,7 @@ const UserProfile = () => {
             
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label htmlFor="newPassword">新密码</label>
+                <label htmlFor="newPassword">New Password</label>
                 <input
                   type="password"
                   id="newPassword"
@@ -230,7 +230,7 @@ const UserProfile = () => {
               </div>
               
               <div className={styles.formGroup}>
-                <label htmlFor="confirmPassword">确认新密码</label>
+                <label htmlFor="confirmPassword">Confirm New Password</label>
                 <input
                   type="password"
                   id="confirmPassword"
@@ -241,7 +241,7 @@ const UserProfile = () => {
                 />
               </div>
             </div>
-            <small>如果不想更改密码，请将密码字段留空</small>
+            <small>Leave password fields empty if you don't want to change your password</small>
           </div>
           
           <div className={styles.formActions}>
@@ -250,7 +250,7 @@ const UserProfile = () => {
               className={styles.saveBtn}
               disabled={isSubmitting}
             >
-              {isSubmitting ? '保存中...' : '保存更改'}
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>

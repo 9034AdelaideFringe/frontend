@@ -24,7 +24,7 @@ export const getAllEvents = async (forceRefresh = false) => {
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超时
     
     // 使用API助手构建URL, 现在会正确添加/api前缀
-    const apiUrl = getApiUrl('/event');
+    const apiUrl = '/api/event';
     console.log(`尝试获取事件数据: ${apiUrl}`);
     
     const response = await fetch(apiUrl, {

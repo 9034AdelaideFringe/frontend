@@ -35,18 +35,6 @@ export default defineConfig({
       "/api": {
         target: "http://23.22.158.203:8080",
         changeOrigin: true,
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('代理错误:', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('代理请求:', req.method, req.url, '->',
-                        proxyReq.method, proxyReq.protocol + '//' + proxyReq.host + proxyReq.path);
-          });
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('代理响应:', proxyRes.statusCode, req.url);
-          });
-        }
       },
     },
   },
