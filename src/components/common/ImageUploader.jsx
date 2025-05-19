@@ -64,7 +64,7 @@ const ImageUploader = ({
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
+    
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
@@ -82,18 +82,13 @@ const ImageUploader = ({
     setIsUploading(true);
 
     try {
-      // Create preview
+      // 创建预览URL供显示
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
-      setInputValue('Image uploaded successfully'); // 不显示实际URL
+      setInputValue(file.name); // 显示文件名而非URL
       
-      // In a real implementation, you would upload to server here
-      // For now, we'll simulate a server call
-      await simulateUpload(file);
-      
-      // After successful upload, call the callback with the URL
-      // In a real implementation, the URL would come from the server
-      onImageUploaded(objectUrl); 
+      // 传递文件对象，而不是URL
+      onImageUploaded(file);
     } catch (err) {
       setError('Failed to upload image. Please try again.');
       console.error('Upload error:', err);

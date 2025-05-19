@@ -74,34 +74,31 @@ export const mapEventData = (apiEvent) => {
  * @returns {Object} API格式的事件数据
  */
 export const prepareEventDataForApi = (eventData, id = null) => {
-  console.log('准备提交事件数据:', JSON.stringify(eventData, null, 2));
-  
   const apiEventData = {
     title: eventData.title,
-    des: eventData.description || eventData.des,
+    des: eventData.description || eventData.des, // 确保映射正确
     short_description: eventData.short_description,
     image: eventData.image,
-    // 使用原始字段名，确保API能正确接收
-    venueseatinglayout: eventData.venueSeatingLayout || eventData.venueseatinglayout,
+    venueseatinglayout: eventData.venueseatinglayout || eventData.venueSeatingLayout, // 优先使用小写版本
     date: eventData.date,
     time: eventData.time,
     end_time: eventData.end_time,
     venue: eventData.venue,
     capacity: eventData.capacity || '100',
     category: eventData.category,
-    status: eventData.status || 'ACTIVE'
+    status: eventData.status || 'ACTIVE',
+    created_by: eventData.created_by
   };
   
-  // 如果提供了ID，添加到数据中
-  if (id) {
-    apiEventData.id = id;
-  }
-  
-  // 如果有票种数据，也添加到请求中
+  // 如果有票种数据，需确保字段命名正确
   if (eventData.ticketTypes && eventData.ticketTypes.length > 0) {
-    apiEventData.ticketTypes = eventData.ticketTypes;
+    apiEventData.ticketTypes = eventData.ticketTypes.map(ticket => ({
+      name: ticket.name,
+      description: ticket.description,
+      price: ticket.price,
+      available_quantity: ticket.available_quantity
+    }));
   }
   
-  console.log('格式化后的API提交数据:', JSON.stringify(apiEventData, null, 2));
   return apiEventData;
 };

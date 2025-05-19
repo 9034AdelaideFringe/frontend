@@ -3,10 +3,10 @@ import styles from './TicketTypeManager.module.css';
 
 const TicketTypeManager = ({ ticketTypes, onChange }) => {
   const [newTicketType, setNewTicketType] = useState({
-    name: '',
-    description: '',
-    price: '',
-    availableQuantity: ''
+    name: 'Standard',
+    description: 'This is a standard ticket',
+    price: '20',
+    available_quantity: '10' // 改为下划线命名
   });
   const [errors, setErrors] = useState({});
 
@@ -45,13 +45,13 @@ const TicketTypeManager = ({ ticketTypes, onChange }) => {
       newErrors.price = 'Price must be a valid positive number';
     }
     
-    if (!newTicketType.availableQuantity) {
-      newErrors.availableQuantity = 'Quantity is required';
+    if (!newTicketType.available_quantity) {
+      newErrors.available_quantity = 'Quantity is required';
     } else if (
-      isNaN(parseInt(newTicketType.availableQuantity)) || 
-      parseInt(newTicketType.availableQuantity) <= 0
+      isNaN(parseInt(newTicketType.available_quantity)) || 
+      parseInt(newTicketType.available_quantity) <= 0
     ) {
-      newErrors.availableQuantity = 'Quantity must be a valid positive number';
+      newErrors.available_quantity = 'Quantity must be a valid positive number';
     }
     
     setErrors(newErrors);
@@ -68,7 +68,7 @@ const TicketTypeManager = ({ ticketTypes, onChange }) => {
       name: newTicketType.name,
       description: newTicketType.description,
       price: parseFloat(newTicketType.price),
-      availableQuantity: parseInt(newTicketType.availableQuantity),
+      available_quantity: parseInt(newTicketType.available_quantity), // 使用available_quantity而不是availableQuantity
     };
     
     // 更新票种列表
@@ -80,23 +80,31 @@ const TicketTypeManager = ({ ticketTypes, onChange }) => {
       name: '',
       description: '',
       price: '',
-      availableQuantity: ''
+      available_quantity: '' // 改为下划线命名
     });
   };
 
-  // 更新票种
   const handleEditType = (index, field, value) => {
     const updatedTypes = [...ticketTypes];
     
     if (field === 'price') {
       updatedTypes[index][field] = parseFloat(value);
-    } else if (field === 'availableQuantity') {
+    } else if (field === 'available_quantity') { // 改为下划线命名
       updatedTypes[index][field] = parseInt(value);
     } else {
       updatedTypes[index][field] = value;
     }
     
     onChange(updatedTypes);
+  };
+  
+  // 添加票种时
+  const newType = {
+    id: `temp-${Date.now()}`,
+    name: newTicketType.name,
+    description: newTicketType.description,
+    price: parseFloat(newTicketType.price),
+    available_quantity: parseInt(newTicketType.available_quantity), // 这里用的是下划线
   };
 
   // 删除票种
@@ -107,6 +115,20 @@ const TicketTypeManager = ({ ticketTypes, onChange }) => {
       onChange(updatedTypes);
     }
   };
+
+  // 在组件添加一个调试日志函数
+  const logTicketTypes = () => {
+    console.log("Current ticket types:", ticketTypes);
+    ticketTypes.forEach((ticket, index) => {
+      console.log(`Ticket #${index + 1} fields:`, Object.keys(ticket));
+      console.log(`Ticket #${index + 1} available_quantity:`, ticket.available_quantity);
+    });
+  };
+
+  // 在render前调用
+  if (ticketTypes.length > 0) {
+    logTicketTypes();
+  }
 
   return (
     <div className={styles.ticketTypeManager}>
@@ -165,8 +187,8 @@ const TicketTypeManager = ({ ticketTypes, onChange }) => {
                     <input
                       type="number"
                       min="1"
-                      value={type.availableQuantity}
-                      onChange={(e) => handleEditType(index, 'availableQuantity', e.target.value)}
+                      value={type.available_quantity} // 使用available_quantity而不是availableQuantity
+                      onChange={(e) => handleEditType(index, 'available_quantity', e.target.value)} // 使用available_quantity而不是availableQuantity
                     />
                   </div>
                 </div>
@@ -232,15 +254,15 @@ const TicketTypeManager = ({ ticketTypes, onChange }) => {
             <label htmlFor="ticketQuantity">Available Quantity</label>
             <input
               id="ticketQuantity"
-              name="availableQuantity"
+              name="available_quantity" // 修改为下划线命名
               type="number"
               min="1"
               placeholder="e.g., 100"
-              value={newTicketType.availableQuantity}
+              value={newTicketType.available_quantity} // 修改为下划线命名
               onChange={handleInputChange}
-              className={errors.availableQuantity ? styles.inputError : ''}
+              className={errors.available_quantity ? styles.inputError : ''} // 同样修改
             />
-            {errors.availableQuantity && <span className={styles.error}>{errors.availableQuantity}</span>}
+            {errors.available_quantity && <span className={styles.error}>{errors.available_quantity}</span>}
           </div>
         </div>
         

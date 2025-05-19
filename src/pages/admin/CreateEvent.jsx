@@ -8,18 +8,19 @@ import ImageUploader from '../../components/common/ImageUploader';
 const CreateEvent = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    short_description: '',
+    title: 'MY EVENT',
+    description: 'FINE',
+    short_description: 'GOOD',
     image: '',
-    venueSeatingLayout: '',
-    date: '',
-    time: '',
-    end_time: '',
-    venue: '',
+    venueseatinglayout: '', // 修改为小写，与API保持一致
+    date: '2025-10-01', // 默认日期
+    time: '19:00', // 默认时间
+    end_time: '20:00', // 这里应该使用结束日期，而不仅是时间
+    venue: 'Tonsley',
     capacity: '100',
-    category: '',
-    // Note: Status is handled automatically based on date in the database
+    category: 'ABC',
+    status: 'ACTIVE', // 添加状态字段
+    created_by: 'fb42ef95-251a-4370-8c5a-fd5bcc84e8cf', // 添加创建者ID字段
     ticketTypes: []
   });
   const [errors, setErrors] = useState({});
@@ -57,13 +58,13 @@ const CreateEvent = () => {
   const handleLayoutUploaded = (imageUrl) => {
     setFormData({
       ...formData,
-      venueSeatingLayout: imageUrl
+      venueseatinglayout: imageUrl
     });
     // Clear error if present
-    if (errors.venueSeatingLayout) {
+    if (errors.venueseatinglayout) {
       setErrors({
         ...errors,
-        venueSeatingLayout: null
+        venueseatinglayout: null
       });
     }
   };
@@ -90,22 +91,68 @@ const CreateEvent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    console.log("=== EVENT CREATION PROCESS STARTED ===");
+    console.log("Form data before validation:", formData);
+    
     // Validate form
     const formErrors = validate();
     if (Object.keys(formErrors).length > 0) {
+      console.error("Form validation failed:", formErrors);
       setErrors(formErrors);
       return;
     }
     
+    console.log("Form validation passed");
     setIsSubmitting(true);
     
     try {
+      console.log("Preparing to send event data to API...");
+      console.log("Ticket types being sent:", formData.ticketTypes);
+      
       // Call API to create event with ticket types
-      await createEvent(formData);
-      alert('Event created successfully!');
-      navigate('/admin/events');
+      const response = await createEvent(formData);
+      console.log("API Response received:", response);
+      
+      // 首先检查是否有错误
+      if (response && response.error) {
+        console.error("API returned error:", response.error);
+        throw new Error(response.error);
+      }
+      
+      // 检查API是否返回成功消息
+      if (response) {
+        let successMessage = "Event created successfully!";
+        let eventId = null;
+        
+        // 尝试提取ID (如果存在的话)
+        if (response.data && response.data.event_id) {
+          eventId = response.data.event_id;
+          console.log("Found event_id in response.data:", eventId);
+          successMessage += ` (ID: ${eventId.substring(0, 8)}...)`;
+        } else if (response.event_id) {
+          eventId = response.event_id;
+          console.log("Found event_id directly in response:", eventId);
+          successMessage += ` (ID: ${eventId.substring(0, 8)}...)`;
+        } else if (response.id) {
+          eventId = response.id;
+          console.log("Found id in response:", eventId);
+          successMessage += ` (ID: ${eventId.substring(0, 8)}...)`;
+        } else if (response.message === "ok") {
+          console.log("Server reported success with 'ok' message");
+        } else {
+          console.log("Server returned success response format:", response);
+        }
+        
+        console.log("=== EVENT CREATED SUCCESSFULLY ===");
+        alert(successMessage);
+        navigate('/admin/events');
+      } else {
+        console.error("API returned empty response");
+        throw new Error("Server returned empty response");
+      }
     } catch (error) {
-      console.error('Error creating event:', error);
+      console.error("=== EVENT CREATION FAILED ===");
+      console.error("Error details:", error);
       alert('Error creating event: ' + (error.message || 'Please try again'));
     } finally {
       setIsSubmitting(false);
@@ -113,10 +160,27 @@ const CreateEvent = () => {
   };
 
   const handleTicketTypesChange = (newTicketTypes) => {
+    console.log("Ticket types changed:", newTicketTypes);
+    
+    // 验证每个票种是否有正确的字段名
+    newTicketTypes.forEach((ticket, index) => {
+      if (ticket.available_quantity === undefined) {
+        console.error(`Ticket #${index + 1} missing available_quantity field!`);
+      }
+    });
+    
     setFormData({
       ...formData,
       ticketTypes: newTicketTypes
     });
+    
+    // 如果之前有票种错误，清除它
+    if (errors.ticketTypes) {
+      setErrors({
+        ...errors,
+        ticketTypes: null
+      });
+    }
   };
 
   return (
@@ -216,6 +280,22 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+              className={errors.status ? styles.inputError : ''}
+            >
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+            {errors.status && <span className={styles.error}>{errors.status}</span>}
+          </div>
+
+          <div className={styles.formGroup}>
             <label htmlFor="image">Event Image</label>
             <ImageUploader
               currentImageUrl={formData.image}
@@ -228,15 +308,15 @@ const CreateEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="venueSeatingLayout">Venue Seating Layout</label>
+            <label htmlFor="venueseatinglayout">Venue Seating Layout</label>
             <ImageUploader
-              currentImageUrl={formData.venueSeatingLayout}
+              currentImageUrl={formData.venueseatinglayout}
               label="Browse Layouts"
               onImageUploaded={handleLayoutUploaded}
               placeholder="Select a seating layout image or enter URL"
               id="seating-layout"
             />
-            {errors.venueSeatingLayout && <span className={styles.error}>{errors.venueSeatingLayout}</span>}
+            {errors.venueseatinglayout && <span className={styles.error}>{errors.venueseatinglayout}</span>}
           </div>
 
           <div className={styles.formGroupFull}>
