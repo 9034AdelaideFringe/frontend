@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getEventById } from '../services/eventService';
 import { addToCart } from '../services/cartService';
-import TicketSelector from '../pages/user/tickets/TicketSelector';
+import TicketSelector from './TicketSelector';
 import styles from './EventDetailPage.module.css';
 
 const EventDetailPage = () => {
@@ -123,10 +123,10 @@ const EventDetailPage = () => {
     return `$${lowestPrice}`;
   };
 
-  const handleAddToCart = (cartItem) => {
-    addToCart(cartItem)
+  const handleAddToCart = (cartItems) => {
+    Promise.all(cartItems.map(item => addToCart(item)))
       .then(() => {
-        alert('Added to cart!');
+        alert('Tickets added to cart!');
         setShowTicketSelector(false);
       })
       .catch(err => {
@@ -134,8 +134,8 @@ const EventDetailPage = () => {
       });
   };
 
-  const handleBuyNow = (cartItem) => {
-    addToCart(cartItem)
+  const handleBuyNow = (cartItems) => {
+    Promise.all(cartItems.map(item => addToCart(item)))
       .then(() => {
         setShowTicketSelector(false);
         navigate('/checkout');

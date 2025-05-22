@@ -139,12 +139,29 @@ export const updateEvent = async (id, eventData) => {
   try {
     console.log('正在发送更新数据...');
     
-    const apiEventData = prepareEventDataForApi(eventData, id);
+    // 直接使用传入的事件数据，不通过prepareEventDataForApi处理
+    // 这样可以保留原始字段结构，不会丢失或修改任何字段
+    const updateData = {
+      event_id: eventData.event_id || id,
+      title: String(eventData.title || ''),
+      description: String(eventData.description || ''),
+      short_description: String(eventData.short_description || ''),
+      date: String(eventData.date || ''),
+      time: String(eventData.time || ''),
+      end_time: String(eventData.end_time || ''),
+      venue: String(eventData.venue || ''),
+      capacity: String(eventData.capacity || ''),
+      category: String(eventData.category || ''),
+      status: String(eventData.status || 'ACTIVE'),
+      created_by: String(eventData.created_by || '')
+    };
     
-    const response = await fetch(getApiUrl('/event/update'), {
-      method: 'POST',
+    console.log('准备发送的更新数据:', updateData);
+    
+    const response = await fetch(getApiUrl('/event'), {
+      method: 'PUT',
       ...getRequestOptions(),
-      body: JSON.stringify(apiEventData)
+      body: JSON.stringify(updateData)
     });
     
     const result = await handleApiResponse(response, '更新事件');

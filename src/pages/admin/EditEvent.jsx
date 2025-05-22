@@ -1,27 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getEventById, updateEvent } from '../../services/eventService'
-import TicketTypeManager from './TicketTypeManager';
 import styles from './CreateEvent.module.css' // Reusing create event styles
-import ImageUploader from '../../components/common/ImageUploader';
 
 const EditEvent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
+    event_id: '',
     title: '',
     description: '',
     short_description: '',
-    image: '',
-    venueSeatingLayout: '',
     date: '',
     time: '',
     end_time: '',
     venue: '',
     capacity: '',
     category: '',
-    ticketTypes: []
+    status: 'ACTIVE',
+    created_by: 'fb42ef95-251a-4370-8c5a-fd5bcc84e8cf'
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,20 +28,44 @@ const EditEvent = () => {
     // Fetch event details
     getEventById(id)
       .then(eventData => {
+        console.log("Retrieved event data:", eventData);
+        
+        // 处理可能的不同返回格式
+        let eventObj;
+        
+        if (Array.isArray(eventData)) {
+          // 如果返回的是数组，取第一个元素
+          eventObj = eventData[0];
+          console.log("Using first item from array:", eventObj);
+        } else if (eventData && eventData.data && Array.isArray(eventData.data)) {
+          // 如果返回的是 {data: Array}格式
+          eventObj = eventData.data[0];
+          console.log("Using first item from data array:", eventObj);
+        } else {
+          // 假设是直接返回的对象
+          eventObj = eventData;
+        }
+        
+        // 验证我们得到了有效的事件对象
+        if (!eventObj || !eventObj.event_id) {
+          console.error("Invalid event data structure:", eventData);
+          throw new Error("Invalid event data structure");
+        }
+        
         // Map API data to form fields
         setFormData({
-          title: eventData.title || '',
-          description: eventData.description || '',
-          short_description: eventData.short_description || '',
-          image: eventData.image || '',
-          venueSeatingLayout: eventData.venueSeatingLayout || '',
-          date: eventData.date || '',
-          time: eventData.time || '',
-          end_time: eventData.end_time || '',
-          venue: eventData.venue || '',
-          capacity: eventData.capacity || '',
-          category: eventData.category || '',
-          ticketTypes: eventData.ticketTypes || []
+          event_id: eventObj.event_id || id,
+          title: eventObj.title || '',
+          description: eventObj.description || '',
+          short_description: eventObj.short_description || '',
+          date: eventObj.date || '',
+          time: eventObj.time || '',
+          end_time: eventObj.end_time || '',
+          venue: eventObj.venue || '',
+          capacity: eventObj.capacity || '',
+          category: eventObj.category || '',
+          status: eventObj.status || 'ACTIVE',
+          created_by: eventObj.created_by || 'fb42ef95-251a-4370-8c5a-fd5bcc84e8cf'
         });
         setLoading(false);
       })
@@ -69,34 +91,6 @@ const EditEvent = () => {
     }
   };
 
-  const handleImageUploaded = (imageUrl) => {
-    setFormData({
-      ...formData,
-      image: imageUrl
-    });
-    // Clear error if present
-    if (errors.image) {
-      setErrors({
-        ...errors,
-        image: null
-      });
-    }
-  };
-
-  const handleLayoutUploaded = (imageUrl) => {
-    setFormData({
-      ...formData,
-      venueSeatingLayout: imageUrl
-    });
-    // Clear error if present
-    if (errors.venueSeatingLayout) {
-      setErrors({
-        ...errors,
-        venueSeatingLayout: null
-      });
-    }
-  };
-
   const validate = () => {
     const newErrors = {};
     
@@ -108,44 +102,65 @@ const EditEvent = () => {
     if (!formData.capacity) newErrors.capacity = 'Capacity is required';
     if (!formData.description) newErrors.description = 'Event description is required';
 
-    // Ticket types validation - ensure at least one exists
-    if (formData.ticketTypes.length === 0) {
-      newErrors.ticketTypes = 'At least one ticket type is required';
-    }
-
     return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    console.log("=== EVENT UPDATE PROCESS STARTED ===");
+    console.log("Form data before validation:", formData);
+    
     // Validate form
     const formErrors = validate();
     if (Object.keys(formErrors).length > 0) {
+      console.error("Form validation failed:", formErrors);
       setErrors(formErrors);
       return;
     }
     
+    console.log("Form validation passed");
     setIsSubmitting(true);
     
     try {
+      // Only send the required fields for update
+      const updateData = {
+        event_id: formData.event_id,
+        title: formData.title,
+        description: formData.description,
+        short_description: formData.short_description,
+        date: formData.date,
+        time: formData.time,
+        end_time: formData.end_time,
+        venue: formData.venue,
+        capacity: formData.capacity,
+        category: formData.category,
+        status: formData.status,
+        created_by: formData.created_by
+      };
+      
+      console.log("Sending update data to API:", updateData);
+      
       // Call API to update event
-      await updateEvent(id, formData);
+      const response = await updateEvent(id, updateData);
+      console.log("API response:", response);
+      
+      // Check for errors in the response
+      if (response && response.error) {
+        console.error("API returned error:", response.error);
+        throw new Error(response.error);
+      }
+      
+      console.log("=== EVENT UPDATED SUCCESSFULLY ===");
       alert('Event updated successfully!');
       navigate('/admin/events');
     } catch (error) {
-      console.error('Error updating event:', error);
+      console.error("=== EVENT UPDATE FAILED ===");
+      console.error("Error details:", error);
       alert('Error updating event: ' + (error.message || 'Please try again'));
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleTicketTypesChange = (newTicketTypes) => {
-    setFormData({
-      ...formData,
-      ticketTypes: newTicketTypes
-    });
   };
 
   if (loading) {
@@ -249,27 +264,19 @@ const EditEvent = () => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="image">Event Image</label>
-            <ImageUploader
-              currentImageUrl={formData.image}
-              label="Browse Images"
-              onImageUploaded={handleImageUploaded}
-              placeholder="Select an image or enter URL"
-              id="event-image"
-            />
-            {errors.image && <span className={styles.error}>{errors.image}</span>}
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="venueSeatingLayout">Venue Seating Layout</label>
-            <ImageUploader
-              currentImageUrl={formData.venueSeatingLayout}
-              label="Browse Layouts"
-              onImageUploaded={handleLayoutUploaded}
-              placeholder="Select a seating layout image or enter URL"
-              id="seating-layout"
-            />
-            {errors.venueSeatingLayout && <span className={styles.error}>{errors.venueSeatingLayout}</span>}
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+              className={errors.status ? styles.inputError : ''}
+            >
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+            {errors.status && <span className={styles.error}>{errors.status}</span>}
           </div>
 
           <div className={styles.formGroupFull}>
@@ -299,19 +306,6 @@ const EditEvent = () => {
             />
             {errors.description && <span className={styles.error}>{errors.description}</span>}
           </div>
-        </div>
-
-        {/* Ticket Types Section */}
-        <div className={styles.ticketTypesSection}>
-          <h3>Ticket Types</h3>
-          {errors.ticketTypes && (
-            <p className={styles.error}>{errors.ticketTypes}</p>
-          )}
-          
-          <TicketTypeManager
-            ticketTypes={formData.ticketTypes}
-            onChange={handleTicketTypesChange}
-          />
         </div>
 
         <div className={styles.formActions}>

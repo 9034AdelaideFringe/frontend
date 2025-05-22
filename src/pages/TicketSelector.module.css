@@ -1,0 +1,181 @@
+.ticketSelector {
+  font-family: var(--font-family, sans-serif);
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.ticketSelector h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.75rem;
+}
+
+.loading,
+.error,
+.noTickets {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+}
+
+.error {
+  color: #d32f2f;
+}
+
+.ticketList {
+  margin-bottom: 1.5rem;
+}
+
+.ticketItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.ticketItem:last-child {
+  border-bottom: none;
+}
+
+.ticketInfo {
+  flex: 1;
+}
+
+.ticketName {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.ticketPrice {
+  margin: 0 0 0.5rem 0;
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.ticketDescription {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.ticketAvailability {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.plentyAvailable {
+  color: #2e7d32;
+}
+
+.limitedAvailable {
+  color: #f57c00;
+}
+
+.ticketActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.decrementBtn,
+.incrementBtn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.decrementBtn:hover,
+.incrementBtn:hover {
+  background-color: #e0e0e0;
+}
+
+.decrementBtn:disabled,
+.incrementBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ticketCount {
+  min-width: 30px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.ticketSummary {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.summaryRow:last-child {
+  margin-bottom: 0;
+  font-weight: bold;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #ddd;
+}
+
+.ticketActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.addToCartBtn,
+.buyNowBtn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.addToCartBtn {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.buyNowBtn {
+  background-color: #f50057;
+  color: white;
+}
+
+.addToCartBtn:hover {
+  background-color: #e0e0e0;
+}
+
+.buyNowBtn:hover {
+  background-color: #d50050;
+}
+
+.addToCartBtn:disabled,
+.buyNowBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
