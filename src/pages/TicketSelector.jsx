@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTicketTypesByEventIdAPI } from '../services/ticketService/ticketTypeService';
+import { getTicketTypesByEventIdAPI } from '../services/ticketTypeService';
 import styles from './TicketSelector.module.css';
 
 const TicketSelector = ({ eventId, onAddToCart, onBuyNow }) => {

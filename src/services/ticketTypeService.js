@@ -1,4 +1,4 @@
-import { getApiUrl, handleApiResponse, getRequestOptions } from '../eventService/config/apiConfig';
+import { getApiUrl, handleApiResponse, getRequestOptions } from './eventService/config/apiConfig';
 
 // 票种数据缓存
 let ticketTypeCache = {};
