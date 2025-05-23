@@ -138,7 +138,7 @@ const EventDetailPage = () => {
     Promise.all(cartItems.map(item => addToCart(item)))
       .then(() => {
         setShowTicketSelector(false);
-        navigate('/checkout');
+        navigate('/user/checkout');
       })
       .catch(err => {
         alert('Failed to process: ' + err.message);

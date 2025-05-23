@@ -1,0 +1,279 @@
+.checkoutPage {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.checkoutPage h1 {
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #333;
+}
+
+.checkoutPage h2 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.formHelper {
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.error {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+  color: #d32f2f;
+  border-radius: 4px;
+}
+
+.checkoutContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.checkoutForm {
+  flex: 3;
+  min-width: 300px;
+}
+
+.orderSummary {
+  flex: 2;
+  min-width: 300px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 1.5rem;
+  align-self: flex-start;
+  position: sticky;
+  top: 2rem;
+}
+
+.formSection {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.formSection:last-child {
+  border-bottom: none;
+  margin-bottom: 1.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1.25rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: #f50057;
+  box-shadow: 0 0 0 2px rgba(245, 0, 87, 0.1);
+}
+
+.formRow {
+  display: flex;
+  gap: 1rem;
+}
+
+.formRow .formGroup {
+  flex: 1;
+}
+
+.paymentOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.paymentOption {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.paymentOption:hover {
+  background-color: #f5f5f5;
+}
+
+.paymentOption.selected {
+  border-color: #f50057;
+  background-color: rgba(245, 0, 87, 0.05);
+}
+
+.paymentIcon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+}
+
+.paymentName {
+  flex: 1;
+  font-weight: 500;
+}
+
+.checkmark {
+  color: #f50057;
+  font-weight: bold;
+}
+
+.cardDetails, .paypalInfo {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border: 1px solid #eaeaea;
+}
+
+.paypalInfo p {
+  margin: 0;
+  color: #666;
+}
+
+.checkoutActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.backButton, .paymentButton {
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.backButton {
+  background-color: #f5f5f5;
+  color: #333;
+  flex: 1;
+}
+
+.paymentButton {
+  background-color: #f50057;
+  color: white;
+  flex: 2;
+}
+
+.backButton:hover {
+  background-color: #e0e0e0;
+}
+
+.paymentButton:hover {
+  background-color: #d1004b;
+}
+
+.backButton:disabled, .paymentButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.itemsList {
+  margin-bottom: 1.5rem;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.itemName {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.itemType {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.itemQuantity {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.itemPrice {
+  font-weight: 600;
+  color: #333;
+}
+
+.summaryFooter {
+  padding-top: 1rem;
+  border-top: 1px solid #eaeaea;
+  margin-top: 1rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.totalRow {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eaeaea;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .checkoutContainer {
+    flex-direction: column;
+  }
+  
+  .orderSummary {
+    position: static;
+    order: -1;
+  }
+  
+  .formRow {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}

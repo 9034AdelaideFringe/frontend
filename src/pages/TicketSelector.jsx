@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getTicketTypesByEventIdAPI } from '../services/ticketTypeService';
 import styles from './TicketSelector.module.css';
 
-const TicketSelector = ({ eventId, onAddToCart, onBuyNow }) => {
+const TicketSelector = ({ eventId, onAddToCart}) => {
   const [ticketTypes, setTicketTypes] = useState([]);
   const [selectedTickets, setSelectedTickets] = useState({});
   const [loading, setLoading] = useState(true);
@@ -82,16 +82,7 @@ const TicketSelector = ({ eventId, onAddToCart, onBuyNow }) => {
     }
     onAddToCart(items);
   };
-  
-  // 立即购买
-  const handleBuyNow = () => {
-    const items = prepareCartItems();
-    if (items.length === 0) {
-      alert('Please select at least one ticket');
-      return;
-    }
-    onBuyNow(items);
-  };
+
   
   // 计算总价
   const totalPrice = ticketTypes.reduce((sum, type) => {
@@ -172,13 +163,6 @@ const TicketSelector = ({ eventId, onAddToCart, onBuyNow }) => {
               disabled={totalTickets === 0}
             >
               Add to Cart
-            </button>
-            <button 
-              className={styles.buyNowBtn}
-              onClick={handleBuyNow}
-              disabled={totalTickets === 0}
-            >
-              Buy Now
             </button>
           </div>
         </>
