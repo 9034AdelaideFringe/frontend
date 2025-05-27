@@ -4,6 +4,8 @@
 import { apiUrl, getAuthRequestOptions } from './api-config';
 import { handleApiError } from './error-handler';
 
+const IS_DEV = import.meta.env.MODE === 'development';
+
 /**
  * Make a request to the authentication API
  * @param {string} endpoint - API endpoint
@@ -16,11 +18,25 @@ export const authRequest = async (endpoint, options = {}) => {
     const url = apiUrl(endpoint);
     console.log("发送请求到:", url);
     
-    // 使用统一的认证请求选项
-    const requestOptions = getAuthRequestOptions(options);
-    
+    // 修改请求选项以解决 CORS 问题
+    const defaultOptions = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        // 如果有存储的token，添加到请求头中
+        ...(getAuthToken() && { 'Authorization': `Bearer ${getAuthToken()}` }),
+        ...options.headers,
+      },
+      // 在开发环境中不包含凭据以避免 CORS 问题
+      ...(IS_DEV ? {} : { credentials: 'include' }),
+      ...options,
+    };
+
+    console.log(`请求URL: ${url}`);
+    console.log(`请求选项:`, defaultOptions);
+
     // 发送请求
-    const response = await fetch(url, requestOptions);
+    const response = await fetch(url, defaultOptions);
     
     // 检查响应状态
     if (!response.ok) {
@@ -70,26 +86,72 @@ export const authRequest = async (endpoint, options = {}) => {
  */
 export const authenticatedRequest = async (endpoint, options = {}) => {
   try {
-    const response = await fetch(apiUrl(endpoint), {
+    // 获取认证token
+    const token = getAuthToken();
+    
+    // 准备请求头
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+      ...options.headers,
+    };
+
+    // 准备请求选项
+    const requestOptions = {
       ...options,
-      credentials: "include", // Include cookies for JWT
-    });
+      headers,
+      // 在开发环境中不包含凭据以避免 CORS 问题
+      ...(IS_DEV ? {} : { credentials: 'include' }),
+    };
+
+    // **修复：直接使用传入的endpoint作为URL**
+    // 因为cartService已经通过buildApiUrl构建了完整的URL
+    const finalUrl = endpoint;
+
+    console.log(`认证请求到: ${finalUrl}`);
+    console.log(`请求选项:`, requestOptions);
+
+    const response = await fetch(finalUrl, requestOptions);
 
     if (response.status === 401) {
       // Token expired or invalid, trigger logout
       localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("user");
+      localStorage.removeItem("authToken");
       window.location.href = "/";
       throw new Error("Session expired. Please login again.");
     }
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw errorData;
+      let errorMsg = `请求失败: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || errorMsg;
+        throw new Error(errorMsg);
+      } catch (parseError) {
+        throw new Error(errorMsg);
+      }
     }
 
-    return response.json();
+    const contentType = response.headers.get('Content-Type');
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
+    } else {
+      const text = await response.text();
+      return { message: "ok", text };
+    }
   } catch (error) {
+    console.error("认证请求错误:", error);
     throw error;
+  }
+};
+
+// 获取存储的认证token
+const getAuthToken = () => {
+  try {
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+  } catch (error) {
+    console.warn('无法获取认证token:', error);
+    return null;
   }
 };

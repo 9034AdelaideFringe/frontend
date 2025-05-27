@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getEventById } from "../services/eventService";
-import { addToCart } from "../services/cartService";
+import { addToCart } from "../services/cartService"; // 导入更新后的 addToCart
 import TicketSelector from "./TicketSelector";
 import styles from "./EventDetailPage.module.css";
 // 导入默认图片，如果 EventCard.jsx 中有定义，这里也可以导入共享的 DEFAULT_IMAGE
@@ -173,25 +173,37 @@ const EventDetailPage = () => {
     return `$${lowestPrice}`;
   };
 
+  // 处理添加到购物车
   const handleAddToCart = (cartItems) => {
-    Promise.all(cartItems.map((item) => addToCart(item)))
+    // cartItems 是 TicketSelector 准备的项目数组 [{ eventId, ticketTypeId, quantity, ... }]
+    // 我们的 addToCart API 假设一次添加一个项目，所以需要遍历调用
+    console.log("尝试将项目添加到购物车:", cartItems);
+    Promise.all(cartItems.map((item) => addToCart(item))) // 调用更新后的 addToCart
       .then(() => {
         alert("Tickets added to cart!");
         setShowTicketSelector(false);
+        // 添加成功后，可以考虑刷新购物车 UI 或导航到购物车页面
+        // navigate('/user/cart'); // 可选：导航到购物车页面
       })
       .catch((err) => {
-        alert("Failed to add to cart: " + err.message);
+        alert("Failed to add to cart: " + (err.message || '未知错误'));
+        console.error("添加购物车失败:", err);
       });
   };
 
+  // 处理立即购买
   const handleBuyNow = (cartItems) => {
-    Promise.all(cartItems.map((item) => addToCart(item)))
+    // 立即购买通常是先添加到购物车，然后直接跳转到结账页面
+    console.log("尝试立即购买项目:", cartItems);
+     Promise.all(cartItems.map((item) => addToCart(item))) // 调用更新后的 addToCart
       .then(() => {
         setShowTicketSelector(false);
+        // 添加成功后，直接导航到结账页面
         navigate("/user/checkout");
       })
       .catch((err) => {
-        alert("Failed to process: " + err.message);
+        alert("Failed to process: " + (err.message || '未知错误'));
+        console.error("立即购买失败:", err);
       });
   };
 

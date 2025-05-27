@@ -12,12 +12,18 @@ import { handleApiError } from './error-handler';
  * @returns {Promise} Login result
  */
 export const login = async ({ email, password }) => {
+  console.log('用户服务：开始登录');
   try {
-    const response = await authRequest("/login", {
-      method: "POST",
+    // 不包含凭据的登录请求，明确指定 credentials: 'omit'
+    const response = await authRequest('/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ email, password }),
+      credentials: 'omit' // 明确指定不包含凭据
     });
-    
+
     console.log("Login API response:", response);
     
     // 处理API返回的数组格式
@@ -42,6 +48,12 @@ export const login = async ({ email, password }) => {
     if (!userData || !userData.email) {
       console.error("Invalid user data format:", response);
       throw new Error("Invalid user data received");
+    }
+
+    // 如果后端返回token，存储它
+    if (response.token) {
+      localStorage.setItem('authToken', response.token);
+      console.log('Token已存储');
     }
     
     // 存储用户信息
