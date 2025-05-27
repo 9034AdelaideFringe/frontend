@@ -1,9 +1,9 @@
 // 共享的API配置
 
 // 获取环境变量
-export const API_BASE_URL = import.meta.env.VITE_APP_API_URL || '';
-export const IS_DEV = import.meta.env.MODE === 'development';
-export const IS_HTTPS = typeof window !== 'undefined' && window.location.protocol === 'https:';
+// 优先使用 VITE_APP_API_URL 环境变量，如果未设置则使用默认值
+export const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'https://x.badtom.dpdns.org/api'; // 确保默认值是新的HTTPS地址
+export const IS_DEV = import.meta.env.MODE === 'development'; // 使用 import.meta.env.MODE
 
 // 默认图片配置（从eventService迁移）
 export const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1603190287605-e6ade32fa852?auto=format&fit=crop&q=80&w=800&h=600';
@@ -14,43 +14,20 @@ export const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1603190287605-e6
  * @returns {string} 完整的API URL
  */
 export const buildApiUrl = (endpoint) => {
+  // 确保 endpoint 以 / 开头
   const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  
+
   // 调试信息
   if (IS_DEV) console.log('API_BASE_URL:', API_BASE_URL);
-  
+
   let url;
-  
-  // 处理完整URL的情况（部署环境）
-  if (API_BASE_URL && API_BASE_URL.startsWith('http')) {
-    // 规范化基础URL
-    const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-    
-    // 确保API请求包含/api前缀
-    if (path.startsWith('/api/')) {
-      // 路径已经包含/api前缀
-      url = `${baseUrl}${path}`;
-    } else if (baseUrl.endsWith('/api')) {
-      // 基础URL已包含/api后缀
-      url = `${baseUrl}${path}`;
-    } else {
-      // 需要添加/api前缀
-      url = `${baseUrl}/api${path}`;
-    }
-    
-    if (IS_DEV) console.log('构建的生产环境URL:', url);
-  } else {
-    // 本地开发环境（相对路径）
-    // 确保以/api开头
-    if (path.startsWith('/api/')) {
-      url = path;
-    } else {
-      url = `/api${path}`;
-    }
-    
-    if (IS_DEV) console.log('构建的开发环境URL:', url);
-  }
-  
+
+  // 直接使用配置的基础URL和路径
+  // 假设后端API路径已经包含 /api
+  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  url = `${baseUrl}${path}`;
+
+
   if (IS_DEV) console.log(`最终API请求URL: ${url}`);
   return url;
 };

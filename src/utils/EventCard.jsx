@@ -1,35 +1,23 @@
-import React, { useState, useEffect } from "react"; // 导入 useEffect 和 useState
+import React from "react"; // 不再需要 useState, useEffect
 import { Link } from "react-router-dom";
 import styles from "./EventCard.module.css";
+import { DEFAULT_IMAGE } from '../services/shared/apiConfig'; // 导入默认图片
 
-// 定义一个包含多种可能图片 URL 格式的数组
-// 这些函数接收清理后的路径 (例如 'images/your-image.jpg') 并返回完整的 URL
-const imageAttempts = [
-  (cleanPath) => `/api/${cleanPath}`, // 尝试 1: 通过 /api 代理路径 (推荐用于部署环境)
-  (cleanPath) => `https://23.22.158.203:8080/${cleanPath}`, // 尝试 2: 直接 HTTPS (如果后端支持)
-  (cleanPath) => `http://23.22.158.203:8080/${cleanPath}`, // 尝试 3: 直接 HTTP (在 HTTPS 页面会触发混合内容错误，但作为尝试保留)
-  (cleanPath) => `/${cleanPath}`, // 尝试 4: 相对根路径
-];
-
-// 默认图片 URL，当所有尝试都失败时使用
-const DEFAULT_IMAGE_URL = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+// 从环境变量读取后端图片的基础URL
+// 注意：如果图片路径不是直接在根目录下，需要调整这里的逻辑
+// 例如，如果图片路径是 /static/images/...，这里应该是 import.meta.env.VITE_APP_IMAGE_BASE_URL + '/static'
+const IMAGE_BASE_URL = import.meta.env.VITE_APP_IMAGE_BASE_URL; // **从环境变量读取**
 
 const EventCard = ({ event }) => {
   console.log("event.image:", event.image);
   const { id, title, abstract, image } = event;
 
-  // State 来跟踪当前尝试的 URL 索引
-  const [attemptIndex, setAttemptIndex] = useState(0);
-  // State 来保存当前正在尝试加载的图片 URL
-  const [currentImageUrl, setCurrentImageUrl] = useState('');
-
-  // 函数根据尝试索引获取对应的 URL
-  const getAttemptUrl = (imagePath, index) => {
-    // 如果 imagePath 为空，直接返回默认图片
+  // 函数根据图片路径获取完整的 URL
+  const getImageUrl = (imagePath) => {
     if (!imagePath) {
-      return DEFAULT_IMAGE_URL;
+      return DEFAULT_IMAGE; // 使用导入的默认图片
     }
-    // 如果 imagePath 已经是完整的 http 或 https URL，直接返回，不再进行尝试
+    // 如果 imagePath 已经是完整的 http 或 https URL，直接返回
     if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
       return imagePath;
     }
@@ -37,26 +25,21 @@ const EventCard = ({ event }) => {
     // 清理路径，移除开头的 ./ 或 /
     const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\/+/, "");
 
-    // 如果当前尝试索引在有效范围内，使用对应的函数生成 URL
-    if (index < imageAttempts.length) {
-      return imageAttempts[index](cleanPath);
+    // 拼接基础URL和清理后的路径
+    // 确保 IMAGE_BASE_URL 存在，否则可能导致错误
+    if (!IMAGE_BASE_URL) {
+        console.error("VITE_APP_IMAGE_BASE_URL is not defined in environment variables.");
+        return DEFAULT_IMAGE; // 如果环境变量未设置，返回默认图片
     }
 
-    // 如果所有尝试都失败了，返回默认图片 URL
-    return DEFAULT_IMAGE_URL;
+    // 确保基础URL没有尾部斜杠，清理后的路径没有头部斜杠，避免双斜杠
+    const baseUrl = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
+    const finalPath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
+
+    return `${baseUrl}/${finalPath}`;
   };
 
-  // 使用 useEffect 在 image 或 attemptIndex 变化时更新 currentImageUrl
-  useEffect(() => {
-    setCurrentImageUrl(getAttemptUrl(image, attemptIndex));
-  }, [image, attemptIndex]); // 依赖 image 和 attemptIndex
-
-  // 图片加载失败时的处理函数
-  const handleImageError = () => {
-    console.log(`图片加载失败 (尝试 ${attemptIndex + 1}/${imageAttempts.length}): ${currentImageUrl}. 尝试下一个 URL.`);
-    // 增加尝试索引，触发下一次尝试
-    setAttemptIndex(prevIndex => prevIndex + 1);
-  };
+  const finalImageUrl = getImageUrl(image);
 
   return (
     <div className={styles.card}>
@@ -69,11 +52,11 @@ const EventCard = ({ event }) => {
             display: "block",
             margin: "0 auto",
           }}
-          // 使用 currentImageUrl 作为图片的 src
-          src={currentImageUrl}
+          // 直接使用最终计算出的图片 URL
+          src={finalImageUrl}
           alt={event.title}
-          // 在图片加载失败时调用 handleImageError
-          onError={handleImageError}
+          // 如果图片加载失败，浏览器会自动显示 alt 文本或破损图标
+          // 如果需要更复杂的错误处理，可以保留 onError 但逻辑会简化
         />
       </div>
       <div className={styles.content}>

@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
@@ -31,12 +30,13 @@ export default defineConfig({
       strict: true,
       allow: ["."],
     },
-    proxy: {
-      "/api": {
-        target: "http://23.22.158.203:8080",
-        changeOrigin: true,
-      },
-    },
+    // 移除或注释掉代理配置
+    // proxy: {
+    //   "/api": {
+    //     target: "http://23.22.158.203:8080", // 旧的HTTP IP
+    //     changeOrigin: true,
+    //   },
+    // },
   },
   configFile: resolve(__dirname, "vite.config.js"),
 
