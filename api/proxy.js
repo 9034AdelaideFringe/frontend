@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     // 从请求URL中提取路径，去除/api前缀
     const backendBase = 'http://23.22.158.203:8080';  // 硬编码后端地址
     const targetPath = req.url.replace(/^\/api/, '');
-    const targetUrl = `${backendBase}${targetPath}`;
+    const targetUrl = `${backendBase}/api${targetPath}`;
     
     console.log(`[API 代理请求] ${req.method} ${targetUrl}`);
     
