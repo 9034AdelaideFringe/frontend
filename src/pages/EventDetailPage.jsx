@@ -97,35 +97,33 @@ const EventDetailPage = () => {
     return url.startsWith("http://") || url.startsWith("https://");
   };
 
-  // Get a safe image URL, use default image if invalid
-
-  const IMAGE_BASE_URL = "http://23.22.158.203:8080";
+  // Get a safe event image URL
+  // const IMAGE_BASE_URL = "http://23.22.158.203:8080"; // 移除或注释掉这个硬编码的BASE_URL
   const getEventImageUrl = (imageUrl) => {
     if (!imageUrl) return "";
     if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://"))
       return imageUrl;
 
+    // 移除开头的 ./ 或 /，然后通过 /api 代理路径请求
     const cleanPath = imageUrl.replace(/^\.\//, "").replace(/^\/+/, "");
-    return `${IMAGE_BASE_URL}/${cleanPath}`;
+    // return `${IMAGE_BASE_URL}/${cleanPath}`; // 原始代码
+    return `/api/${cleanPath}`; // 修改为通过代理请求
   };
 
   // Get a safe seating layout image URL
-  // const getSeatLayoutUrl = (imageUrl) => {
-  //   if (isValidImageUrl(imageUrl)) {
-  //     return imageUrl;
-  //   }
-  //   return "https://plus.unsplash.com/premium_photo-1724753996107-a35012f43bae?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-  // };
   const getSeatLayoutUrl = (imagePath) => {
     if (!imagePath) {
-      return "https://plus.unsplash.com/premium_photo-1724753996107-a35012f43bae?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0";
+      return "https://plus.unsplash.com/premium_photo-1724753996107-a35012f43bae?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
     }
 
     if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
       return imagePath;
     }
 
-    return `http://23.22.158.203:8080${imagePath.replace("./", "/")}`;
+    // 移除开头的 ./ 或 /，然后通过 /api 代理路径请求
+    const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\/+/, "");
+    // return `http://23.22.158.203:8080${imagePath.replace("./", "/")}`; // 原始代码
+    return `/api/${cleanPath}`; // 修改为通过代理请求
   };
 
   const getLowestPrice = (ticketTypes) => {

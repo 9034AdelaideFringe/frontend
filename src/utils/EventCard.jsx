@@ -5,17 +5,19 @@ import styles from "./EventCard.module.css";
 const EventCard = ({ event }) => {
   console.log("event.image:", event.image);
   const { id, title, abstract, image } = event;
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) {
-      return "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-    }
-    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-      return imagePath;
-    }
+const getImageUrl = (imagePath) => {
+  if (!imagePath) {
+    return "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+  }
+  // 如果已经是完整的http/https URL，直接返回
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath;
+  }
 
-    const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\/+/, "");
-    return `http://23.22.158.203:8080/${cleanPath}`;
-  };
+  // 移除开头的 ./ 或 /，然后通过 /api 代理路径请求
+  const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\/+/, "");
+  return `/api/${cleanPath}`; // 修改为通过代理请求
+};
 
   return (
     <div className={styles.card}>
