@@ -1,463 +1,196 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { getEventById } from "../services/eventService";
-import { addToCart } from "../services/cartService";
-import TicketSelector from "./TicketSelector";
-import styles from "./EventDetailPage.module.css";
+export default async function handler(req, res) {
+  try {
+    console.log(`[DEBUG] 收到API请求:`, {
+      url: req.url,
+      method: req.method,
+      cookies: req.headers.cookie
+    });
 
-const EventDetailPage = () => {
-  const { id } = useParams();
-  const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showTicketSelector, setShowTicketSelector] = useState(false);
-  const navigate = useNavigate();
+    // 设置 CORS 头
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
 
-  useEffect(() => {
-    getEventById(id)
-      .then((data) => {
-        // Handle different response formats
-        let eventData;
-        if (Array.isArray(data)) {
-          eventData = data[0];
-        } else if (
-          data &&
-          data.data &&
-          Array.isArray(data.data) &&
-          data.data.length > 0
-        ) {
-          eventData = data.data[0];
-        } else if (data && (data.event_id || data.id)) {
-          eventData = data;
-        } else {
-          throw new Error("Invalid event data format");
+    // 处理预检请求
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+
+    const backendBase = 'http://23.22.158.203:8080'; // 硬编码后端地址
+    const requestUrl = req.url;
+    let targetUrl;
+    const isImageRequest = requestUrl.startsWith('/api/images/'); // 更直接判断是否为图片请求
+
+    // 从请求URL中提取路径，去除/api前缀
+    const targetPath = requestUrl.replace(/^\/api/, '');
+
+    // **根据路径判断是否为图片请求，并构建不同的目标URL**
+    if (isImageRequest) {
+      // 如果是图片请求，直接将去除/api后的路径拼接到后端基础地址
+      targetUrl = `${backendBase}${targetPath}`;
+      console.log(`[API 代理请求 - 图片] ${req.method} ${targetUrl}`);
+    } else {
+      // 如果是其他API请求，按照原有逻辑，将去除/api后的路径拼接到后端/api路径下
+      targetUrl = `${backendBase}/api${targetPath}`;
+      console.log(`[API 代理请求 - 其他] ${req.method} ${targetUrl}`);
+    }
+
+    // 构建请求选项
+    const options = {
+      method: req.method,
+      headers: {
+        // 默认设置Content-Type，但对于图片请求可能不需要或需要其他类型
+        // 移除默认的 application/json，让 fetch 根据 body 自动设置或不设置
+      },
+      credentials: 'include'
+    };
+
+    // 复制原始请求头（排除一些特殊头）
+    if (req.headers) {
+      Object.keys(req.headers).forEach(key => {
+        if (!['host', 'connection', 'content-length', 'content-type'].includes(key.toLowerCase())) { // 排除 content-type
+          options.headers[key] = req.headers[key];
         }
-
-        setEvent(eventData);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
       });
-  }, [id]);
+    }
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Date not specified";
+    // 添加Cookie，如果存在
+    if (req.headers.cookie) {
+      options.headers['Cookie'] = req.headers.cookie;
+    }
 
-    try {
-      // Handle direct date string format: "2022-02-02"
-      const date = new Date(dateString);
+    // 添加请求体 (通常图片请求没有请求体)
+    if (req.body && !['GET', 'HEAD'].includes(req.method)) {
+      try {
+        console.log(`[DEBUG] 处理请求体类型:`, typeof req.body);
 
-      if (!isNaN(date.getTime())) {
-        return date.toLocaleDateString("en-AU", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
+        // 检查是否已经是字符串
+        if (typeof req.body === 'string') {
+          try {
+            JSON.parse(req.body); // 验证是有效JSON
+            options.body = req.body;
+            options.headers['Content-Type'] = 'application/json'; // 如果是JSON，设置Content-Type
+          } catch (e) {
+            console.warn('[警告] 请求体不是有效JSON，尝试包装:', req.body.substring(0, 100));
+            options.body = JSON.stringify({ data: req.body });
+            options.headers['Content-Type'] = 'application/json'; // 包装后也是JSON
+          }
+        }
+        // 处理对象
+        else if (typeof req.body === 'object') {
+          options.body = JSON.stringify(req.body);
+           options.headers['Content-Type'] = 'application/json'; // 对象转JSON
+        }
+         // 对于 FormData，fetch 会自动设置 Content-Type: multipart/form-data
+         // 所以这里不需要额外处理 FormData 类型
+        console.log(`[请求体] 最终发送长度:`, options.body ? options.body.length : 0);
+      } catch (err) {
+        console.error('处理请求体出错:', err);
       }
-
-      // If we can't parse it as a date, return the original string
-      return dateString;
-    } catch (err) {
-      return dateString;
-    }
-  };
-
-  const formatTime = (timeString) => {
-    if (!timeString) return "Time not specified";
-
-    // If the time is already in HH:MM format, return it directly
-    if (typeof timeString === "string" && timeString.includes(":")) {
-      return timeString;
     }
 
-    try {
-      // Try to parse as a full date and extract time
-      const date = new Date(`2022-01-01T${timeString}`);
+    // 发送请求到后端API
+    console.log(`[DEBUG] 发送代理请求:`, {
+      url: targetUrl,
+      method: options.method,
+      headers: options.headers // 打印发送的请求头
+    });
 
-      if (!isNaN(date.getTime())) {
-        return date.toLocaleTimeString("en-AU", {
-          hour: "2-digit",
-          minute: "2-digit",
+    const response = await fetch(targetUrl, options);
+
+    console.log(`[DEBUG] 收到代理响应:`, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()) // 打印收到的响应头
+    });
+
+    // 处理Set-Cookie响应头
+    const setCookieHeader = response.headers.get('set-cookie');
+    if (setCookieHeader) {
+      res.setHeader('Set-Cookie', setCookieHeader);
+      console.log('[DEBUG] 转发Set-Cookie头');
+    }
+
+    // 设置响应状态码
+    res.status(response.status);
+
+    // 处理不同类型的响应或错误响应
+    const contentType = response.headers.get('content-type');
+
+    // **检查响应状态码**
+    if (!response.ok) { // 如果响应状态码不是 2xx
+        console.error(`[API 代理错误] 后端返回状态码: ${response.status}`);
+        // 尝试读取错误响应体并转发
+        try {
+            const errorBody = await response.text();
+            console.error(`[API 代理错误] 后端错误响应体:`, errorBody);
+            // 转发后端返回的Content-Type和错误体
+            if (contentType) {
+                res.setHeader('Content-Type', contentType);
+            }
+            return res.send(errorBody);
+        } catch (readError) {
+            console.error('[API 代理错误] 无法读取后端错误响应体:', readError);
+            return res.send('代理收到后端错误，但无法读取错误详情。');
+        }
+    }
+
+    // 如果响应成功 (状态码 2xx)
+    if (isImageRequest) {
+       // 对于图片请求，直接转发原始响应
+       console.log('[API 代理] 转发图片响应流');
+       // 转发所有响应头
+       response.headers.forEach((value, name) => {
+           res.setHeader(name, value);
+       });
+       // 转发响应流
+       // 使用 response.body.pipeTo(res) 可能更直接，取决于环境
+       // 如果 pipeTo 报错，可以尝试手动读取流并发送
+       try {
+           await response.body.pipeTo(res.writable);
+           console.log('[API 代理] 图片响应流转发完成');
+       } catch (pipeError) {
+           console.error('[API 代理错误] 转发图片流失败:', pipeError);
+           // 尝试手动读取并发送
+           try {
+               const imageBuffer = await response.buffer(); // 或者 arrayBuffer()
+               res.end(imageBuffer);
+               console.log('[API 代理] 手动发送图片数据完成');
+           } catch (manualSendError) {
+               console.error('[API 代理错误] 手动发送图片数据失败:', manualSendError);
+               // 最后的错误处理
+               if (!res.headersSent) {
+                   res.status(500).send('代理转发图片失败');
+               } else {
+                   // 如果头已经发送，只能结束响应
+                   res.end();
+               }
+           }
+       }
+
+    } else if (contentType && contentType.includes('application/json')) {
+      console.log('[API 代理] 转发 JSON 响应');
+      const data = await response.json();
+      console.log('[DEBUG] 响应JSON:', typeof data === 'object' ? '对象' : typeof data);
+      return res.json(data);
+    } else {
+      console.log('[API 代理] 转发文本响应');
+      const text = await response.text();
+      console.log('[DEBUG] 响应文本:', text.substring(0, 50));
+      return res.send(text);
+    }
+  } catch (error) {
+    console.error('[API 代理全局错误]', error);
+    // 确保在发生未捕获的错误时发送响应
+    if (!res.headersSent) {
+        return res.status(500).json({
+          error: '代理服务器内部错误',
+          message: error.message || '未知错误'
         });
-      }
-
-      return timeString;
-    } catch (err) {
-      return timeString;
+    } else {
+        // 如果头已经发送，只能结束响应
+        res.end();
     }
-  };
-
-  // Check if the image URL is a valid HTTP/HTTPS link
-  const isValidImageUrl = (url) => {
-    if (!url) return false;
-
-    // Check if it's a standard HTTP/HTTPS URL
-    return url.startsWith("http://") || url.startsWith("https://");
-  };
-
-  // Get a safe image URL, use default image if invalid
-
-  const IMAGE_BASE_URL = "http://23.22.158.203:8080";
-  const getEventImageUrl = (imageUrl) => {
-    if (!imageUrl) return "";
-    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://"))
-      return imageUrl;
-
-    const cleanPath = imageUrl.replace(/^\.\//, "").replace(/^\/+/, "");
-    return `${IMAGE_BASE_URL}/${cleanPath}`;
-  };
-
-  // Get a safe seating layout image URL
-  // const getSeatLayoutUrl = (imageUrl) => {
-  //   if (isValidImageUrl(imageUrl)) {
-  //     return imageUrl;
-  //   }
-  //   return "https://plus.unsplash.com/premium_photo-1724753996107-a35012f43bae?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-  // };
-  const getSeatLayoutUrl = (imagePath) => {
-    if (!imagePath) {
-      return "https://plus.unsplash.com/premium_photo-1724753996107-a35012f43bae?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0";
-    }
-
-    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-      return imagePath;
-    }
-
-    return `http://23.22.158.203:8080${imagePath.replace("./", "/")}`;
-  };
-
-  const getLowestPrice = (ticketTypes) => {
-    if (!ticketTypes || ticketTypes.length === 0) {
-      return "N/A";
-    }
-
-    const prices = ticketTypes
-      .map((ticket) => parseFloat(ticket.price))
-      .filter((price) => !isNaN(price) && price > 0);
-
-    if (prices.length === 0) return "Free";
-
-    const lowestPrice = Math.min(...prices).toFixed(2);
-    return `$${lowestPrice}`;
-  };
-
-  const handleAddToCart = (cartItems) => {
-    Promise.all(cartItems.map((item) => addToCart(item)))
-      .then(() => {
-        alert("Tickets added to cart!");
-        setShowTicketSelector(false);
-      })
-      .catch((err) => {
-        alert("Failed to add to cart: " + err.message);
-      });
-  };
-
-  const handleBuyNow = (cartItems) => {
-    Promise.all(cartItems.map((item) => addToCart(item)))
-      .then(() => {
-        setShowTicketSelector(false);
-        navigate("/user/checkout");
-      })
-      .catch((err) => {
-        alert("Failed to process: " + err.message);
-      });
-  };
-
-  if (loading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}></div>
-        <p>Loading event information...</p>
-      </div>
-    );
   }
-
-  if (error) {
-    return (
-      <div className={styles.errorContainer}>
-        <h2>Error</h2>
-        <p>{error}</p>
-        <Link to="/events" className={styles.backButton}>
-          Back to Events
-        </Link>
-      </div>
-    );
-  }
-
-  if (!event) {
-    return (
-      <div className={styles.errorContainer}>
-        <h2>Event Not Found</h2>
-        <p>
-          Sorry, we couldn't find the event you're looking for. It may have been
-          removed or the link is invalid.
-        </p>
-        <Link to="/events" className={styles.backButton}>
-          Back to Events
-        </Link>
-      </div>
-    );
-  }
-
-  // Extract event properties with appropriate fallbacks
-  const eventId = event.event_id || event.id;
-  const eventTitle = event.title || "";
-  const eventImage = event.image || "";
-  const eventVenue = event.venue || "";
-  const eventCapacity = event.capacity || "";
-  const eventCategory = event.category || "";
-
-  // Event date and time fields
-  const eventDate = event.date || "";
-  const eventTime = event.time || "";
-  const eventEndTime = event.end_time || "";
-
-  const eventStatus = event.status || "INACTIVE";
-  const eventVenueLayout =
-    event.venueseatinglayout || event.venueSeatingLayout || "";
-
-  // Event description - retain all possible field names
-  const eventDescription =
-    event.short_description ||
-    event.description ||
-    event.des ||
-    "No description available";
-
-  // Format for display
-  const displayDate =
-    eventDate === "Date TBA" ? eventDate : formatDate(eventDate);
-  const displayTime =
-    eventTime === "Time TBA" ? eventTime : formatTime(eventTime);
-
-  // Ticket types
-  const ticketTypes = event.ticketTypes || [];
-
-  // Calculate price display
-  const priceDisplay =
-    ticketTypes.length > 0
-      ? `From ${getLowestPrice(ticketTypes)}`
-      : event.price
-      ? event.price
-      : "Price not specified";
-
-  return (
-    <div className={styles.eventDetailPage}>
-      <div className={styles.eventHeader}>
-        <h1 className={styles.eventTitle}>{eventTitle}</h1>
-        <div className={styles.eventMeta}>
-          <div className={styles.metaItem}>
-            <i className="icon-calendar"></i> {displayDate}
-          </div>
-          <div className={styles.metaItem}>
-            <i className="icon-clock"></i> {displayTime}
-          </div>
-          <div className={styles.metaItem}>
-            <i className="icon-location"></i> {eventVenue || "Location TBA"}
-          </div>
-          {eventCategory && (
-            <div className={styles.metaItem}>
-              <i className="icon-tag"></i> {eventCategory}
-            </div>
-          )}
-          {eventStatus && (
-            <div
-              className={`${styles.statusTag} ${
-                styles[eventStatus.toLowerCase()]
-              }`}
-            >
-              {eventStatus}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className={styles.eventContent}>
-        <div className={styles.imageSection}>
-          {/* <img 
-            src={getEventImageUrl(eventImage)} 
-            alt={eventTitle} 
-            className={styles.eventImage} 
-            onError={(e) => { 
-              e.target.onerror = null; 
-              e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; 
-            }}
-          /> */}
-          <img
-            src={getEventImageUrl(eventImage)}
-            alt={eventTitle}
-            className={styles.eventImage}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src =
-                "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-            }}
-          />
-
-          {eventVenueLayout && (
-            <div className={styles.venueLayout}>
-              <h3>Venue Seating Layout</h3>
-              <img
-                src={getSeatLayoutUrl(eventVenueLayout)}
-                alt="Venue Seating Layout"
-                className={styles.layoutImage}
-                onClick={() =>
-                  window.open(getSeatLayoutUrl(eventVenueLayout), "_blank")
-                }
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src =
-                    "https://plus.unsplash.com/premium_photo-1724753996107-a35012f43bae?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-                }}
-              />
-            </div>
-          )}
-        </div>
-
-        <div className={styles.infoSection}>
-          <div className={styles.eventDescription}>
-            <h2>Event Description</h2>
-            <div className={styles.descriptionText}>{eventDescription}</div>
-          </div>
-
-          <div className={styles.eventDetails}>
-            <h2>Event Details</h2>
-            <div className={styles.detailsGrid}>
-              <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Date</span>
-                <span className={styles.detailValue}>{displayDate}</span>
-              </div>
-              <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Time</span>
-                <span className={styles.detailValue}>{displayTime}</span>
-              </div>
-
-              {eventEndTime && (
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>End Time</span>
-                  <span className={styles.detailValue}>
-                    {formatDate(eventEndTime)}
-                  </span>
-                </div>
-              )}
-
-              <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Venue</span>
-                <span className={styles.detailValue}>
-                  {eventVenue || "TBA"}
-                </span>
-              </div>
-              <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Price</span>
-                <span className={styles.detailValue}>{priceDisplay}</span>
-              </div>
-              {eventCapacity && (
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Capacity</span>
-                  <span className={styles.detailValue}>
-                    {eventCapacity} people
-                  </span>
-                </div>
-              )}
-              {eventCategory && (
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Category</span>
-                  <span className={styles.detailValue}>{eventCategory}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Display ticket type information */}
-          {ticketTypes.length > 0 && (
-            <div className={styles.ticketTypesSection}>
-              <h2>Ticket Information</h2>
-              <div className={styles.ticketTypesList}>
-                {ticketTypes.map((ticket, index) => (
-                  <div
-                    key={ticket.id || `ticket-${index}-${ticket.name}`}
-                    className={styles.ticketTypeCard}
-                  >
-                    <div className={styles.ticketTypeHeader}>
-                      <h3>{ticket.name}</h3>
-                      <span className={styles.ticketPrice}>
-                        {parseFloat(ticket.price) > 0
-                          ? `$${parseFloat(ticket.price).toFixed(2)}`
-                          : "Free"}
-                      </span>
-                    </div>
-                    {ticket.description && (
-                      <p className={styles.ticketDescription}>
-                        {ticket.description}
-                      </p>
-                    )}
-                    <div className={styles.ticketAvailability}>
-                      <span>Available: </span>
-                      <span
-                        className={
-                          parseInt(
-                            ticket.available_quantity ||
-                              ticket.availableQuantity ||
-                              0
-                          ) > 10
-                            ? styles.available
-                            : styles.limited
-                        }
-                      >
-                        {parseInt(
-                          ticket.available_quantity ||
-                            ticket.availableQuantity ||
-                            0
-                        ) > 0
-                          ? ticket.available_quantity ||
-                            ticket.availableQuantity
-                          : "Sold Out"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className={styles.actionSection}>
-            <button
-              className={styles.buyButton}
-              onClick={() => setShowTicketSelector(true)}
-              disabled={eventStatus !== "ACTIVE"}
-            >
-              {eventStatus === "ACTIVE"
-                ? "Buy Tickets"
-                : "Currently Unavailable"}
-            </button>
-            <Link to="/events" className={styles.backButton}>
-              Back to Events
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {showTicketSelector && (
-        <div className={styles.overlay}>
-          <div className={styles.modalContent}>
-            <button
-              className={styles.closeButton}
-              onClick={() => setShowTicketSelector(false)}
-            >
-              ×
-            </button>
-            <h2>Select Tickets</h2>
-            <TicketSelector
-              eventId={id}
-              onAddToCart={handleAddToCart}
-              onBuyNow={handleBuyNow}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default EventDetailPage;
+}

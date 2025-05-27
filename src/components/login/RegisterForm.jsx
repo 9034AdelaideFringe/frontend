@@ -1,30 +1,25 @@
-import React, { useState } from "react";
-import styles from "./Form.module.css";
+import React, { useState } from 'react'
+import styles from './Form.module.css'
 
 const RegisterForm = ({ onRegister }) => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-    if (!emailRegex.test(email)) {
-      setPasswordError("Please enter a valid email address");
-      return;
-    }
-
+    e.preventDefault()
+    
     // Password validation
     if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match");
+      setPasswordError('Passwords do not match');
       return;
     }
-
-    setPasswordError("");
+    
+    setPasswordError('');
     onRegister({ name, email, password });
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit}>
@@ -67,15 +62,11 @@ const RegisterForm = ({ onRegister }) => {
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
         />
-        {passwordError && (
-          <div className={styles.errorText}>{passwordError}</div>
-        )}
+        {passwordError && <div className={styles.errorText}>{passwordError}</div>}
       </div>
-      <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>
-        Register
-      </button>
+      <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>Register</button>
     </form>
-  );
-};
+  )
+}
 
-export default RegisterForm;
+export default RegisterForm
