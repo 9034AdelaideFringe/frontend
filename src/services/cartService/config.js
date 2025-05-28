@@ -7,7 +7,7 @@ export const CART_ENDPOINTS = {
   GET_CART: (userId) => `/cart/${userId}`,
   ADD_TO_CART: '/cart',
   UPDATE_CART_ITEM: (cartItemId) => `/cart/${cartItemId}`,
-  REMOVE_FROM_CART: (cartItemId) => `/cart/${cartItemId}`,
+  REMOVE_FROM_CART: `/cart`,
   CHECKOUT: '/checkout'
 };
 

@@ -13,12 +13,16 @@ export const removeFromCart = async (cartItemId) => {
   
   try {
     // 构建API URL
-    const apiUrl = buildApiUrl(CART_ENDPOINTS.REMOVE_FROM_CART(cartItemId));
+    const apiUrl = buildApiUrl(CART_ENDPOINTS.REMOVE_FROM_CART);
     console.log(`尝试从购物车中删除项目 ${cartItemId}: ${apiUrl}`);
 
     // 发送API请求
     const response = await authenticatedRequest(apiUrl, {
       method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+        body: JSON.stringify({ cart_item_id: cartItemId }),
     });
 
     console.log("删除购物车项目的API响应:", response);
