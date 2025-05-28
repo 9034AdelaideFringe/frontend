@@ -7,12 +7,14 @@ import {
   isApiResponseSuccess,
   logCartOperation 
 } from '../utils';
+import { enrichCartItems } from './enrichCartItems';
 
 /**
  * 获取当前用户的购物车项目
+ * @param {boolean} enrichData - 是否丰富数据（获取票种和事件信息）
  * @returns {Promise<Array>} 购物车项目列表
  */
-export const getCartItems = async () => {
+export const getCartItems = async (enrichData = true) => {
   logCartOperation('GET_CART_ITEMS', 'STARTED');
   
   try {
@@ -34,11 +36,21 @@ export const getCartItems = async () => {
     if (isApiResponseSuccess(response) && Array.isArray(response.data)) {
       console.log(`成功获取 ${response.data.length} 个购物车项目`);
       
-      // 映射数据格式
-      const mappedItems = response.data.map(mapCartItemFromApi);
+      // 映射基础数据格式
+      const basicItems = response.data.map(mapCartItemFromApi);
       
-      logCartOperation('GET_CART_ITEMS', 'FINISHED', { count: mappedItems.length });
-      return mappedItems;
+      // 如果需要丰富数据，获取票种和事件信息
+      let finalItems = basicItems;
+      if (enrichData && basicItems.length > 0) {
+        console.log('开始丰富购物车数据...');
+        finalItems = await enrichCartItems(basicItems);
+      }
+      
+      logCartOperation('GET_CART_ITEMS', 'FINISHED', { 
+        count: finalItems.length, 
+        enriched: enrichData 
+      });
+      return finalItems;
     } else {
       console.error('无效的API响应格式:', response);
       return [];

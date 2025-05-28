@@ -9,6 +9,7 @@ export { addToCart } from './operations/addToCart';
 export { updateCartItemQuantity } from './operations/updateCartItem';
 export { removeFromCart } from './operations/removeFromCart';
 export { checkout } from './operations/checkout';
+export { enrichCartItems } from './operations/enrichCartItems';
 
 // 导出配置和工具函数（如果需要）
 export * from './config';
@@ -21,4 +22,5 @@ export default {
   updateCartItemQuantity: () => import('./operations/updateCartItem').then(m => m.updateCartItemQuantity),
   removeFromCart: () => import('./operations/removeFromCart').then(m => m.removeFromCart),
   checkout: () => import('./operations/checkout').then(m => m.checkout),
+  enrichCartItems: () => import('./operations/enrichCartItems').then(m => m.enrichCartItems),
 };
