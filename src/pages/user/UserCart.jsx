@@ -40,10 +40,28 @@ const UserCart = () => {
   // 更新商品数量
   const handleQuantityChange = async (itemId, newQuantity) => {
     try {
-      // 调用更新后的 updateCartItemQuantity 函数
-      await updateCartItemQuantity(itemId, newQuantity);
+      // 从 cartItems 状态中找到当前正在更新的项目
+      const itemToUpdate = cartItems.find(item => item.id === itemId || item.cartItemId === itemId);
+
+      if (!itemToUpdate) {
+        console.error(`[UserCart] 未找到购物车项目 ${itemId} 进行更新`);
+        throw new Error(`未找到购物车项目 ${itemId}`);
+      }
+
+      const ticketTypeId = itemToUpdate.ticketTypeId;
+
+      if (typeof ticketTypeId === 'undefined') {
+        console.error(`[UserCart] 项目 ${itemId} 的 ticketTypeId 未定义!`, itemToUpdate);
+        throw new Error(`项目 ${itemId} 的 ticketTypeId 未定义`);
+      }
+      
+      console.log(`[UserCart] 更新项目: ${itemId}, 新数量: ${newQuantity}, 票种ID: ${ticketTypeId}`);
+
+      // 调用更新后的 updateCartItemQuantity 函数，并传递 ticketTypeId
+      await updateCartItemQuantity(itemId, newQuantity, ticketTypeId);
       // 数量更新成功后，重新加载购物车数据以同步后端状态
       loadCartItems();
+      setError(null); // 清除之前的错误
     } catch (err) {
       setError('更新商品数量失败: ' + (err.message || '未知错误'));
       console.error("更新商品数量失败:", err);

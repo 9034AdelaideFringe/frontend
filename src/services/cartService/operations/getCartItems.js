@@ -29,28 +29,18 @@ export const getCartItems = async (enrichData = true) => {
     const response = await authenticatedRequest(apiUrl, {
       method: 'GET',
     });
-
-    console.log("获取购物车的API响应:", response);
+    // console.log('获取购物车的API响应:', response);
 
     // 处理成功响应
-    if (isApiResponseSuccess(response) && Array.isArray(response.data)) {
-      console.log(`成功获取 ${response.data.length} 个购物车项目`);
-      
-      // 映射基础数据格式
+    if (isApiResponseSuccess(response) && response.data) {
       const basicItems = response.data.map(mapCartItemFromApi);
-      
-      // 如果需要丰富数据，获取票种和事件信息
-      let finalItems = basicItems;
-      if (enrichData && basicItems.length > 0) {
-        console.log('开始丰富购物车数据...');
-        finalItems = await enrichCartItems(basicItems);
+      console.log('[getCartItems] Basic items after mapping:', JSON.parse(JSON.stringify(basicItems))); // 日志映射后的基础项目
+
+      if (enrichData) {
+        // console.log('需要丰富购物车数据，调用 enrichCartItems');
+        return await enrichCartItems(basicItems);
       }
-      
-      logCartOperation('GET_CART_ITEMS', 'FINISHED', { 
-        count: finalItems.length, 
-        enriched: enrichData 
-      });
-      return finalItems;
+      return basicItems;
     } else {
       console.error('无效的API响应格式:', response);
       return [];

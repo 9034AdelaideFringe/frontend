@@ -86,7 +86,6 @@ const saveEventToCache = (eventId, eventData) => {
  * @returns {Promise<Object>} 事件数据
  */
 export const getCachedEventById = async (eventId) => {
-  console.log(`获取事件数据: ${eventId}`);
   
   // 首先尝试从缓存获取
   const cachedEvent = getEventFromCache(eventId);
@@ -94,8 +93,6 @@ export const getCachedEventById = async (eventId) => {
     return cachedEvent;
   }
   
-  // 缓存不存在或已过期，从API获取
-  console.log(`从API获取事件 ${eventId}`);
   try {
     const eventData = await getEventById(eventId);
     

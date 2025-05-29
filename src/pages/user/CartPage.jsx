@@ -49,19 +49,36 @@ function CartPage() {
     }
 
     setUpdating(prev => new Set(prev.add(cartItemId)));
-    
+
     try {
-      console.log(`更新项目 ${cartItemId} 数量到 ${newQuantity}`);
+      // console.log(`更新项目 ${cartItemId} 数量到 ${newQuantity}`);
+
+      // **查找对应的购物车项目以获取 ticketTypeId**
+      const itemToUpdate = cartItems.find(item => item.cartItemId === cartItemId);
       
+      // 新增日志：检查 itemToUpdate 和它包含的 ticketTypeId
+      console.log('[CartPage] Item to update:', itemToUpdate); 
+      
+      if (!itemToUpdate) {
+          console.error(`[CartPage] 未找到购物车项目 ${cartItemId} 进行更新`);
+          throw new Error(`未找到购物车项目 ${cartItemId}`);
+      }
+      const ticketTypeId = itemToUpdate.ticketTypeId;
+      
+      // 新增/确认日志：检查提取的 ticketTypeId
+      console.log(`[CartPage] 找到项目 ${cartItemId} 的票种ID: ${ticketTypeId}`, '(Type:', typeof ticketTypeId + ')'); 
+
+
       if (newQuantity === 0) {
         // 删除项目
         await removeFromCart(cartItemId);
         setCartItems(prev => prev.filter(item => item.cartItemId !== cartItemId));
       } else {
         // 更新数量
-        await updateCartItemQuantity(cartItemId, newQuantity);
-        setCartItems(prev => prev.map(item => 
-          item.cartItemId === cartItemId 
+        // **修改这里：将 ticketTypeId 作为第三个参数传递**
+        await updateCartItemQuantity(cartItemId, newQuantity, ticketTypeId);
+        setCartItems(prev => prev.map(item =>
+          item.cartItemId === cartItemId
             ? { ...item, quantity: newQuantity, totalPrice: item.pricePerTicket * newQuantity }
             : item
         ));
@@ -84,7 +101,8 @@ function CartPage() {
     if (!confirm('确定要删除这个项目吗？')) {
       return;
     }
-    
+
+    // 调用 handleQuantityChange 并将数量设置为 0 来触发删除逻辑
     await handleQuantityChange(cartItemId, 0);
   };
 
@@ -98,20 +116,20 @@ function CartPage() {
     try {
       setIsCheckingOut(true);
       console.log('开始结账...');
-      
+
       // 传递购物车项目给结账函数
       const result = await checkout(cartItems);
-      
+
       console.log('结账成功:', result);
       alert(`结账成功！订单号: ${result.order.id}`);
-      
+
       // 导航到订单确认页面或我的票页面
       if (result.order && result.order.id) {
         navigate(`/order-confirmation/${result.order.id}`);
       } else {
         navigate("/user/tickets");
       }
-      
+
     } catch (err) {
       console.error('结账失败:', err);
       setError("结账失败: " + (err.message || '未知错误'));
@@ -156,8 +174,8 @@ function CartPage() {
         {cartItems.map((item) => (
           <div key={item.cartItemId} className={styles.cartItem}>
             <div className={styles.itemImage}>
-              <img 
-                src={item.eventImage} 
+              <img
+                src={item.eventImage}
                 alt={item.eventName}
                 onError={(e) => {
                   e.target.src = '/default-event-image.jpg';
@@ -217,24 +235,27 @@ function CartPage() {
             <span>商品小计:</span>
             <span>${calculateTotal().toFixed(2)}</span>
           </div>
-          <div className={`${styles.summaryRow} ${styles.total}`}>
-            <span>总计:</span>
+          {/* 可以添加其他费用，如运费、税费等 */}
+          {/* <div className={styles.summaryRow}>
+            <span>Shipping:</span>
+            <span>$0.00</span>
+          </div>
+          <div className={styles.summaryRow}>
+            <span>Tax:</span>
+            <span>$0.00</span>
+          </div> */}
+          <div className={`${styles.summaryRow} ${styles.orderTotal}`}>
+            <span>订单总计:</span>
             <span>${calculateTotal().toFixed(2)}</span>
           </div>
         </div>
-
-        <div className={styles.checkoutActions}>
-          <Link to="/events" className={styles.continueShoppingBtn}>
-            继续购物
-          </Link>
-          <button
-            className={styles.checkoutBtn}
-            onClick={handleCheckout}
-            disabled={isCheckingOut || cartItems.length === 0}
-          >
-            {isCheckingOut ? "处理中..." : "结账"}
-          </button>
-        </div>
+        <button
+          className={styles.checkoutBtn}
+          onClick={handleCheckout}
+          disabled={cartItems.length === 0 || isCheckingOut || updating.size > 0}
+        >
+          {isCheckingOut ? '处理中...' : '去结账'}
+        </button>
       </div>
     </div>
   );

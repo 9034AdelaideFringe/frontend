@@ -147,8 +147,8 @@ export const getCurrentUser = () => {
  */
 export const logout = async () => {
   try {
-    await authRequest("/logout", {
-      method: "POST",
+    await authRequest("/signout", {
+      method: "GET",
     });
     
     // Clear local storage regardless of API response
