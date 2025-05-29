@@ -117,17 +117,16 @@ function CartPage() {
       setIsCheckingOut(true);
       console.log('开始结账...');
 
-      // 传递购物车项目给结账函数
       const result = await checkout(cartItems);
-
-      console.log('结账成功:', result);
-      alert(`结账成功！订单号: ${result.order.id}`);
-
-      // 导航到订单确认页面或我的票页面
-      if (result.order && result.order.id) {
-        navigate(`/order-confirmation/${result.order.id}`);
+      console.log('结账API调用完成:', result);
+      
+      if (result && result.success) {
+        alert(result.message || "结账成功！您的订单正在处理中。");
+        setCartItems([]); // Clear the cart on successful checkout
+        // Navigate to a relevant page
+        navigate("/user/tickets"); 
       } else {
-        navigate("/user/tickets");
+        alert(result.message || "结账失败，请重试。");
       }
 
     } catch (err) {

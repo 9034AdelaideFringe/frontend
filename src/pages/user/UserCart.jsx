@@ -13,6 +13,7 @@ const UserCart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [processingItemId, setProcessingItemId] = useState(null); // New state
   const navigate = useNavigate();
 
   // 加载购物车商品
@@ -39,13 +40,29 @@ const UserCart = () => {
 
   // 更新商品数量
   const handleQuantityChange = async (itemId, newQuantity) => {
+    const originalCartItems = [...cartItems]; // Store original items for rollback
+    setProcessingItemId(itemId); // Indicate this item is being processed
+
+    // Optimistically update UI
+    setCartItems(prevItems =>
+      prevItems.map(item =>
+        (item.id === itemId || item.cartItemId === itemId)
+          ? {
+              ...item,
+              quantity: newQuantity,
+              totalPrice: newQuantity * item.pricePerTicket, // Recalculate totalPrice
+            }
+          : item
+      )
+    );
+
     try {
-      // 从 cartItems 状态中找到当前正在更新的项目
-      const itemToUpdate = cartItems.find(item => item.id === itemId || item.cartItemId === itemId);
+      const itemToUpdate = originalCartItems.find(item => item.id === itemId || item.cartItemId === itemId);
 
       if (!itemToUpdate) {
-        console.error(`[UserCart] 未找到购物车项目 ${itemId} 进行更新`);
-        throw new Error(`未找到购物车项目 ${itemId}`);
+        // This should ideally not happen if the item was in cartItems for optimistic update
+        console.error(`[UserCart] Optimistic update failed: 未找到购物车项目 ${itemId}`);
+        throw new Error(`未找到购物车项目 ${itemId} 进行后端同步`);
       }
 
       const ticketTypeId = itemToUpdate.ticketTypeId;
@@ -55,16 +72,19 @@ const UserCart = () => {
         throw new Error(`项目 ${itemId} 的 ticketTypeId 未定义`);
       }
       
-      console.log(`[UserCart] 更新项目: ${itemId}, 新数量: ${newQuantity}, 票种ID: ${ticketTypeId}`);
+      // console.log(`[UserCart] 更新项目: ${itemId}, 新数量: ${newQuantity}, 票种ID: ${ticketTypeId}`);
 
-      // 调用更新后的 updateCartItemQuantity 函数，并传递 ticketTypeId
       await updateCartItemQuantity(itemId, newQuantity, ticketTypeId);
-      // 数量更新成功后，重新加载购物车数据以同步后端状态
-      loadCartItems();
-      setError(null); // 清除之前的错误
+      // API call successful, UI is already updated.
+      // No need to call loadCartItems() here.
+      setError(null); 
     } catch (err) {
       setError('更新商品数量失败: ' + (err.message || '未知错误'));
       console.error("更新商品数量失败:", err);
+      // Rollback UI to original state if API call fails
+      setCartItems(originalCartItems);
+    } finally {
+      setProcessingItemId(null); // Clear processing state
     }
   };
 
@@ -75,14 +95,24 @@ const UserCart = () => {
         "Are you sure you want to remove this item from your cart?"
       )
     ) {
+      const originalCartItems = [...cartItems]; // Store original items for rollback
+      setProcessingItemId(itemId); // Indicate this item is being processed
+
+      // Optimistically update UI
+      setCartItems(prevItems => prevItems.filter(item => item.id !== itemId && item.cartItemId !== itemId));
+
       try {
-        // 调用更新后的 removeFromCart 函数
         await removeFromCart(itemId);
-        // 删除成功后，重新加载购物车数据以同步后端状态
-        loadCartItems();
+        // API call successful, UI is already updated.
+        // No need to call loadCartItems() here.
+        setError(null);
       } catch (err) {
         setError('删除商品失败: ' + (err.message || '未知错误'));
         console.error("删除商品失败:", err);
+        // Rollback UI to original state if API call fails
+        setCartItems(originalCartItems);
+      } finally {
+        setProcessingItemId(null); // Clear processing state
       }
     }
   };
@@ -96,20 +126,20 @@ const UserCart = () => {
 
     try {
       setIsCheckingOut(true);
-      // 调用 checkout 函数 (目前是 mock 或需要替换为实际 API 调用)
-      // 注意：如果 checkout API 需要发送购物车项目列表，需要将 cartItems 传递进去
       const result = await checkout(cartItems); // 传递当前购物车项目
 
       setIsCheckingOut(false);
 
-      // 导航到订单确认页面，使用后端返回的订单ID (如果 mock 返回了)
-      if (result && result.order && result.order.id) {
-         alert(`Checkout successful! Your order ID is: ${result.order.id}`);
-         navigate(`/order-confirmation/${result.order.id}`);
+      // Adjust based on the new response from checkout service
+      if (result && result.success) {
+         alert(result.message || "Checkout successful! Your order is being processed.");
+         setCartItems([]); // Clear the cart on successful checkout
+         // Navigate to a relevant page, e.g., user's tickets/orders page or homepage
+         // Since no order_id is directly returned, can't go to specific order confirmation
+         navigate("/user/tickets"); 
       } else {
-         // 如果 mock 或 API 没有返回订单ID，可以导航到其他页面或显示通用信息
-         alert("Checkout successful!");
-         navigate("/user/tickets"); // 导航到我的票页面
+         // Handle cases where checkout might not throw an error but isn't successful
+         alert(result.message || "Checkout failed. Please try again.");
       }
 
     } catch (err) {
@@ -172,18 +202,18 @@ const UserCart = () => {
                 <div className={styles.itemQuantity}>
                   <button
                     onClick={() =>
-                      handleQuantityChange(item.id, item.quantity - 1) // 使用 item.id (映射后的 cart_item_id)
+                      handleQuantityChange(item.id, item.quantity - 1)
                     }
-                    disabled={item.quantity <= 1 || isCheckingOut} // 结账中禁用按钮
+                    disabled={item.quantity <= 1 || isCheckingOut || processingItemId === item.id} // Updated
                   >
                     -
                   </button>
                   <span>{item.quantity}</span>
                   <button
                     onClick={() =>
-                      handleQuantityChange(item.id, item.quantity + 1) // 使用 item.id (映射后的 cart_item_id)
+                      handleQuantityChange(item.id, item.quantity + 1)
                     }
-                    disabled={isCheckingOut} // 结账中禁用按钮
+                    disabled={isCheckingOut || processingItemId === item.id} // Updated
                   >
                     +
                   </button>
@@ -196,8 +226,8 @@ const UserCart = () => {
 
                 <button
                   className={styles.removeButton}
-                  onClick={() => handleRemoveItem(item.id)} // 使用 item.id (映射后的 cart_item_id)
-                  disabled={isCheckingOut} // 结账中禁用按钮
+                  onClick={() => handleRemoveItem(item.id)}
+                  disabled={isCheckingOut || processingItemId === item.id} // Updated
                 >
                   Remove
                 </button>

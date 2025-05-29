@@ -8,7 +8,7 @@ export const CART_ENDPOINTS = {
   ADD_TO_CART: '/cart',
   UPDATE_CART_ITEM:  `/cart`,
   REMOVE_FROM_CART: `/cart`,
-  CHECKOUT: '/checkout'
+  CHECKOUT: (userId) => `/cart/${userId}`
 };
 
 // 错误消息
