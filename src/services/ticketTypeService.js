@@ -13,11 +13,9 @@ const ALL_TICKET_TYPES_CACHE_EXPIRY_MS = 30 * 60 * 1000; // 30分钟
 export const clearTicketTypeCache = (eventId) => {
   if (eventId) {
     delete ticketTypeCache[eventId];
-    console.log(`已清除事件ID为 ${eventId} 的票种缓存`);
   } else {
     ticketTypeCache = {};
     allTicketTypesCache = null; // 清除所有票种缓存
-    console.log('已清除所有票种缓存');
   }
 };
 
@@ -31,11 +29,8 @@ export const getTicketTypesByEventIdAPI = async (eventId, forceRefresh = false) 
   try {
     // 如果缓存中有数据且不需要强制刷新，则使用缓存
     if (!forceRefresh && ticketTypeCache[eventId]) {
-      console.log(`使用缓存中的票种数据 (事件ID: ${eventId})`);
       return ticketTypeCache[eventId];
     }
-
-    console.log(`从API获取事件ID为 ${eventId} 的票种类型`);
     
     // 注意：这里调用的是 /ticket-type/{eventId} 端点
     const response = await fetch(getApiUrl(`/ticket-type/${eventId}`), {
@@ -49,8 +44,6 @@ export const getTicketTypesByEventIdAPI = async (eventId, forceRefresh = false) 
     let ticketTypes = [];
     
     if (result && result.data && Array.isArray(result.data)) {
-      console.log(`成功获取 ${result.data.length} 个票种`);
-      
       ticketTypes = result.data.map(ticket => ({
         id: ticket.ticket_type_id,
         ticket_type_id: ticket.ticket_type_id, // 保留原始字段
@@ -62,8 +55,6 @@ export const getTicketTypesByEventIdAPI = async (eventId, forceRefresh = false) 
         created_at: ticket.created_at,
         updated_at: ticket.updated_at
       }));
-    } else {
-      console.log('API响应没有包含票种数据或格式不正确');
     }
     
     // 更新缓存
@@ -71,7 +62,6 @@ export const getTicketTypesByEventIdAPI = async (eventId, forceRefresh = false) 
     
     return ticketTypes;
   } catch (error) {
-    console.error(`获取票种失败:`, error);
     throw error;
   }
 };
@@ -83,19 +73,16 @@ export const getTicketTypesByEventIdAPI = async (eventId, forceRefresh = false) 
  * @returns {Promise<Object>} 票种信息
  */
 export const getTicketTypeById = async (ticketTypeId) => {
-
   try {
     const allTicketTypes = await getAllTicketTypesAPI(); // 调用新函数获取所有票种
     const foundTicketType = allTicketTypes.find(type => type.ticket_type_id === ticketTypeId);
 
     if (foundTicketType) {
-return foundTicketType;
+      return foundTicketType;
     } else {
-      console.warn(`未在所有票种中找到 ${ticketTypeId}`);
       return null;
     }
   } catch (error) {
-    console.error(`通过ID获取票种 ${ticketTypeId} 失败 (使用所有票种方法):`, error);
     throw error; // 重新抛出错误
   }
 };
@@ -107,7 +94,6 @@ return foundTicketType;
  * @returns {Promise<Array>} 所有票种信息数组
  */
 export const getAllTicketTypesAPI = async () => {
-
   // 检查缓存
   if (allTicketTypesCache && (Date.now() - allTicketTypesCache.timestamp < ALL_TICKET_TYPES_CACHE_EXPIRY_MS)) {
     return allTicketTypesCache.data;
@@ -126,8 +112,6 @@ export const getAllTicketTypesAPI = async () => {
     let allTicketTypes = [];
 
     if (result && result.data && Array.isArray(result.data)) {
-      console.log(`成功获取 ${result.data.length} 个所有票种`);
-      
       // 格式化返回数据，确保字段名一致
       allTicketTypes = result.data.map(ticket => ({
         id: ticket.ticket_type_id, // 使用 ticket_type_id 作为前端的 id
@@ -148,13 +132,10 @@ export const getAllTicketTypesAPI = async () => {
       };
 
       return allTicketTypes;
-
     } else {
-      console.error('无效的所有票种API响应:', result);
       return [];
     }
   } catch (error) {
-    console.error('获取所有票种失败:', error);
     throw error; // 重新抛出错误
   }
 };
@@ -167,8 +148,6 @@ export const getAllTicketTypesAPI = async () => {
  * @returns {Promise<Array>} 票种信息数组
  */
 export const getMultipleTicketTypes = async (ticketTypeIds) => {
-  console.log(`批量获取票种信息 (使用所有票种方法):`, ticketTypeIds);
-  
   try {
     // 调用获取所有票种的函数一次
     const allTicketTypes = await getAllTicketTypesAPI();
@@ -178,11 +157,8 @@ export const getMultipleTicketTypes = async (ticketTypeIds) => {
       ticketTypeIds.includes(type.ticket_type_id)
     );
 
-    console.log(`从所有票种中筛选出 ${neededTicketTypes.length} 个需要的票种`);
     return neededTicketTypes;
-
   } catch (error) {
-    console.error('批量获取票种信息失败 (使用所有票种方法):', error);
     throw error;
   }
 };

@@ -23,7 +23,6 @@ export const getCartItems = async (enrichData = true) => {
     
     // 构建API URL
     const apiUrl = buildApiUrl(CART_ENDPOINTS.GET_CART(userId));
-    console.log(`尝试获取用户 ${userId} 的购物车数据: ${apiUrl}`);
 
     // 发送API请求
     const response = await authenticatedRequest(apiUrl, {
@@ -34,20 +33,16 @@ export const getCartItems = async (enrichData = true) => {
     // 处理成功响应
     if (isApiResponseSuccess(response) && response.data) {
       const basicItems = response.data.map(mapCartItemFromApi);
-      console.log('[getCartItems] Basic items after mapping:', JSON.parse(JSON.stringify(basicItems))); // 日志映射后的基础项目
 
       if (enrichData) {
-        // console.log('需要丰富购物车数据，调用 enrichCartItems');
         return await enrichCartItems(basicItems);
       }
       return basicItems;
     } else {
-      console.error('无效的API响应格式:', response);
       return [];
     }
 
   } catch (error) {
-    console.error("获取购物车项目失败:", error);
     logCartOperation('GET_CART_ITEMS', 'FAILED', { error: error.message });
     throw error;
   }

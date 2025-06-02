@@ -49,8 +49,7 @@ const getEventFromCache = (eventId) => {
       localStorage.removeItem(cacheKey);
       return null;
     }
-    
-    console.log(`从缓存获取事件 ${eventId}:`, parsed.data);
+
     return parsed.data;
     
   } catch (error) {
@@ -114,7 +113,6 @@ export const getCachedEventById = async (eventId) => {
  * @returns {Promise<Array>} 事件数据数组
  */
 export const getMultipleCachedEvents = async (eventIds) => {
-  console.log(`批量获取事件数据:`, eventIds);
   
   try {
     const promises = eventIds.map(id => getCachedEventById(id));

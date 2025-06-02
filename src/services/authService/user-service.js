@@ -195,7 +195,7 @@ export const updateUserProfile = async (updateData) => {
       throw new Error("用户未登录或无法获取用户ID");
     }
     
-    console.log("发送更新用户资料请求:", updateData);
+    console.log("[user-service.js] 发送更新用户资料请求:", updateData);
     
     // 构建请求体，根据API要求格式
     const requestBody = {
@@ -209,39 +209,44 @@ export const updateUserProfile = async (updateData) => {
         throw new Error("更改密码需要提供当前密码");
       }
       requestBody.password = updateData.newPassword;
-      requestBody.current_password = updateData.currentPassword; // 可能后端需要验证当前密码
-    } else {
-      // 如果不是更改密码，也需要提供密码字段
-      // 这里使用当前密码或空字符串，取决于后端要求
-      requestBody.password = updateData.currentPassword || '';
+      requestBody.current_password = updateData.currentPassword; 
+    } else if (updateData.currentPassword) {
+      // 如果提供了当前密码但不是更改密码，保留当前密码字段用于验证
+      requestBody.current_password = updateData.currentPassword;
+      // 不设置 password 字段，因为不是在更改密码
     }
     
-    // 使用正确的API端点路径 - "/user" 而非 "/user/update"
+    console.log("[user-service.js] 更新用户资料请求体:", JSON.parse(JSON.stringify(requestBody)));
+    
+    // 使用正确的API端点路径并确保包含credentials: 'include'
     const data = await authRequest("/user", {
       method: "POST",
       body: JSON.stringify(requestBody),
+      credentials: 'include', // 确保包含凭据
     });
     
-    console.log("更新用户资料API响应:", data);
+    console.log("[user-service.js] 更新用户资料API响应:", data);
     
-    // 即使API没有返回完整的用户数据，我们也基于本地更新
-    // 创建更新后的用户对象
-    const updatedUser = {
-      ...currentUser,
-      name: updateData.name
-    };
-    
-    // 更新本地存储
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    
-    // 返回更新后的用户对象
-    return updatedUser;
+    // 更新成功后，更新本地存储的用户信息
+    if (data && (data.message === "ok" || data.success)) {
+      const updatedUser = {
+        ...currentUser,
+        name: updateData.name // 只更新名称，密码不存储在本地
+      };
+      
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      console.log("[user-service.js] 已更新本地用户信息");
+      
+      return updatedUser;
+    } else {
+      throw new Error(data?.message || "更新用户资料失败");
+    }
   } catch (error) {
-    console.error("更新用户资料错误:", error);
+    console.error("[user-service.js] 更新用户资料错误:", error);
     
     // 如果是网络错误，允许本地更新UI
     if (error.message && (error.message.includes("Failed to fetch") || error.message.includes("API端点不存在"))) {
-      console.log("API请求失败，仅更新本地数据");
+      console.log("[user-service.js] API请求失败，仅更新本地数据");
       const currentUser = getCurrentUser();
       if (currentUser && updateData.name) {
         const updatedUser = { ...currentUser, name: updateData.name };

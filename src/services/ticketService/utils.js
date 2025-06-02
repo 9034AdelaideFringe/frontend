@@ -10,7 +10,6 @@ import { getCurrentUser } from '../authService/user-service'; // 从 authService
  * @returns {boolean} 是否成功
  */
 export const isApiResponseSuccess = (response) => {
-  console.log('[ticketService/utils.js] isApiResponseSuccess called with response:', response);
   // 假设后端成功响应数据包含 success: true 或没有 error 字段
   // 这个实现应该与 cartService/utils 中的逻辑一致，以确保行为统一
   return response !== undefined && response !== null && (response.success === true || (response.message !== "error" && !response.error));

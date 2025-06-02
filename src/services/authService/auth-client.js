@@ -24,19 +24,39 @@ export const authRequest = async (endpoint, options = {}) => {
   try {
     // 构建 API URL
     const url = apiUrl(endpoint);
+    console.log(`[auth-client.js] 发送请求到: ${url}`);
+
+    // 不论开发还是生产环境，都使用 credentials: 'include'
+    // 除了登录和注册请求，这些通常不需要发送 cookie
+    let effectiveCredentials = options.credentials;
+    if (effectiveCredentials === undefined) {
+      if (options.method === 'POST' && (endpoint === '/login' || endpoint === '/signup')) {
+        effectiveCredentials = 'omit';
+        console.log(`[auth-client.js] ${endpoint}: 使用 'credentials: "omit"'`);
+      } else {
+        // 对其他所有请求，特别是需要认证的请求，默认使用 'include'
+        effectiveCredentials = 'include';
+        console.log(`[auth-client.js] ${endpoint}: 使用 'credentials: "include"'`);
+      }
+    }
 
     const defaultOptions = {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        // 如果有存储的token，添加到请求头中
         ...(getAuthToken() && { 'Authorization': `Bearer ${getAuthToken()}` }),
         ...options.headers,
       },
-      // 在开发环境中不包含凭据以避免 CORS 问题
-      ...(IS_DEV ? {} : { credentials: 'include' }),
+      credentials: effectiveCredentials, // 使用确定的凭据策略
       ...options,
     };
+
+    console.log(`[auth-client.js] 请求选项:`, {
+      url,
+      method: defaultOptions.method,
+      credentials: defaultOptions.credentials,
+      headers: Object.keys(defaultOptions.headers)
+    });
 
     const response = await fetch(url, defaultOptions);
 
@@ -174,4 +194,24 @@ const getAuthToken = () => {
     console.warn('无法获取认证token:', error);
     return null;
   }
+};
+
+// 添加调试函数到文件末尾
+
+/**
+ * 检查并打印当前文档的cookie信息（不包含HttpOnly cookie内容）
+ * @returns {void}
+ */
+export const checkCookieStatus = () => {
+  console.log('[auth-client.js] 文档cookie存在:', document.cookie.length > 0);
+  console.log('[auth-client.js] 文档cookie长度:', document.cookie.length);
+  
+  // 提取所有非HttpOnly cookie的名称（无法读取HttpOnly cookie的值）
+  const cookieNames = document.cookie
+    .split(';')
+    .map(c => c.trim().split('=')[0])
+    .filter(name => name);
+  
+  console.log('[auth-client.js] 可见cookie名称:', cookieNames);
+  console.log('[auth-client.js] JWT HttpOnly cookie应该存在 (但JS无法直接查看)');
 };

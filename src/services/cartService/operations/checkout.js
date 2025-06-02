@@ -17,7 +17,6 @@ export const checkout = async (cartItemsToCheckout) => {
 
     // 验证输入
     if (!cartItemsToCheckout || cartItemsToCheckout.length === 0) {
-      console.warn("购物车为空，无法结账");
       throw new Error(ERROR_MESSAGES.CART_EMPTY);
     }
 
@@ -58,12 +57,10 @@ export const checkout = async (cartItemsToCheckout) => {
       return result;
     } else {
       const errorMessage = (response && response.error) || (response && response.message && response.message !== "ok" ? response.message : ERROR_MESSAGES.INVALID_RESPONSE);
-      console.error("结账API请求失败:", errorMessage, response);
       throw new Error(errorMessage);
     }
 
   } catch (error) {
-    console.error("结账处理失败:", error);
     logCartOperation('CHECKOUT', 'FAILED', { error: error.message });
     throw new Error(error.message || 'Checkout process failed');
   }

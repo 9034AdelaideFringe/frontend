@@ -9,14 +9,11 @@ import { TICKET_ENDPOINTS, ERROR_MESSAGES } from '../config';
 import { getEventById } from '../../eventService';
 import { getMultipleTicketTypes } from '../../ticketTypeService';
 
-// import { logTicketOperation } from '../utils'; // Uncomment if you add logging utility
-
 /**
  * 获取当前用户的所有票据并丰富事件和票种信息
  * @returns {Promise<Array>} 用户票据 (已丰富信息)
  */
 export const getUserTickets = async () => {
-  // logTicketOperation('GET_USER_TICKETS', 'STARTED');
   try {
     // 1. 验证用户并获取用户ID (使用 ticketService/utils 中实现的函数)
     const userId = validateUserAndGetId(); // This will throw if user is not logged in
@@ -38,7 +35,6 @@ export const getUserTickets = async () => {
         rawApiTickets = apiResponse;
     }
     else {
-      // logTicketOperation('GET_USER_TICKETS', 'FAILED', { response: apiResponse });
       throw new Error((apiResponse && apiResponse.message) || (apiResponse && apiResponse.error) || ERROR_MESSAGES.FAILED_TO_FETCH_TICKETS);
     }
 
@@ -83,12 +79,9 @@ export const getUserTickets = async () => {
         return mappedTicket;
     });
 
-    // logTicketOperation('GET_USER_TICKETS', 'FINISHED', { ticketCount: frontendTickets.length });
     return frontendTickets;
 
   } catch (error) {
-    // logTicketOperation('GET_USER_TICKETS', 'FAILED', { error: error.message });
-    // 重新抛出错误，以便组件可以捕获
     throw error;
   }
 };
@@ -101,7 +94,6 @@ export const getUserTickets = async () => {
  * @returns {Promise<Object>} 票据详情
  */
 export const getTicketById = async (ticketId) => {
-  // logTicketOperation('GET_TICKET_BY_ID', 'STARTED', { ticketId });
   try {
     // Fetch all user tickets (which now fetches for the current user via API and enriches data)
     const userTickets = await getUserTickets();
@@ -110,18 +102,14 @@ export const getTicketById = async (ticketId) => {
     const ticket = userTickets.find(t => t.id === ticketId);
 
     if (ticket) {
-      // logTicketOperation('GET_TICKET_BY_ID', 'FINISHED', { ticketId });
       return ticket;
     } else {
-      // logTicketOperation('GET_TICKET_BY_ID', 'FAILED', { ticketId, error: ERROR_MESSAGES.TICKET_NOT_FOUND });
       // 抛出明确的错误
       const notFoundError = new Error(ERROR_MESSAGES.TICKET_NOT_FOUND);
       notFoundError.status = 404; // Use 404 status for consistency
       throw notFoundError;
     }
   } catch (error) {
-    // logTicketOperation('GET_TICKET_BY_ID', 'FAILED', { ticketId, error: error.message });
-    // 重新抛出错误
     throw error;
   }
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { getCurrentUser } from '../../services/authService'
 import { updateUserProfile } from '../../services/authService/user-service' 
+import { checkCookieStatus } from '../../services/authService/auth-client';
 import styles from './UserProfile.module.css'
 
 const UserProfile = () => {
@@ -72,6 +73,11 @@ const UserProfile = () => {
     e.preventDefault();
     setSuccess('');
     setError('');
+    
+    // 检查cookie状态
+    console.log("==== 检查cookie状态 ====");
+    checkCookieStatus();
+    console.log("========================");
     
     // Validate passwords (if attempting to change)
     if (!validatePasswords()) {

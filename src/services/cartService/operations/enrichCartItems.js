@@ -23,7 +23,6 @@ const getFullImageUrl = (imagePath) => {
 
   // 确保 IMAGE_BASE_URL 存在
   if (!IMAGE_BASE_URL) {
-      // console.error("VITE_APP_IMAGE_BASE_URL is not defined in environment variables.");
       return DEFAULT_IMAGE; // 如果环境变量未设置，返回默认图片
   }
 
@@ -45,22 +44,16 @@ const getFullImageUrl = (imagePath) => {
  * @returns {Promise<Array>} 包含完整信息的购物车项目
  */
 export const enrichCartItems = async (cartItems) => {
-  // console.log('开始丰富购物车项目信息');
-  console.log('[enrichCartItems] Input cartItems:', JSON.parse(JSON.stringify(cartItems))); // 日志输入到 enrichCartItems 的数据
-
   if (!cartItems || cartItems.length === 0) {
-    // console.log('购物车为空，无需丰富信息');
     return [];
   }
 
   try {
     // 提取所有票种ID
     const ticketTypeIds = [...new Set(cartItems.map(item => item.ticketTypeId))];
-    // console.log('需要获取的票种ID:', ticketTypeIds);
 
     // 调用 getMultipleTicketTypes，它现在会获取所有票种并筛选
     const ticketTypes = await getMultipleTicketTypes(ticketTypeIds);
-    // console.log('获取到的票种信息 (通过筛选所有票种):', ticketTypes);
 
     // 创建票种ID到票种信息的映射
     const ticketTypeMap = new Map();
@@ -68,22 +61,16 @@ export const enrichCartItems = async (cartItems) => {
       // 使用 ticket_type_id 作为 Map 的键
       if (ticketType && ticketType.ticket_type_id) {
          ticketTypeMap.set(ticketType.ticket_type_id, ticketType);
-      } else {
-        //  console.warn('跳过无效票种数据:', ticketType);
       }
     });
-    // console.log('票种信息映射:', ticketTypeMap);
-
 
     // 提取所有事件ID (从获取到的票种信息中提取)
     // Ensure ticketType.event_id is valid before adding to eventIds
     const eventIds = [...new Set(ticketTypes.map(tt => tt.event_id).filter(id => id != null && id !== ''))]; // 过滤掉 null 或 undefined 的 event_id
-    // console.log('需要获取的事件ID:', eventIds);
 
     // 批量获取事件信息（优先从缓存）
     // getMultipleCachedEvents 内部会调用 getEventById 或 getMultipleEventsByIds
     const events = await getMultipleCachedEvents(eventIds);
-    // console.log('获取到的原始事件数据 (来自 getMultipleCachedEvents):', events); // Log the raw events data
 
     // 创建事件ID到事件信息的映射
     const eventMap = new Map();
@@ -95,16 +82,9 @@ export const enrichCartItems = async (cartItems) => {
             // Assuming event object has an event_id property and other necessary properties (title, image, etc.)
             if (event && event.event_id) {
                 eventMap.set(event.event_id, event);
-            } else {
-                // Log the original item that caused the issue
-                // console.warn('跳过无效事件数据 (缺少 event_id):', item);
             }
         });
-    } else {
-        // console.error('getMultipleCachedEvents did not return an array:', events);
     }
-    // console.log('事件信息映射:', eventMap);
-
 
     // 丰富购物车项目信息
     const enrichedItems = cartItems.map(cartItem => {
@@ -117,10 +97,6 @@ export const enrichCartItems = async (cartItems) => {
       const pricePerTicket = ticketType && typeof ticketType.price === 'number' ? ticketType.price : DEFAULT_VALUES.PRICE;
       const quantity = typeof cartItem.quantity === 'number' ? cartItem.quantity : parseInt(cartItem.quantity) || 0;
       const totalPrice = pricePerTicket * quantity;
-
-      // Log the event data found for this specific cart item
-      // console.log(`为购物车项目 ${cartItem.cartItemId} 找到的事件数据:`, event);
-
 
       return {
         ...cartItem,
@@ -145,11 +121,9 @@ export const enrichCartItems = async (cartItems) => {
       };
     });
 
-    // console.log('购物车项目信息丰富完成:', enrichedItems);
     return enrichedItems;
 
   } catch (error) {
-    // console.error('丰富购物车项目信息失败:', error);
     // 返回原始数据，add default values to ensure structure
     return cartItems.map(item => ({
         ...item,

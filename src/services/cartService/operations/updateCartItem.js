@@ -17,7 +17,6 @@ export const updateCartItemQuantity = async (cartItemId, quantity, ticketTypeId)
   try {
     // 如果数量小于1，删除项目
     if (quantity < 1) {
-      console.log(`数量小于1 (${quantity})，调用移除函数`);
       return await removeFromCart(cartItemId);
     }
 
@@ -33,10 +32,6 @@ export const updateCartItemQuantity = async (cartItemId, quantity, ticketTypeId)
         cart_item_id: cartItemId,
     };
 
-    //console.log(`尝试更新购物车项目 ${cartItemId} 数量到 ${quantity}: ${apiUrl}`);
-    console.log('请求体对象 (在 stringify 之前):', requestBody); // 添加日志确认请求体内容
-
-
     // 发送API请求
     const response = await authenticatedRequest(apiUrl, {
       method: 'PUT',
@@ -46,12 +41,8 @@ export const updateCartItemQuantity = async (cartItemId, quantity, ticketTypeId)
       body: JSON.stringify(requestBody),
     });
 
-    console.log("更新购物车数量的API响应:", response);
-
     // 处理响应
     if (isApiResponseSuccess(response) || response.success) {
-      console.log("成功更新购物车项目数量:", response);
-
       const result = {
         success: true,
         message: SUCCESS_MESSAGES.ITEM_UPDATED,
@@ -61,14 +52,11 @@ export const updateCartItemQuantity = async (cartItemId, quantity, ticketTypeId)
       logCartOperation('UPDATE_CART_ITEM', 'FINISHED', { cartItemId, quantity });
       return result;
     } else {
-      console.error('更新失败:', response);
       // Log the full error response from the API for more details
-      console.error('API错误详情:', response.error);
       throw new Error(response.message || ERROR_MESSAGES.FAILED_TO_UPDATE);
     }
 
   } catch (error) {
-    console.error("更新购物车项目数量失败:", error);
     logCartOperation('UPDATE_CART_ITEM', 'FAILED', { cartItemId, quantity, error: error.message });
     throw error;
   }

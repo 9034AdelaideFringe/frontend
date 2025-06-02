@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户身份测试工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .panel {
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .response {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #d9534f;
+        }
+        .success {
+            color: #5cb85c;
+        }
+        .cookie-status {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f0f0f0;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 15px;
+            background-color: #ddd;
+            border: none;
+            cursor: pointer;
+        }
+        .tab.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>用户身份测试工具</h1>
+    
+    <div class="panel">
+        <p><strong>Important Notes:</strong></p>
+        <ul>
+            <li>The API sets an <code>HttpOnly</code>, <code>SameSite=Strict</code> cookie named <code>jwt</code> for session management.</li>
+            <li><code>HttpOnly</code> cookies are not accessible via JavaScript (<code>document.cookie</code>), so they won't appear in the "Cookie 状态" section below. This is a security feature.</li>
+            <li><code>SameSite=Strict</code> means this HTML page <strong>must be served from the same domain</strong> as the API (<code>https://x.badtom.dpdns.org</code>) for the <code>jwt</code> cookie to be sent with subsequent requests. If opened as a local file (<code>file://</code>) or from a different domain, authentication will likely fail after login.</li>
+            <li>The "清除所有Cookie" button cannot clear <code>HttpOnly</code> cookies. Use the "登出" button or browser developer tools.</li>
+        </ul>
+    </div>
+
+    <div class="cookie-status" id="cookie-status">
+        <h3>Cookie 状态 (可见的非 HttpOnly Cookies)</h3>
+        <div id="cookie-info">检查中...</div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="openTab(event, 'login-tab')">登录测试</button>
+        <button class="tab" onclick="openTab(event, 'profile-tab')">用户信息修改</button>
+        <button class="tab" onclick="openTab(event, 'debug-tab')">调试工具</button>
+    </div>
+
+    <div id="login-tab" class="tab-content active">
+        <div class="panel">
+            <h2>登录测试</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">邮箱</label>
+                    <input type="email" id="login-email" name="email" value="test@outlook.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">密码</label>
+                    <input type="password" id="login-password" name="password" value="123456abcd" required>
+                </div>
+                <button type="submit">登录</button>
+            </form>
+            <div class="response" id="login-response">登录响应将显示在这里...</div>
+        </div>
+    </div>
+
+    <div id="profile-tab" class="tab-content">
+        <div class="panel">
+            <h2>用户信息修改</h2>
+            <form id="profile-form">
+                <div class="form-group">
+                    <label for="update-name">名称</label>
+                    <input type="text" id="update-name" name="name" value="新名称测试">
+                </div>
+                <div class="form-group">
+                    <label for="current-password">当前密码 (修改名称或密码时必填)</label>
+                    <input type="password" id="current-password" name="current_password">
+                </div>
+                <div class="form-group">
+                    <label for="new-password">新密码 (可选)</label>
+                    <input type="password" id="new-password" name="password">
+                </div>
+                <button type="submit">更新资料</button>
+            </form>
+            <div class="response" id="profile-response">更新响应将显示在这里...</div>
+        </div>
+    </div>
+
+    <div id="debug-tab" class="tab-content">
+        <div class="panel">
+            <h2>调试工具</h2>
+            <button id="check-auth">检查认证状态 (GET /api/user)</button>
+            <button id="clear-cookies">清除所有 (非HttpOnly) Cookie</button>
+            <button id="logout">登出 (GET /api/signout)</button>
+            <div class="response" id="debug-response">调试响应将显示在这里...</div>
+        </div>
+    </div>
+
+    <script>
+        // API 基础 URL
+        const API_BASE_URL = 'https://x.badtom.dpdns.org/api';
+        
+        // 页签功能
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+            
+            const tabs = document.getElementsByClassName("tab");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // 更新Cookie状态显示
+        function updateCookieStatus() {
+            const cookieInfo = document.getElementById('cookie-info');
+            const cookies = document.cookie.split(';').filter(cookie => cookie.trim() !== ''); // Filter out empty strings
+            
+            if (cookies.length === 0) {
+                cookieInfo.innerHTML = "<p>没有检测到任何 JavaScript 可访问的 Cookie.</p>";
+            } else {
+                let html = "<p><strong>当前 JavaScript 可访问的 Cookie:</strong></p><ul>";
+                cookies.forEach(cookie => {
+                    const parts = cookie.split('=');
+                    const name = parts.shift().trim();
+                    const value = parts.join('='); // Rejoin if value had '='
+                    html += `<li>${name}: ${value ? '******' : '[空值]'}</li>`; // Mask value for security
+                });
+                html += "</ul>";
+                cookieInfo.innerHTML = html;
+            }
+            cookieInfo.innerHTML += "<p><em>注意: HttpOnly Cookies (如 'jwt' session cookie) 无法通过 JavaScript 查看，但浏览器会自动处理它们.</em></p>";
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCookieStatus();
+            
+            // 登录表单处理
+            document.getElementById('login-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const responseElement = document.getElementById('login-response');
+                responseElement.innerHTML = "正在发送登录请求...";
+                
+                try {
+                    const formData = new FormData(this);
+                    const loginData = {
+                        email: formData.get('email'),
+                        password: formData.get('password')
+                    };
+                    
+                    console.log("发送登录请求:", loginData);
+                    const response = await fetch(`${API_BASE_URL}/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                            // 'Accept': 'application/json' // Good practice
+                        },
+                        body: JSON.stringify(loginData),
+                        credentials: 'omit' // 重要: 包含凭据 (cookies)
+                    });
+                    
+                    // 记录Headers
+                    const responseHeaders = {};
+                    response.headers.forEach((value, key) => { responseHeaders[key] = value; });
+                    console.log("登录响应头:", responseHeaders);
+                    
+                    const data = await response.json();
+                    console.log("登录响应体:", data);
+                    
+                    if (response.ok) {
+                        responseElement.innerHTML = `<p class="success">登录成功!</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                        
+                        let userData;
+                        // Based on your curl, data structure is { message: "ok", data: [{...user_info...}] }
+                        if (data.message === "ok" && Array.isArray(data.data) && data.data.length > 0) {
+                            userData = data.data[0];
+                        } else if (data.message === "ok" && data.data && typeof data.data === 'object' && !Array.isArray(data.data)) { // Alternative if data.data is an object
+                            userData = data.data;
+                        } else if (data.user_id || data.email) { // Fallback if structure is flatter
+                            userData = data;
+                        }
+                        
+                        if (userData) {
+                            localStorage.setItem("user", JSON.stringify(userData));
+                            localStorage.setItem("isLoggedIn", "true");
+                            console.log("User data stored in localStorage:", userData);
+                        } else {
+                            console.warn("User data not found in login response as expected.");
+                        }
+                        
+                        // Login sets an HttpOnly cookie. updateCookieStatus won't show it, but browser has it.
+                        // Give a moment for any browser cookie processing if needed, though usually not.
+                        setTimeout(updateCookieStatus, 100);
+                    } else {
+                        responseElement.innerHTML = `<p class="error">登录失败: ${data.message || response.statusText || '未知错误'}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                        localStorage.removeItem("user");
+                        localStorage.removeItem("isLoggedIn");
+                    }
+                } catch (error) {
+                    console.error("登录请求错误:", error);
+                    responseElement.innerHTML = `<p class="error">请求出错: ${error.message}</p>`;
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("isLoggedIn");
+                }
+            });
+            
+            // 用户信息更新表单处理
+            document.getElementById('profile-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const responseElement = document.getElementById('profile-response');
+                responseElement.innerHTML = "正在发送更新请求...";
+                
+                try {
+                    const formData = new FormData(this);
+                    const updateData = {};
+                    
+                    const name = formData.get('name');
+                    const current_password = formData.get('current_password');
+                    const new_password = formData.get('password');
+
+                    if (name) updateData.name = name;
+                    if (current_password) updateData.current_password = current_password; // Server needs this to authorize changes
+                    if (new_password) updateData.password = new_password; // This is the new password
+                    
+                    // If trying to change name or password, current_password should be required by the server
+                    // This client-side check is a basic UX improvement.
+                    if ((updateData.name || updateData.password) && !updateData.current_password) {
+                         responseElement.innerHTML = `<p class="error">错误: 更新名称或密码需要提供当前密码。</p>`;
+                         return;
+                    }
+                     if (Object.keys(updateData).length === 0 || (Object.keys(updateData).length === 1 && updateData.current_password && !updateData.name && !updateData.password)) {
+                        responseElement.innerHTML = `<p class="error">错误: 没有提供要更新的信息 (名称或新密码)。</p>`;
+                        return;
+                    }
+
+                    console.log("发送更新请求:", updateData);
+                    const requestBody = JSON.stringify(updateData);
+                    
+                    const response = await fetch(`${API_BASE_URL}/login`, {
+                        method: 'POST', // Or 'PUT' if your API uses PUT for updates
+                        headers: {
+                            'Content-Type': 'application/json'
+                            // 'Accept': 'application/json'
+                        },
+                        body: requestBody,
+                        credentials: 'include' // 重要: 包含凭据 (cookies)
+                    });
+                    
+                    const responseHeaders = {};
+                    response.headers.forEach((value, key) => { responseHeaders[key] = value; });
+                    console.log("更新响应头:", responseHeaders);
+                    
+                    let data;
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        const text = await response.text();
+                        data = { responseText: text }; // Wrap non-JSON response
+                    }
+                    console.log("更新响应体:", data);
+                    
+                    if (response.ok) {
+                        responseElement.innerHTML = `<p class="success">更新成功!</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                        
+                        // Optionally, update localStorage if name changed and server confirms
+                        const storedUserJson = localStorage.getItem("user");
+                        if (storedUserJson && updateData.name) {
+                            try {
+                                const storedUser = JSON.parse(storedUserJson);
+                                storedUser.name = updateData.name; // Assuming server confirms the new name in response or implicitly
+                                localStorage.setItem("user", JSON.stringify(storedUser));
+                                console.log("Local user name updated.");
+                            } catch (e) {
+                                console.error("Error updating localStorage user:", e);
+                            }
+                        }
+                    } else {
+                        responseElement.innerHTML = `<p class="error">更新失败: ${data.message || data.responseText || response.statusText}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    }
+                } catch (error) {
+                    console.error("更新请求错误:", error);
+                    responseElement.innerHTML = `<p class="error">请求出错: ${error.message}</p>`;
+                }
+            });
+            
+            // 调试按钮
+            document.getElementById('check-auth').addEventListener('click', async function() {
+                const debugResponse = document.getElementById('debug-response');
+                debugResponse.innerHTML = "检查认证状态中 (GET /api/user)...";
+                
+                try {
+                    let localInfo = "<strong>本地存储状态:</strong>\n";
+                    localInfo += `isLoggedIn: ${localStorage.getItem("isLoggedIn") || 'not set'}\n`;
+                    const userString = localStorage.getItem("user");
+                    localInfo += `user: ${userString ? JSON.stringify(JSON.parse(userString), null, 2) : 'not set'}\n\n`; // Pretty print if exists
+                    
+                    console.log("发送认证检查请求 (GET /api/user)");
+                    const response = await fetch(`${API_BASE_URL}/user`, {
+                        method: 'GET',
+                        credentials: 'include' // 重要: 包含凭据 (cookies)
+                    });
+                    
+                    const responseHeaders = {};
+                    response.headers.forEach((value, key) => { responseHeaders[key] = value; });
+                    console.log("认证检查响应头:", responseHeaders);
+
+                    let data;
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        const text = await response.text();
+                        data = { responseText: text };
+                    }
+                    console.log("认证检查响应体:", data);
+                    
+                    if (response.ok) {
+                        debugResponse.innerHTML = `<pre>${localInfo}</pre><p class="success">已认证 (服务器响应)!</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    } else {
+                        debugResponse.innerHTML = `<pre>${localInfo}</pre><p class="error">未认证或错误 (服务器响应): ${response.status} ${response.statusText}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    }
+                    updateCookieStatus(); // Refresh display of non-HttpOnly cookies
+                } catch (error) {
+                    console.error("认证检查错误:", error);
+                    debugResponse.innerHTML = `<p class="error">请求出错: ${error.message}</p>`;
+                }
+            });
+            
+            document.getElementById('clear-cookies').addEventListener('click', function() {
+                // This method CANNOT clear HttpOnly cookies.
+                document.cookie.split(";").forEach(function(c) {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/;domain=" + document.domain + ";");
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/;domain=" + document.domain.replace(/^www\./, '') + ";"); // Also try without www
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/;"); // For current path
+                });
+                
+                localStorage.removeItem("isLoggedIn");
+                localStorage.removeItem("user");
+                
+                updateCookieStatus();
+                document.getElementById('debug-response').innerHTML = "<p class='success'>已尝试清除浏览器中的所有非HttpOnly Cookie 和本地存储. HttpOnly cookies (like 'jwt') cannot be cleared by client-side JavaScript.</p>";
+            });
+            
+            document.getElementById('logout').addEventListener('click', async function() {
+                const debugResponse = document.getElementById('debug-response');
+                debugResponse.innerHTML = "登出中 (GET /api/signout)...";
+                
+                try {
+                    console.log("发送登出请求 (GET /api/signout)");
+                    const response = await fetch(`${API_BASE_URL}/signout`, {
+                        method: 'GET', // Or POST if your API requires it for logout
+                        credentials: 'include'
+                    });
+                    
+                    // Always clear local storage regardless of response
+                    localStorage.removeItem("isLoggedIn");
+                    localStorage.removeItem("user");
+                    console.log("Local storage cleared.");
+
+                    const responseHeaders = {};
+                    response.headers.forEach((value, key) => { responseHeaders[key] = value; });
+                    console.log("登出响应头:", responseHeaders);
+
+                    let data = { message: "Logout request sent." };
+                    try {
+                        if (response.headers.get('content-type')?.includes('application/json')) {
+                            data = await response.json();
+                        } else {
+                            const text = await response.text();
+                            if (text) data.responseText = text;
+                        }
+                    } catch (e) {
+                        // ignore if parsing fails for empty or non-json response
+                    }
+                    console.log("登出响应体:", data);
+                    
+                    if (response.ok) {
+                        debugResponse.innerHTML = `<p class='success'>登出请求成功. 服务器应该已清除会话/cookie.</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    } else {
+                        debugResponse.innerHTML = `<p class='error'>登出API返回错误: ${response.status} ${response.statusText}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    }
+                    // The HttpOnly cookie 'jwt' should be cleared by the server's response (e.g. via Set-Cookie with expiry)
+                    // updateCookieStatus will only show changes to non-HttpOnly cookies.
+                    setTimeout(updateCookieStatus, 100); 
+                } catch (error) {
+                    console.error("登出错误:", error);
+                    localStorage.removeItem("isLoggedIn"); // Ensure cleared even on network error
+                    localStorage.removeItem("user");
+                    debugResponse.innerHTML = `<p class="error">登出请求出错: ${error.message}</p>`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

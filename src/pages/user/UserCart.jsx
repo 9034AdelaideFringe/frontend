@@ -26,13 +26,11 @@ const UserCart = () => {
       setLoading(true);
       // 调用更新后的 getCartItems 函数
       const items = await getCartItems();
-      console.log("从API获取的购物车数据:", items);
       // 注意：这里接收到的 items 已经是经过 cartService 映射过的格式
       setCartItems(items);
       setError(null);
     } catch (err) {
       setError('加载购物车失败: ' + (err.message || '未知错误'));
-      console.error("加载购物车失败:", err);
     } finally {
       setLoading(false);
     }
@@ -60,27 +58,19 @@ const UserCart = () => {
       const itemToUpdate = originalCartItems.find(item => item.id === itemId || item.cartItemId === itemId);
 
       if (!itemToUpdate) {
-        // This should ideally not happen if the item was in cartItems for optimistic update
-        console.error(`[UserCart] Optimistic update failed: 未找到购物车项目 ${itemId}`);
         throw new Error(`未找到购物车项目 ${itemId} 进行后端同步`);
       }
 
       const ticketTypeId = itemToUpdate.ticketTypeId;
 
       if (typeof ticketTypeId === 'undefined') {
-        console.error(`[UserCart] 项目 ${itemId} 的 ticketTypeId 未定义!`, itemToUpdate);
         throw new Error(`项目 ${itemId} 的 ticketTypeId 未定义`);
       }
-      
-      // console.log(`[UserCart] 更新项目: ${itemId}, 新数量: ${newQuantity}, 票种ID: ${ticketTypeId}`);
 
       await updateCartItemQuantity(itemId, newQuantity, ticketTypeId);
-      // API call successful, UI is already updated.
-      // No need to call loadCartItems() here.
       setError(null); 
     } catch (err) {
       setError('更新商品数量失败: ' + (err.message || '未知错误'));
-      console.error("更新商品数量失败:", err);
       // Rollback UI to original state if API call fails
       setCartItems(originalCartItems);
     } finally {
@@ -103,12 +93,9 @@ const UserCart = () => {
 
       try {
         await removeFromCart(itemId);
-        // API call successful, UI is already updated.
-        // No need to call loadCartItems() here.
         setError(null);
       } catch (err) {
         setError('删除商品失败: ' + (err.message || '未知错误'));
-        console.error("删除商品失败:", err);
         // Rollback UI to original state if API call fails
         setCartItems(originalCartItems);
       } finally {
@@ -144,7 +131,6 @@ const UserCart = () => {
 
     } catch (err) {
       setError('结账失败: ' + (err.message || '未知错误'));
-      console.error("结账失败:", err);
       setIsCheckingOut(false);
     }
   };
