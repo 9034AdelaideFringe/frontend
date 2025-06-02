@@ -38,37 +38,49 @@ export const validateUserAndGetId = () => {
 
 
 /**
- * Maps an API ticket object to the frontend ticket structure.
- * Note: Fields like eventName, date, time, venue, ticketType (name)
- * are not directly available in the API response for a ticket and
- * would require separate fetching/enrichment using event_id and ticket_type_id.
- * For now, they will be set to placeholder values or derived simply.
+ * Maps an API ticket object to the frontend ticket structure, enriching with event and ticket type details.
  * @param {Object} apiTicket - The ticket object from the API.
- * @returns {Object} The mapped ticket object for the frontend.
+ * @param {Map<string, Object>} eventMap - Map from event_id to event object.
+ * @param {Map<string, Object>} ticketTypeMap - Map from ticket_type_id to ticket type object.
+ * @returns {Object} The mapped and enriched ticket object for the frontend.
  */
-export const mapApiTicketToFrontend = (apiTicket) => {
-  console.log('[ticketService/utils.js] mapApiTicketToFrontend called with:', apiTicket); // Log function call
+export const mapApiTicketToFrontend = (apiTicket, eventMap = new Map(), ticketTypeMap = new Map()) => {
   if (!apiTicket) {
     console.log('[ticketService/utils.js] mapApiTicketToFrontend received null/undefined');
     return null;
   }
+
+  // 从映射中查找事件和票种信息
+  const event = eventMap.get(apiTicket.event_id);
+  const ticketType = ticketTypeMap.get(apiTicket.ticket_type_id);
+
+  // 使用查找到的信息或默认值
+  const eventName = event ? event.title || event.name : DEFAULT_VALUES.EVENT_NAME; // 假设事件对象有 title 或 name 字段
+  const venue = event ? event.venue : DEFAULT_VALUES.VENUE; // 假设事件对象有 venue 字段
+  const ticketTypeName = ticketType ? ticketType.name : DEFAULT_VALUES.TICKET_TYPE_NAME; // 假设票种对象有 name 字段
+
+  // 尝试从事件对象获取日期和时间，如果票据对象没有提供
+  const eventDate = apiTicket.event_date || (event ? event.date : null);
+  const eventTime = apiTicket.event_time || (event ? event.time : null);
+
+
   return {
     id: apiTicket.ticket_id, // Frontend ID
     ticketId: apiTicket.ticket_id, // Keep original API field name as well
     eventId: apiTicket.event_id,
     orderId: apiTicket.order_id,
-    // Placeholders - these need enrichment from event and ticket type services
-    // 或者如果API直接返回这些字段，则使用API的值
-    eventName: apiTicket.event_name || DEFAULT_VALUES.EVENT_NAME, // 假设API可能返回 event_name
-    date: apiTicket.event_date ? new Date(apiTicket.event_date).toLocaleDateString() : (apiTicket.issue_date ? new Date(apiTicket.issue_date).toLocaleDateString() : DEFAULT_VALUES.DATE), // 假设API可能返回 event_date
-    time: apiTicket.event_time ? new Date(`1970-01-01T${apiTicket.event_time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (apiTicket.issue_date ? new Date(apiTicket.issue_date).toLocaleTimeString() : DEFAULT_VALUES.TIME), // 假设API可能返回 event_time
-    venue: apiTicket.venue_name || DEFAULT_VALUES.VENUE, // 假设API可能返回 venue_name
-    ticketType: apiTicket.ticket_type_name || DEFAULT_VALUES.TICKET_TYPE_NAME, // 假设API可能返回 ticket_type_name
+
+    // 使用查找到的事件和票种信息进行填充
+    eventName: eventName,
+    date: eventDate ? new Date(eventDate).toLocaleDateString() : (apiTicket.issue_date ? new Date(apiTicket.issue_date).toLocaleDateString() : DEFAULT_VALUES.DATE),
+    time: eventTime ? new Date(`1970-01-01T${eventTime}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (apiTicket.issue_date ? new Date(apiTicket.issue_date).toLocaleTimeString() : DEFAULT_VALUES.TIME),
+    venue: venue,
+    ticketType: ticketTypeName,
 
     ticketTypeId: apiTicket.ticket_type_id,
     quantity: apiTicket.quantity || 1, // Assuming API provides quantity, default to 1
-    pricePerTicket: parseFloat(apiTicket.price_per_ticket || apiTicket.total_amount || 0), // Assuming API provides price_per_ticket or total_amount
-    totalPrice: parseFloat(apiTicket.total_price || apiTicket.total_amount || 0), // Assuming API provides total_price or total_amount
+    pricePerTicket: parseFloat(apiTicket.price_per_ticket || apiTicket.total_amount || (ticketType ? ticketType.price : 0)), // 优先使用 ticket_type 的价格
+    totalPrice: parseFloat(apiTicket.total_price || apiTicket.total_amount || (ticketType ? ticketType.price * (apiTicket.quantity || 1) : 0)), // 优先使用 ticket_type 的价格 * 数量
     purchaseDate: apiTicket.purchase_date || apiTicket.issue_date, // Use purchase_date if available
     status: apiTicket.status ? apiTicket.status.toLowerCase() : 'unknown',
     qrCode: apiTicket.qr_code,

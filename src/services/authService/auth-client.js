@@ -9,8 +9,7 @@ const IS_DEV = import.meta.env.MODE === 'development';
 // TODO: Implement the actual logic based on your API response structure
 // This function checks the *parsed JSON data* for application-level success
 export const isApiResponseSuccess = (data) => {
-  console.log('[auth-client.js] isApiResponseSuccess called with data:', data);
-  // Based on cart service usage, it seems to check for a 'success' property or absence of 'error'
+// Based on cart service usage, it seems to check for a 'success' property or absence of 'error'
   return data !== undefined && data !== null && (data.success === true || (data.message !== "error" && !data.error));
 };
 
@@ -25,7 +24,6 @@ export const authRequest = async (endpoint, options = {}) => {
   try {
     // 构建 API URL
     const url = apiUrl(endpoint);
-    console.log("发送请求到:", url);
 
     const defaultOptions = {
       method: 'GET',
@@ -39,9 +37,6 @@ export const authRequest = async (endpoint, options = {}) => {
       ...(IS_DEV ? {} : { credentials: 'include' }),
       ...options,
     };
-
-    console.log(`请求URL: ${url}`);
-    console.log(`请求选项:`, defaultOptions);
 
     const response = await fetch(url, defaultOptions);
 
@@ -59,12 +54,10 @@ export const authRequest = async (endpoint, options = {}) => {
     if (!contentType || !contentType.includes('application/json')) {
       console.warn("非 JSON 响应:", contentType);
       const text = await response.text();
-      console.log("响应内容:", text);
       return { message: "ok", text };
     }
 
     const data = await response.json();
-    console.log("API 响应数据:", data);
 
     if (data.error || data.message === "error") {
       throw new Error(data.error || "Operation failed");
@@ -84,8 +77,7 @@ export const authRequest = async (endpoint, options = {}) => {
  * @returns {Promise<Object|Blob|Response>} API response data (JSON, Blob for files, or raw Response)
  */
 export const authenticatedRequest = async (endpoint, options = {}) => {
-  console.log(`[auth-client.js] authenticatedRequest called for: ${endpoint}`);
-  try {
+try {
     const token = getAuthToken();
 
     const headers = {
@@ -105,13 +97,7 @@ export const authenticatedRequest = async (endpoint, options = {}) => {
     // 使用传入的endpoint作为URL
     const finalUrl = endpoint;
 
-    console.log(`[auth-client.js] Sending authenticated request to: ${finalUrl}`);
-    console.log(`[auth-client.js] Request options:`, requestOptions);
-
     const response = await fetch(finalUrl, requestOptions);
-    console.log(`[auth-client.js] Received response status: ${response.status}`);
-    console.log(`[auth-client.js] Received response headers:`, response.headers);
-
 
     if (response.status === 401) {
       console.warn('[auth-client.js] 401 Unauthorized - Session expired');
@@ -159,12 +145,9 @@ export const authenticatedRequest = async (endpoint, options = {}) => {
 
     // Handle successful responses
     const contentType = response.headers.get('Content-Type');
-    console.log('[auth-client.js] Response Content-Type:', contentType);
 
     if (contentType && contentType.includes('application/json')) {
-      console.log('[auth-client.js] Parsing response as JSON');
       const data = await response.json();
-      console.log('[auth-client.js] Parsed JSON data:', data);
       return data;
     } else if (contentType && (contentType.includes('image/') || contentType.includes('application/pdf') || contentType.includes('application/octet-stream') || contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))) {
        console.log('[auth-client.js] Handling response as Blob (binary data)');
