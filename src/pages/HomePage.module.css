@@ -1,4 +1,5 @@
 .homePage {
+  padding-top: 20px;
   min-height: 100vh;
   background: linear-gradient(135deg, #e0eaff 0%, #f8fbff 100%);
   display: flex;
