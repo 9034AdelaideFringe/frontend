@@ -1,5 +1,5 @@
 .header {
-  background-color: white;
+  background-color: #ebf2ff;
   padding: 1rem 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -53,7 +53,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #ff3366;
+  background-color: #6f69db;
   color: white;
   display: flex;
   align-items: center;

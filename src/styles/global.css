@@ -90,7 +90,7 @@ nav ul {
 
 .main-content {
   flex: 1;
-  padding: 2rem 0;
+  background-color: #f1f3f6;
 }
 
 .footer {
