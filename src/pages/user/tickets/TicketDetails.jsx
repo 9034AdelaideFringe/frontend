@@ -73,36 +73,6 @@ function TicketDetails({ ticket, onClose, onRefund }) {
       </div>
       
       <div className={styles.ticketContent}>
-        <div className={styles.ticketInfo}>
-          <div className={styles.infoRow}>
-            <span>Date:</span>
-            <span>{ticket.date}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span>Time:</span>
-            <span>{ticket.time}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span>Venue:</span>
-            <span>{ticket.venue}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span>Ticket Type:</span>
-            <span>{ticket.ticketType}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span>Quantity:</span>
-            <span>{ticket.quantity}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span>Ticket ID:</span>
-            <span>{ticket.id}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span>Purchase Date:</span>
-            <span>{new Date(ticket.purchaseDate).toLocaleDateString()}</span>
-          </div>
-        </div>
         
         <div className={styles.rightColumn}>
           {ticket.status === 'active' && (
@@ -111,6 +81,10 @@ function TicketDetails({ ticket, onClose, onRefund }) {
               <div className={styles.qrCode}>
                 <img src={ticket.qrCode} alt="Ticket QR Code" />
               </div>
+                      <div className={styles.infoRow}>
+            <span>Ticket ID:</span>
+            <span>{ticket.id}</span>
+          </div>
               <p className={styles.validUntil}>
                 Valid until: {ticket.expiryDate}
               </p>

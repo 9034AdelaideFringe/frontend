@@ -37,56 +37,59 @@ export const validateUserAndGetId = () => {
 
 
 /**
- * Maps an API ticket object to the frontend ticket structure, enriching with event and ticket type details.
- * @param {Object} apiTicket - The ticket object from the API.
- * @param {Map<string, Object>} eventMap - Map from event_id to event object.
- * @param {Map<string, Object>} ticketTypeMap - Map from ticket_type_id to ticket type object.
+ * Maps an API ticket object (with nested details) to the frontend ticket structure.
+ * @param {Object} apiTicket - The ticket object from the API with nested event_details, order_details, ticket_type_details.
  * @returns {Object} The mapped and enriched ticket object for the frontend.
  */
-export const mapApiTicketToFrontend = (apiTicket, eventMap = new Map(), ticketTypeMap = new Map()) => {
+export const mapApiTicketToFrontend = (apiTicket) => { // Removed eventMap and ticketTypeMap parameters
   if (!apiTicket) {
     console.log('[ticketService/utils.js] mapApiTicketToFrontend received null/undefined');
     return null;
   }
 
-  // 从映射中查找事件和票种信息
-  const event = eventMap.get(apiTicket.event_id);
-  const ticketType = ticketTypeMap.get(apiTicket.ticket_type_id);
+  // Extract nested details with fallback checks
+  const eventDetails = apiTicket.event_details || {};
+  const orderDetails = apiTicket.order_details || {};
+  const ticketTypeDetails = apiTicket.ticket_type_details || {};
 
-  // 使用查找到的信息或默认值
-  const eventName = event ? event.title || event.name : DEFAULT_VALUES.EVENT_NAME; // 假设事件对象有 title 或 name 字段
-  const venue = event ? event.venue : DEFAULT_VALUES.VENUE; // 假设事件对象有 venue 字段
-  const ticketTypeName = ticketType ? ticketType.name : DEFAULT_VALUES.TICKET_TYPE_NAME; // 假设票种对象有 name 字段
-
-  // 尝试从事件对象获取日期和时间，如果票据对象没有提供
-  const eventDate = apiTicket.event_date || (event ? event.date : null);
-  const eventTime = apiTicket.event_time || (event ? event.time : null);
-
-
+  // Map to frontend structure
   return {
-    id: apiTicket.ticket_id, // Frontend ID
+    id: apiTicket.ticket_id, // Use ticket_id as the unique ID
     ticketId: apiTicket.ticket_id, // Keep original API field name as well
-    eventId: apiTicket.event_id,
-    orderId: apiTicket.order_id,
+    orderId: orderDetails.order_id,
+    // userId: orderDetails.user_id, // Optional: if needed in frontend
 
-    // 使用查找到的事件和票种信息进行填充
-    eventName: eventName,
-    date: eventDate ? new Date(eventDate).toLocaleDateString() : (apiTicket.issue_date ? new Date(apiTicket.issue_date).toLocaleDateString() : DEFAULT_VALUES.DATE),
-    time: eventTime ? new Date(`1970-01-01T${eventTime}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (apiTicket.issue_date ? new Date(apiTicket.issue_date).toLocaleTimeString() : DEFAULT_VALUES.TIME),
-    venue: venue,
-    ticketType: ticketTypeName,
-
-    ticketTypeId: apiTicket.ticket_type_id,
-    quantity: apiTicket.quantity || 1, // Assuming API provides quantity, default to 1
-    pricePerTicket: parseFloat(apiTicket.price_per_ticket || apiTicket.total_amount || (ticketType ? ticketType.price : 0)), // 优先使用 ticket_type 的价格
-    totalPrice: parseFloat(apiTicket.total_price || apiTicket.total_amount || (ticketType ? ticketType.price * (apiTicket.quantity || 1) : 0)), // 优先使用 ticket_type 的价格 * 数量
-    purchaseDate: apiTicket.purchase_date || apiTicket.issue_date, // Use purchase_date if available
+    // Ticket instance details
+    seat: apiTicket.seat || null, // Extract the new seat field
+    qrCode: apiTicket.qr_code || null,
     status: apiTicket.status ? apiTicket.status.toLowerCase() : 'unknown',
-    qrCode: apiTicket.qr_code,
-    expiryDate: apiTicket.expiry_date,
-    lastRefundDate: apiTicket.last_refund_date,
-    scanDate: apiTicket.scan_date,
-    // rawApiData: apiTicket // Optionally keep raw data
+    issueDate: apiTicket.issue_date || null,
+    expiryDate: apiTicket.expiry_date || null,
+    lastRefundDate: apiTicket.last_refund_date || null,
+    scanDate: apiTicket.scan_date || null,
+    // quantity is implicitly 1 per ticket object in this new structure
+
+    // Event Details (flattened for easier access)
+    eventId: eventDetails.event_id || null,
+    eventName: eventDetails.title || DEFAULT_VALUES.EVENT_NAME,
+    eventDate: eventDetails.date || DEFAULT_VALUES.DATE,
+    eventTime: eventDetails.time || DEFAULT_VALUES.TIME,
+    eventEndTime: eventDetails.end_time || null,
+    eventVenue: eventDetails.venue || DEFAULT_VALUES.VENUE,
+    eventImage: eventDetails.image || DEFAULT_VALUES.EVENT_IMAGE, // Need to handle base URL in component
+    eventCategory: eventDetails.category || null,
+    eventStatus: eventDetails.status || 'UNKNOWN', // Event status
+
+    // Ticket Type Details (flattened)
+    ticketTypeId: ticketTypeDetails.ticket_type_id || null,
+    ticketTypeName: ticketTypeDetails.name || DEFAULT_VALUES.TICKET_TYPE_NAME,
+    ticketTypeDescription: ticketTypeDetails.description || '',
+    pricePerTicket: parseFloat(ticketTypeDetails.price) || DEFAULT_VALUES.PRICE,
+    ticketTypeAvailableQuantity: ticketTypeDetails.available_quantity || 0,
+
+    // Order Details (flattened some key fields)
+    orderDate: orderDetails.order_date || null,
+    orderTotalAmount: parseFloat(orderDetails.total_amount) || 0,
   };
 };
 

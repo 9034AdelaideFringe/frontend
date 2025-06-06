@@ -86,7 +86,7 @@ function MyTickets() {
     document.body.style.overflow = 'auto';
   };
   
-  // Group tickets by status
+  // Group tickets by status (this logic remains the same, assuming status is mapped correctly)
   const activeTickets = tickets.filter(ticket => ticket.status === 'active');
   const usedTickets = tickets.filter(ticket => ticket.status === 'used');
   const cancelledTickets = tickets.filter(ticket => ticket.status === 'cancelled');
@@ -123,250 +123,270 @@ function MyTickets() {
             <h2 className={styles.sectionTitle}>Valid Tickets</h2>
             <span className={styles.sectionCount}>{activeTickets.length}</span>
           </div>
-          
+
           <div className={styles.ticketGrid}>
             {activeTickets.map(ticket => (
-              <div 
-                key={ticket.id} 
-                className={styles.ticketCard} 
+              <div
+                key={ticket.id} // Use the mapped ticket ID
+                className={styles.ticketCard}
                 onClick={() => openTicketDetails(ticket)}
               >
                 <div className={styles.ticketContent}>
                   <div className={styles.ticketHeader}>
+                    {/* Access event name from mapped object */}
                     <h3 className={styles.ticketTitle}>{ticket.eventName}</h3>
+                    {/* Display ticket status */}
+                    <span className={`${styles.ticketStatus} ${styles.statusActive}`}>
+                      {/* You might want a helper function to format status text */}
+                      {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+                    </span>
                   </div>
                   <div className={styles.ticketDetails}>
                     <div className={styles.detailItem}>
                       <span className={styles.detailLabel}>Date</span>
-                      <span className={styles.detailValue}>{ticket.date}</span>
+                      {/* Access event date from mapped object */}
+                      <span className={styles.detailValue}>{ticket.eventDate}</span>
                     </div>
                     <div className={styles.detailItem}>
                       <span className={styles.detailLabel}>Time</span>
-                      <span className={styles.detailValue}>{ticket.time}</span>
+                      {/* Access event time from mapped object */}
+                      <span className={styles.detailValue}>{ticket.eventTime}</span>
                     </div>
                     <div className={styles.detailItem}>
                       <span className={styles.detailLabel}>Venue</span>
-                      <span className={styles.detailValue}>{ticket.venue}</span>
+                      {/* Access event venue from mapped object */}
+                      <span className={styles.detailValue}>{ticket.eventVenue}</span>
                     </div>
                     <div className={styles.detailItem}>
                       <span className={styles.detailLabel}>Ticket Type</span>
-                      <span className={styles.detailValue}>{ticket.ticketType}</span>
+                      {/* Access ticket type name from mapped object */}
+                      <span className={styles.detailValue}>{ticket.ticketTypeName}</span>
                     </div>
+                     {/* Display Seat information if available */}
+                     {ticket.seat && (
+                         <div className={styles.detailItem}>
+                             <span className={styles.detailLabel}>Seat</span>
+                             <span className={styles.detailValue}>{ticket.seat}</span>
+                         </div>
+                     )}
                   </div>
                   <div className={styles.ticketActions}>
-                    <div className={styles.quantity}>Quantity: {ticket.quantity || 1}</div>
+                   {/* Quantity is implicitly 1 per card in this new structure */}
+                   {/* <div className={styles.quantity}>Quantity: {ticket.quantity || 1}</div> */}
                     <div className={styles.actionButtons}>
+                      {/* isRefundable function needs to check ticket.status and ticket.lastRefundDate */}
                       {isRefundable(ticket) && (
-                        <button 
+                        <button
                           className={styles.refundBtn}
                           onClick={(e) => openRefundModal(ticket, e)}
                         >
                           Refund
                         </button>
                       )}
-                      <button className={styles.viewBtn}>View</button>
+                      {/* View button logic remains the same */}
+                      <button className={styles.viewBtn} onClick={() => openTicketDetails(ticket)}>View</button>
                     </div>
                   </div>
-                </div>
               </div>
-            ))}
-          </div>
-        </>
-      )}
-      
-      {(usedTickets.length > 0 || cancelledTickets.length > 0 || expiredTickets.length > 0) && (
-        <div className={styles.sectionDivider}></div>
-      )}
-      
-      {usedTickets.length > 0 && (
-        <>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Used Tickets</h2>
-            <span className={styles.sectionCount}>{usedTickets.length}</span>
-          </div>
-          
-          <div className={styles.ticketGrid}>
-            {usedTickets.map(ticket => (
-              <div 
-                key={ticket.id} 
-                className={styles.ticketCard}
-                onClick={() => openTicketDetails(ticket)}
-              >
-                <div className={styles.ticketContent}>
-                  <div className={styles.ticketHeader}>
-                    <h3 className={styles.ticketTitle}>{ticket.eventName}</h3>
-                  </div>
-                  <div className={styles.ticketDetails}>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Date</span>
-                      <span className={styles.detailValue}>{ticket.date}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Time</span>
-                      <span className={styles.detailValue}>{ticket.time}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Venue</span>
-                      <span className={styles.detailValue}>{ticket.venue}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Ticket Type</span>
-                      <span className={styles.detailValue}>{ticket.ticketType}</span>
-                    </div>
-                  </div>
-                  <div className={styles.ticketDetails + ' ' + styles.usedTicketDetails}>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Used On</span>
-                      <span className={styles.detailValue}>{new Date(ticket.scanDate).toLocaleString()}</span>
-                    </div>
-                  </div>
-                  <div className={styles.ticketActions}>
-                    <div></div>
-                    <button className={styles.btnSecondary}>Review</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-      
-      {(cancelledTickets.length > 0 && (usedTickets.length > 0 || activeTickets.length > 0)) && (
-        <div className={styles.sectionDivider}></div>
-      )}
-      
-      {cancelledTickets.length > 0 && (
-        <>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Cancelled Tickets</h2>
-            <span className={styles.sectionCount}>{cancelledTickets.length}</span>
-          </div>
-          
-          <div className={styles.ticketGrid}>
-            {cancelledTickets.map(ticket => (
-              <div 
-                key={ticket.id} 
-                className={styles.ticketCard}
-                onClick={() => openTicketDetails(ticket)}
-              >
-                <div className={styles.ticketContent}>
-                  <div className={styles.ticketHeader}>
-                    <h3 className={styles.ticketTitle}>{ticket.eventName}</h3>
-                    <span className={`${styles.ticketStatus} ${styles.statusCancelled}`}>Cancelled</span>
-                  </div>
-                  <div className={styles.ticketDetails}>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Date</span>
-                      <span className={styles.detailValue}>{ticket.date}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Time</span>
-                      <span className={styles.detailValue}>{ticket.time}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Venue</span>
-                      <span className={styles.detailValue}>{ticket.venue}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Ticket Type</span>
-                      <span className={styles.detailValue}>{ticket.ticketType}</span>
-                    </div>
-                  </div>
-                  <div className={styles.ticketActions}>
-                    <div></div>
-                    <button className={styles.btnSecondary}>Review</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-      
-      {(expiredTickets.length > 0 && (usedTickets.length > 0 || cancelledTickets.length > 0 || activeTickets.length > 0)) && (
-        <div className={styles.sectionDivider}></div>
-      )}
-      
-      {expiredTickets.length > 0 && (
-        <>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Expired Tickets</h2>
-            <span className={styles.sectionCount}>{expiredTickets.length}</span>
-          </div>
-          
-          <div className={styles.ticketGrid}>
-            {expiredTickets.map(ticket => (
-              <div 
-                key={ticket.id} 
-                className={styles.ticketCard}
-                onClick={() => openTicketDetails(ticket)}
-              >
-                <div className={styles.ticketContent}>
-                  <div className={styles.ticketHeader}>
-                    <h3 className={styles.ticketTitle}>{ticket.eventName}</h3>
-                    <span className={`${styles.ticketStatus} ${styles.statusExpired}`}>Expired</span>
-                  </div>
-                  <div className={styles.ticketDetails}>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Date</span>
-                      <span className={styles.detailValue}>{ticket.date}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Time</span>
-                      <span className={styles.detailValue}>{ticket.time}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Venue</span>
-                      <span className={styles.detailValue}>{ticket.venue}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Ticket Type</span>
-                      <span className={styles.detailValue}>{ticket.ticketType}</span>
-                    </div>
-                  </div>
-                  <div className={styles.ticketActions}>
-                    <div></div>
-                    <button className={styles.btnSecondary}>Review</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-      
-      {/* Modal window */}
-      {selectedTicket && (
-        <div 
-          className={styles.modal} 
-          onClick={(e) => {
-            // Close modal when clicking background
-            if (e.target.className === styles.modal) {
-              closeTicketDetails();
-            }
-          }}
-        >
-          <div className={styles.modalContent}>
-            <TicketDetails 
-              ticket={selectedTicket}
-              onClose={closeTicketDetails}
-              onRefund={handleTicketRefund}
-              isRefundable={isRefundable(selectedTicket)}
-            />
-          </div>
+            </div>
+          ))}
         </div>
-      )}
-      
-      {/* Refund confirmation modal */}
-      {ticketToRefund && (
+      </>
+    )}
+
+    {(usedTickets.length > 0 || cancelledTickets.length > 0 || expiredTickets.length > 0) && (
+      <div className={styles.sectionDivider}></div>
+    )}
+    
+    {usedTickets.length > 0 && (
+      <>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Used Tickets</h2>
+          <span className={styles.sectionCount}>{usedTickets.length}</span>
+        </div>
+        
+        <div className={styles.ticketGrid}>
+          {usedTickets.map(ticket => (
+            <div 
+              key={ticket.id} 
+              className={styles.ticketCard}
+              onClick={() => openTicketDetails(ticket)}
+            >
+              <div className={styles.ticketContent}>
+                <div className={styles.ticketHeader}>
+                  <h3 className={styles.ticketTitle}>{ticket.eventName}</h3>
+                </div>
+                <div className={styles.ticketDetails}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Date</span>
+                    <span className={styles.detailValue}>{ticket.date}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Time</span>
+                    <span className={styles.detailValue}>{ticket.time}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Venue</span>
+                    <span className={styles.detailValue}>{ticket.venue}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Ticket Type</span>
+                    <span className={styles.detailValue}>{ticket.ticketType}</span>
+                  </div>
+                </div>
+                <div className={styles.ticketDetails + ' ' + styles.usedTicketDetails}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Used On</span>
+                    <span className={styles.detailValue}>{new Date(ticket.scanDate).toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className={styles.ticketActions}>
+                  <div></div>
+                  <button className={styles.btnSecondary}>Review</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+    
+    {(cancelledTickets.length > 0 && (usedTickets.length > 0 || activeTickets.length > 0)) && (
+      <div className={styles.sectionDivider}></div>
+    )}
+    
+    {cancelledTickets.length > 0 && (
+      <>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Cancelled Tickets</h2>
+          <span className={styles.sectionCount}>{cancelledTickets.length}</span>
+        </div>
+        
+        <div className={styles.ticketGrid}>
+          {cancelledTickets.map(ticket => (
+            <div 
+              key={ticket.id} 
+              className={styles.ticketCard}
+              onClick={() => openTicketDetails(ticket)}
+            >
+              <div className={styles.ticketContent}>
+                <div className={styles.ticketHeader}>
+                  <h3 className={styles.ticketTitle}>{ticket.eventName}</h3>
+                  <span className={`${styles.ticketStatus} ${styles.statusCancelled}`}>Cancelled</span>
+                </div>
+                <div className={styles.ticketDetails}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Date</span>
+                    <span className={styles.detailValue}>{ticket.date}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Time</span>
+                    <span className={styles.detailValue}>{ticket.time}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Venue</span>
+                    <span className={styles.detailValue}>{ticket.venue}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Ticket Type</span>
+                    <span className={styles.detailValue}>{ticket.ticketType}</span>
+                  </div>
+                </div>
+                <div className={styles.ticketActions}>
+                  <div></div>
+                  <button className={styles.btnSecondary}>Review</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+    
+    {(expiredTickets.length > 0 && (usedTickets.length > 0 || cancelledTickets.length > 0 || activeTickets.length > 0)) && (
+      <div className={styles.sectionDivider}></div>
+    )}
+    
+    {expiredTickets.length > 0 && (
+      <>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Expired Tickets</h2>
+          <span className={styles.sectionCount}>{expiredTickets.length}</span>
+        </div>
+        
+        <div className={styles.ticketGrid}>
+          {expiredTickets.map(ticket => (
+            <div 
+              key={ticket.id} 
+              className={styles.ticketCard}
+              onClick={() => openTicketDetails(ticket)}
+            >
+              <div className={styles.ticketContent}>
+                <div className={styles.ticketHeader}>
+                  <h3 className={styles.ticketTitle}>{ticket.eventName}</h3>
+                  <span className={`${styles.ticketStatus} ${styles.statusExpired}`}>Expired</span>
+                </div>
+                <div className={styles.ticketDetails}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Date</span>
+                    <span className={styles.detailValue}>{ticket.date}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Time</span>
+                    <span className={styles.detailValue}>{ticket.time}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Venue</span>
+                    <span className={styles.detailValue}>{ticket.venue}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Ticket Type</span>
+                    <span className={styles.detailValue}>{ticket.ticketType}</span>
+                  </div>
+                </div>
+                <div className={styles.ticketActions}>
+                  <div></div>
+                  <button className={styles.btnSecondary}>Review</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+    
+    {/* Modal window */}
+    {selectedTicket && (
+      <div 
+        className={styles.modal} 
+        onClick={(e) => {
+          // Close modal when clicking background
+          if (e.target.className === styles.modal) {
+            closeTicketDetails();
+          }
+        }}
+      >
+        <div className={styles.modalContent}>
+          <TicketDetails 
+            ticket={selectedTicket} // Pass the mapped ticket object
+            onClose={closeTicketDetails}
+            onRefund={handleTicketRefund} // This function receives the mapped ticket object
+            isRefundable={isRefundable(selectedTicket)} // Check refundability of the mapped ticket
+          />
+        </div>
+      </div>
+    )}
+
+    {/* Refund confirmation modal */}
+    {ticketToRefund && (
         <RefundConfirmModal
-          ticket={ticketToRefund}
-          onClose={closeRefundModal}
-          onConfirm={handleRefundConfirm}
+            ticket={ticketToRefund} // Pass the mapped ticket object
+            onClose={closeRefundModal}
+            onConfirm={handleRefundConfirm} // This function receives ticket ID
         />
-      )}
-    </div>
-  );
+    )}
+  </div>
+);
 }
 
 export default MyTickets;
