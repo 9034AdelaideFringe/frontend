@@ -3,9 +3,11 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { getEventById } from "../services/eventService";
 import { addToCart } from "../services/cartService"; // 导入更新后的 addToCart
 import TicketSelector from "./TicketSelector";
+import SeatingLayoutSelector from "../components/events/SeatingLayoutSelector"; // Import the new component
 import styles from "./EventDetailPage.module.css";
-// 导入默认图片，如果 EventCard.jsx 中有定义，这里也可以导入共享的 DEFAULT_IMAGE
-// import { DEFAULT_IMAGE } from '../services/shared/apiConfig';
+// 导入随机默认图片函数
+import { getRandomDefaultImageUrl } from '../utils/defaultImages'; // 导入新创建的函数
+
 
 const EventDetailPage = () => {
   const { id } = useParams();
@@ -61,102 +63,95 @@ const EventDetailPage = () => {
 
       // If we can't parse it as a date, return the original string
       return dateString;
-    } catch (err) {
-      return dateString;
+    } catch (e) {
+      console.error("Error formatting date:", e);
+      return dateString; // Return original string on error
     }
   };
 
   const formatTime = (timeString) => {
     if (!timeString) return "Time not specified";
-
-    // If the time is already in HH:MM format, return it directly
-    if (typeof timeString === "string" && timeString.includes(":")) {
-      return timeString;
-    }
-
+    // Assuming timeString is in "HH:MM" or "HH:MM:SS" format
     try {
-      // Try to parse as a full date and extract time
-      const date = new Date(`2022-01-01T${timeString}`);
+      const [hours, minutes] = timeString.split(':');
+      const date = new Date();
+      date.setHours(parseInt(hours, 10));
+      date.setMinutes(parseInt(minutes, 10));
 
-      if (!isNaN(date.getTime())) {
-        return date.toLocaleTimeString("en-AU", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      }
-
-      return timeString;
-    } catch (err) {
-      return timeString;
+      return date.toLocaleTimeString("en-AU", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch (e) {
+      console.error("Error formatting time:", e);
+      return timeString; // Return original string on error
     }
   };
 
-  // Check if the image URL is a valid HTTP/HTTPS link
-  const isValidImageUrl = (url) => {
-    if (!url) return false;
+  // Helper function to get image URL
+  const getEventImageUrl = (imagePath) => {
+    const IMAGE_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use the base URL from env
 
-    // Check if it's a standard HTTP/HTTPS URL
-    return url.startsWith("http://") || url.startsWith("https://");
-  };
-
-  // Get a safe image URL, use default image if invalid
-
-  // 移除或注释掉这个硬编码的旧IP地址
-  // const IMAGE_BASE_URL = "http://23.22.158.203:8080";
-
-  // 从环境变量读取后端图片的基础URL
-  // 注意：如果图片路径不是直接在根目录下，需要调整这里的逻辑
-  const IMAGE_BASE_URL = import.meta.env.VITE_APP_IMAGE_BASE_URL; // **从环境变量读取**
-
-  const getEventImageUrl = (imageUrl) => {
-    if (!imageUrl) return ""; // 或者返回 DEFAULT_IMAGE
-    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://"))
-      return imageUrl;
-
-    const cleanPath = imageUrl.replace(/^\.\//, "").replace(/^\/+/, "");
-
-    // 拼接基础URL和清理后的路径
-    // 确保 IMAGE_BASE_URL 存在，否则可能导致错误
+    // Add a check for IMAGE_BASE_URL being defined
     if (!IMAGE_BASE_URL) {
-        console.error("VITE_APP_IMAGE_BASE_URL is not defined in environment variables.");
-        // 可以返回一个默认图片 URL 或空字符串
-        return ""; // 或者返回 DEFAULT_IMAGE
+        console.error("VITE_API_BASE_URL is not defined in environment variables.");
+        // Return a random default image URL if the base URL is missing
+        return getRandomDefaultImageUrl(); // 使用随机默认图片
     }
 
-    // 确保基础URL没有尾部斜杠，清理后的路径没有头部斜杠，避免双斜杠
-    const baseUrl = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
-    const finalPath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
+    if (!imagePath || typeof imagePath !== "string") {
+      // console.warn("Invalid image path:", imagePath);
+      // Return a random default image URL
+      return getRandomDefaultImageUrl(); // 使用随机默认图片
+    }
 
-    return `${baseUrl}/${finalPath}`;
+    // Remove leading "./" or "/" if present
+    const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\//, "");
+
+    if (!cleanPath) {
+      return getRandomDefaultImageUrl(); // 使用随机默认图片
+    }
+
+    // Ensure base URL doesn't have a trailing slash and cleanPath doesn't have a leading slash
+    const baseUrl = IMAGE_BASE_URL.endsWith("/")
+      ? IMAGE_BASE_URL.slice(0, -1)
+      : IMAGE_BASE_URL;
+    const finalPath = cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath;
+
+    return `${baseUrl}/${finalPath}`; // Construct the full URL
   };
 
-  // Get a safe seating layout image URL
-  const getSeatLayoutUrl = (imagePath) => {
-    if (!imagePath) {
-      // 使用默认图片，可以考虑导入共享的 DEFAULT_IMAGE
-      return "https://plus.unsplash.com/premium_photo-1724753996107-a35012f43bae?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-    }
+    // Helper function to get seat layout image URL (保持不变，除非你也想对布局图使用随机默认图)
+    const getSeatLayoutUrl = (imagePath) => {
+        const IMAGE_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use the base URL from env
 
-    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-      return imagePath;
-    }
+        // Add a check for IMAGE_BASE_URL being defined
+         if (!IMAGE_BASE_URL) {
+            console.error("VITE_API_BASE_URL is not defined in environment variables.");
+            return ""; // Return empty string if the base URL is missing
+        }
 
-    // 移除开头的 ./ 或 /，然后拼接基础URL
-    const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\/+/, "");
 
-    // 确保 IMAGE_BASE_URL 存在，否则可能导致错误
-    if (!IMAGE_BASE_URL) {
-        console.error("VITE_APP_IMAGE_BASE_URL is not defined in environment variables.");
-        // 可以返回一个默认图片 URL 或空字符串
-        return ""; // 或者返回默认图片
-    }
+        if (!imagePath || typeof imagePath !== "string") {
+            // console.warn("Invalid seat layout image path:", imagePath);
+            return ""; // Return empty string if no valid path
+        }
 
-    // 确保基础URL没有尾部斜杠，清理后的路径没有头部斜杠，避免双斜杠
-    const baseUrl = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
-    const finalPath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
+        // Remove leading './' or '/' if present
+        const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\//, "");
 
-    return `${baseUrl}/${finalPath}`; // 修改为直接使用新的HTTPS域名
-  };
+        if (!cleanPath) {
+             return ""; // Return empty string if path is empty after cleaning
+        }
+
+        // Ensure base URL doesn't have a trailing slash and cleanPath doesn't have a leading slash
+        const baseUrl = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
+        const finalPath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
+
+        return `${baseUrl}/${finalPath}`; // Construct the full URL
+    };
+
 
   const getLowestPrice = (ticketTypes) => {
     if (!ticketTypes || ticketTypes.length === 0) {
@@ -173,85 +168,40 @@ const EventDetailPage = () => {
     return `$${lowestPrice}`;
   };
 
-  // 处理添加到购物车
-  const handleAddToCart = (cartItems) => {
-    // cartItems 是 TicketSelector 准备的项目数组 [{ eventId, ticketTypeId, quantity, ... }]
-    // 我们的 addToCart API 假设一次添加一个项目，所以需要遍历调用
-    console.log("尝试将项目添加到购物车:", cartItems);
-    Promise.all(cartItems.map((item) => addToCart(item))) // 调用更新后的 addToCart
-      .then(() => {
-        alert("Tickets added to cart!");
-        setShowTicketSelector(false);
-        // 添加成功后，可以考虑刷新购物车 UI 或导航到购物车页面
-        // navigate('/user/cart'); // 可选：导航到购物车页面
-      })
-      .catch((err) => {
-        alert("Failed to add to cart: " + (err.message || '未知错误'));
-        console.error("添加购物车失败:", err);
-      });
-  };
-
-  // 处理立即购买
-  const handleBuyNow = (cartItems) => {
-    // 立即购买通常是先添加到购物车，然后直接跳转到结账页面
-    console.log("尝试立即购买项目:", cartItems);
-     Promise.all(cartItems.map((item) => addToCart(item))) // 调用更新后的 addToCart
-      .then(() => {
-        setShowTicketSelector(false);
-        // 添加成功后，直接导航到结账页面
-        navigate("/user/checkout");
-      })
-      .catch((err) => {
-        alert("Failed to process: " + (err.message || '未知错误'));
-        console.error("立即购买失败:", err);
-      });
-  };
+  // No longer needed
+  // const handleAddToCart = (cartItems) => {
+  //   // cartItems 是 TicketSelector 准备的项目数组 [{ eventId, ticketTypeId, quantity, ... }]
+  //   // 我们的 addToCart API 假设一次添加一个项目，所以需要遍历调用
+  //   console.log("尝试将项目添加到购物车:", cartItems);
+  //   Promise.all(cartItems.map((item) => addToCart(item))) // 调用更新后的 addToCart
+  //     .then(() => {
+  //       alert("Tickets added to cart!");
+  //       setShowTicketSelector(false);
+  //       // 添加成功后，可以考虑刷新购物车 UI 或导航到购物车页面
+  //       // navigate('/user/cart'); // 可选：导航到购物车页面
+  //     })
+  //     .catch((err) => {
+  //       alert("Failed to add to cart: " + (err.message || '未知错误'));
+  //       console.error("添加购物车失败:", err);
+  //     });
+  // };
 
   if (loading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}></div>
-        <p>Loading event information...</p>
-      </div>
-    );
+    return <div className={styles.loading}>Loading event details...</div>;
   }
 
   if (error) {
-    return (
-      <div className={styles.errorContainer}>
-        <h2>Error</h2>
-        <p>{error}</p>
-        <Link to="/events" className={styles.backButton}>
-          Back to Events
-        </Link>
-      </div>
-    );
+    return <div className={styles.error}>Error: {error}</div>;
   }
 
   if (!event) {
-    return (
-      <div className={styles.errorContainer}>
-        <h2>Event Not Found</h2>
-        <p>
-          Sorry, we couldn't find the event you're looking for. It may have been
-          removed or the link is invalid.
-        </p>
-        <Link to="/events" className={styles.backButton}>
-          Back to Events
-        </Link>
-      </div>
-    );
+    return <div className={styles.notFound}>Event not found.</div>;
   }
 
-  // Extract event properties with appropriate fallbacks
-  const eventId = event.event_id || event.id;
-  const eventTitle = event.title || "";
+  // Destructure event properties with fallbacks
+  const eventTitle = event.title || "Untitled Event";
   const eventImage = event.image || "";
   const eventVenue = event.venue || "";
-  const eventCapacity = event.capacity || "";
-  const eventCategory = event.category || "";
-
-  // Event date and time fields
   const eventDate = event.date || "";
   const eventTime = event.time || "";
   const eventEndTime = event.end_time || "";
@@ -283,6 +233,10 @@ const EventDetailPage = () => {
       : event.price
       ? event.price
       : "Price not specified";
+
+  // Get category for seating layout (still useful for display, but not for layout generation in the new component)
+  const eventCategory = event.category || "";
+
 
   return (
     <div className={styles.eventDetailPage}>
@@ -323,31 +277,10 @@ const EventDetailPage = () => {
             className={styles.eventImage}
             onError={(e) => {
               e.target.onerror = null;
-              // 使用默认图片，可以考虑导入共享的 DEFAULT_IMAGE
-              e.target.src =
-                "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+              // 使用随机默认图片，如果图片加载失败
+              e.target.src = getRandomDefaultImageUrl();
             }}
           />
-
-          {eventVenueLayout && (
-            <div className={styles.venueLayout}>
-              <h3>Venue Seating Layout</h3>
-              <img
-                src={getSeatLayoutUrl(eventVenueLayout)}
-                alt="Venue Seating Layout"
-                className={styles.layoutImage}
-                onClick={() =>
-                  window.open(getSeatLayoutUrl(eventVenueLayout), "_blank")
-                }
-                onError={(e) => {
-                  e.target.onerror = null;
-                  // 使用默认图片，可以考虑导入共享的 DEFAULT_IMAGE
-                  e.target.src =
-                    "https://plus.unsplash.com/premium_photo-1724753996107-a35012f43bae?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-                }}
-              />
-            </div>
-          )}
         </div>
 
         <div className={styles.infoSection}>
@@ -372,11 +305,12 @@ const EventDetailPage = () => {
                 <div className={styles.detailItem}>
                   <span className={styles.detailLabel}>End Time</span>
                   <span className={styles.detailValue}>
-                    {/* 假设 eventEndTime 也是日期格式，如果只是时间需要调整 */}
-                    {formatDate(eventEndTime)}
+                    {/* Assuming eventEndTime is also a time string, adjust if it's a full date */}
+                    {formatTime(eventEndTime)}
                   </span>
                 </div>
               )}
+
 
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Venue</span>
@@ -388,11 +322,11 @@ const EventDetailPage = () => {
                 <span className={styles.detailLabel}>Price</span>
                 <span className={styles.detailValue}>{priceDisplay}</span>
               </div>
-              {eventCapacity && (
+              {event.capacity && (
                 <div className={styles.detailItem}>
                   <span className={styles.detailLabel}>Capacity</span>
                   <span className={styles.detailValue}>
-                    {eventCapacity} people
+                    {event.capacity} people
                   </span>
                 </div>
               )}
@@ -405,10 +339,11 @@ const EventDetailPage = () => {
             </div>
           </div>
 
-          {/* Display ticket type information */}
+          {/* Display ticket type information (Optional, as seating selector replaces this) */}
+          {/* You might remove this section if the seating layout is the primary way to see ticket info */}
           {ticketTypes.length > 0 && (
             <div className={styles.ticketTypesSection}>
-              <h2>Ticket Information</h2>
+              <h2>Ticket Information (by Type)</h2> {/* Changed title */}
               <div className={styles.ticketTypesList}>
                 {ticketTypes.map((ticket, index) => (
                   <div
@@ -423,75 +358,92 @@ const EventDetailPage = () => {
                           : "Free"}
                       </span>
                     </div>
-                    {ticket.description && (
+                    {/* Display description (seat number) if it exists */}
+                     {ticket.description && (
                       <p className={styles.ticketDescription}>
-                        {ticket.description}
+                        Seat: {ticket.description}
                       </p>
                     )}
-                    <div className={styles.ticketAvailability}>
-                      <span>Available: </span>
-                      <span
-                        className={
-                          parseInt(
-                            ticket.available_quantity ||
-                              ticket.availableQuantity ||
-                              0
-                          ) > 10
-                            ? styles.available
-                            : styles.limited
-                        }
-                      >
-                        {parseInt(
-                          ticket.available_quantity ||
-                            ticket.availableQuantity ||
-                            0
-                        ) > 0
-                          ? ticket.available_quantity ||
-                            ticket.availableQuantity
-                          : "Sold Out"}
-                      </span>
-                    </div>
+                    {/* Display available quantity */}
+                    {ticket.available_quantity !== undefined && (
+                         <p className={styles.ticketAvailability}>
+                            Available: {ticket.available_quantity}
+                         </p>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <div className={styles.actionSection}>
-            <button
-              className={styles.buyButton}
-              onClick={() => setShowTicketSelector(true)}
-              disabled={eventStatus !== "ACTIVE"}
-            >
-              {eventStatus === "ACTIVE"
-                ? "Buy Tickets"
-                : "Currently Unavailable"}
-            </button>
-            <Link to="/events" className={styles.backButton}>
-              Back to Events
-            </Link>
-          </div>
+          {/* Display venue seating layout image if available */}
+          {eventVenueLayout && (
+            <div className={styles.venueLayout}>
+              <h3>Venue Seating Layout Image (Reference)</h3> {/* Changed title */}
+              <img
+                src={getSeatLayoutUrl(eventVenueLayout)}
+                alt="Venue Seating Layout"
+                className={styles.layoutImage}
+                onClick={() =>
+                  window.open(getSeatLayoutUrl(eventVenueLayout), "_blank")
+                }
+                onError={(e) => {
+                  e.target.onerror = null;
+                  // Use a default image or hide if layout image fails to load
+                  e.target.style.display = 'none'; // Hide the broken image
+                  console.error("Failed to load venue seating layout image:", getSeatLayoutUrl(eventVenueLayout));
+                }}
+              />
+               <p className={styles.clickToEnlarge}>Click image to enlarge</p>
+            </div>
+          )}
+
+
         </div>
       </div>
 
-      {showTicketSelector && (
-        <div className={styles.overlay}>
-          <div className={styles.modalContent}>
-            <button
-              className={styles.closeButton}
-              onClick={() => setShowTicketSelector(false)}
-            >
-              ×
-            </button>
-            <h2>Select Tickets</h2>
-            <TicketSelector
-              eventId={id}
-              onAddToCart={handleAddToCart}
-              onBuyNow={handleBuyNow}
-            />
-          </div>
-        </div>
+      {/* Seating Layout Selector Component */}
+      {/* Render if event is active and has ticket types */}
+      {eventStatus === "ACTIVE" && ticketTypes.length > 0 && (
+          <SeatingLayoutSelector
+              eventId={event.event_id || event.id} // Pass event ID
+              ticketTypes={ticketTypes} // Pass the ticket types array
+          />
       )}
+       {/* Display message if event is not active or no ticket types */}
+       {eventStatus !== "ACTIVE" && (
+           <div className={styles.unavailableMessage}>
+               Tickets are not available for purchase for this event.
+           </div>
+       )}
+        {eventStatus === "ACTIVE" && ticketTypes.length === 0 && (
+           <div className={styles.unavailableMessage}>
+               No ticket types available for this event.
+           </div>
+       )}
+
+
+      {/* No longer needed */}
+      {/* {eventStatus === "ACTIVE" && ticketTypes.length > 0 && (
+        <div className={styles.buyButtonContainer}>
+          <button
+            className={styles.buyButton}
+            onClick={() => setShowTicketSelector(true)}
+          >
+            Buy Tickets
+          </button>
+        </div>
+      )} */}
+
+      {/* No longer needed */}
+      {/* {showTicketSelector && (
+        <TicketSelector
+          event={event}
+          ticketTypes={ticketTypes}
+          onClose={() => setShowTicketSelector(false)}
+          onAddToCart={handleAddToCart}
+        />
+      )} */}
     </div>
   );
 };

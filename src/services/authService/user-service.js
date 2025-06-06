@@ -21,7 +21,7 @@ export const login = async ({ email, password }) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email, password }),
-      credentials: 'omit' // 明确指定不包含凭据
+      credentials: 'omit' 
     });
 
     console.log("Login API response:", response);

@@ -101,7 +101,6 @@ try {
     const token = getAuthToken();
 
     const headers = {
-      // Default to application/json, but allow override (crucial for FormData)
       'Content-Type': 'application/json',
       ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers,
@@ -110,8 +109,8 @@ try {
     const requestOptions = {
       ...options,
       headers,
-      // **修复：在开发环境中不包含凭据以避免 CORS 问题**
-      ...(IS_DEV ? {} : { credentials: 'include' }), // <-- 改回条件设置
+      // 暂时禁用凭据，仅使用Authorization头
+      credentials: 'omit',  // 改为'omit'以避免CORS错误
     };
 
     // 使用传入的endpoint作为URL
