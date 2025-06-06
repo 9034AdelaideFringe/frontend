@@ -1,60 +1,101 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getEventById } from "../services/eventService";
-import { addToCart } from "../services/cartService"; // 导入更新后的 addToCart
-import TicketSelector from "./TicketSelector";
+import { addToCart } from "../services/cartService";
+import { getTicketTypesByEventIdAPI } from '../services/ticketTypeService';
 import SeatingLayoutSelector from "../components/events/SeatingLayoutSelector"; // Import the new component
 import styles from "./EventDetailPage.module.css";
-// 导入随机默认图片函数
 import { getRandomDefaultImageUrl } from '../utils/defaultImages'; // 导入新创建的函数
 
 
 const EventDetailPage = () => {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
+  // Add state for ticket types
+  const [ticketTypes, setTicketTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showTicketSelector, setShowTicketSelector] = useState(false);
+  // const [showTicketSelector, setShowTicketSelector] = useState(false); // No longer needed
   const navigate = useNavigate();
+  const [isAddingToCart, setIsAddingToCart] = useState(false); // State to manage adding to cart status
+
+  console.log('[EventDetailPage] Component mounted or updated for ID:', id); // Log component mount/update
 
   useEffect(() => {
-    getEventById(id)
-      .then((data) => {
-        // Handle different response formats
-        let eventData;
-        if (Array.isArray(data)) {
-          eventData = data[0];
-        } else if (
-          data &&
-          data.data &&
-          Array.isArray(data.data) &&
-          data.data.length > 0
-        ) {
-          eventData = data.data[0];
-        } else if (data && (data.event_id || data.id)) {
-          eventData = data;
-        } else {
-          throw new Error("Invalid event data format");
-        }
+    console.log('[EventDetailPage] useEffect triggered for ID:', id); // Log useEffect start
 
-        setEvent(eventData);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [id]);
+    const fetchData = async () => {
+        setLoading(true);
+        setError(null); // Clear previous errors
+
+        try {
+            // Fetch event details
+            console.log('[EventDetailPage] Fetching event details with getEventById...'); // Log event fetch start
+            const eventDataResponse = await getEventById(id);
+            console.log('[EventDetailPage] getEventById success:', eventDataResponse); // Log successful event fetch
+
+            let eventData;
+            if (Array.isArray(eventDataResponse)) {
+              eventData = eventDataResponse[0];
+            } else if (
+              eventDataResponse &&
+              eventDataResponse.data &&
+              Array.isArray(eventDataResponse.data) &&
+              eventDataResponse.data.length > 0
+            ) {
+              eventData = eventDataResponse.data[0];
+            } else if (eventDataResponse && (eventDataResponse.event_id || eventDataResponse.id)) {
+              eventData = eventDataResponse;
+            } else {
+              console.error('[EventDetailPage] Invalid event data format received:', eventDataResponse); // Log invalid format
+              throw new Error("Invalid event data format");
+            }
+
+            console.log('[EventDetailPage] Processed event data:', eventData); // Log processed event data
+            setEvent(eventData);
+
+            // Fetch ticket types separately
+            console.log('[EventDetailPage] Fetching ticket types with getTicketTypesByEventIdAPI...'); // Log ticket types fetch start
+            const ticketTypesData = await getTicketTypesByEventIdAPI(id);
+            console.log('[EventDetailPage] getTicketTypesByEventIdAPI success:', ticketTypesData); // Log successful ticket types fetch
+
+            // Ensure ticketTypesData is an array
+            if (Array.isArray(ticketTypesData)) {
+                 setTicketTypes(ticketTypesData);
+            } else if (ticketTypesData && Array.isArray(ticketTypesData.data)) {
+                 // Handle potential nested data structure from API
+                 setTicketTypes(ticketTypesData.data);
+            }
+            else {
+                 console.warn('[EventDetailPage] getTicketTypesByEventIdAPI returned non-array data:', ticketTypesData); // Warn about unexpected format
+                 setTicketTypes([]); // Default to empty array on unexpected format
+            }
+
+
+        } catch (err) {
+            console.error('[EventDetailPage] Error fetching data:', err); // Log fetch error
+            setError(err.message || 'Failed to load event details or ticket types.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchData();
+
+  }, [id]); // Re-run effect if ID changes
 
   const formatDate = (dateString) => {
     if (!dateString) return "Date not specified";
 
     try {
-      // Handle direct date string format: "2022-02-02"
+      // Handle direct date string format: "YYYY-MM-DD"
       const date = new Date(dateString);
 
       if (!isNaN(date.getTime())) {
-        return date.toLocaleDateString("en-AU", {
+        const [year, month, day] = dateString.split('-').map(Number);
+        const localDate = new Date(year, month - 1, day); // Month is 0-indexed
+
+        return localDate.toLocaleDateString("en-AU", {
           year: "numeric",
           month: "long",
           day: "numeric",
@@ -74,9 +115,9 @@ const EventDetailPage = () => {
     // Assuming timeString is in "HH:MM" or "HH:MM:SS" format
     try {
       const [hours, minutes] = timeString.split(':');
-      const date = new Date();
-      date.setHours(parseInt(hours, 10));
-      date.setMinutes(parseInt(minutes, 10));
+      // Create a Date object using a fixed date to avoid date-related issues
+      const date = new Date(`2000-01-01T${hours}:${minutes}:00`);
+
 
       return date.toLocaleTimeString("en-AU", {
         hour: "2-digit",
@@ -89,13 +130,14 @@ const EventDetailPage = () => {
     }
   };
 
+
   // Helper function to get image URL
   const getEventImageUrl = (imagePath) => {
     const IMAGE_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use the base URL from env
 
     // Add a check for IMAGE_BASE_URL being defined
     if (!IMAGE_BASE_URL) {
-        console.error("VITE_API_BASE_URL is not defined in environment variables.");
+        console.error("[EventDetailPage] VITE_API_BASE_URL is not defined in environment variables."); // Added context to log
         // Return a random default image URL if the base URL is missing
         return getRandomDefaultImageUrl(); // 使用随机默认图片
     }
@@ -105,6 +147,12 @@ const EventDetailPage = () => {
       // Return a random default image URL
       return getRandomDefaultImageUrl(); // 使用随机默认图片
     }
+
+    // If it's already a full URL, return it
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+        return imagePath;
+    }
+
 
     // Remove leading "./" or "/" if present
     const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\//, "");
@@ -126,17 +174,17 @@ const EventDetailPage = () => {
     const getSeatLayoutUrl = (imagePath) => {
         const IMAGE_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use the base URL from env
 
-        // Add a check for IMAGE_BASE_URL being defined
-         if (!IMAGE_BASE_URL) {
-            console.error("VITE_API_BASE_URL is not defined in environment variables.");
-            return ""; // Return empty string if the base URL is missing
-        }
-
 
         if (!imagePath || typeof imagePath !== "string") {
             // console.warn("Invalid seat layout image path:", imagePath);
             return ""; // Return empty string if no valid path
         }
+
+         // If it's already a full URL, return it
+        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+            return imagePath;
+        }
+
 
         // Remove leading './' or '/' if present
         const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\//, "");
@@ -144,12 +192,11 @@ const EventDetailPage = () => {
         if (!cleanPath) {
              return ""; // Return empty string if path is empty after cleaning
         }
-
-        // Ensure base URL doesn't have a trailing slash and cleanPath doesn't have a leading slash
-        const baseUrl = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
+        const baseUrl = IMAGE_BASE_URL ? (IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL) : '';
         const finalPath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
 
-        return `${baseUrl}/${finalPath}`; // Construct the full URL
+        // Only construct URL if baseUrl is available
+        return baseUrl ? `${baseUrl}/${finalPath}` : ""; // Construct the full URL or return empty if base URL is missing
     };
 
 
@@ -168,33 +215,39 @@ const EventDetailPage = () => {
     return `$${lowestPrice}`;
   };
 
-  // No longer needed
-  // const handleAddToCart = (cartItems) => {
-  //   // cartItems 是 TicketSelector 准备的项目数组 [{ eventId, ticketTypeId, quantity, ... }]
-  //   // 我们的 addToCart API 假设一次添加一个项目，所以需要遍历调用
-  //   console.log("尝试将项目添加到购物车:", cartItems);
-  //   Promise.all(cartItems.map((item) => addToCart(item))) // 调用更新后的 addToCart
-  //     .then(() => {
-  //       alert("Tickets added to cart!");
-  //       setShowTicketSelector(false);
-  //       // 添加成功后，可以考虑刷新购物车 UI 或导航到购物车页面
-  //       // navigate('/user/cart'); // 可选：导航到购物车页面
-  //     })
-  //     .catch((err) => {
-  //       alert("Failed to add to cart: " + (err.message || '未知错误'));
-  //       console.error("添加购物车失败:", err);
-  //     });
-  // };
+  // Define the handleAddToCart function in the parent component
+  const handleAddToCart = async (itemsToAdd) => {
+      console.log('[EventDetailPage] handleAddToCart called with items:', itemsToAdd); // Log received items
+      setIsAddingToCart(true); // Set loading state
+
+      try {
+
+          await Promise.all(itemsToAdd.map(item => addToCart(item)));
+
+          alert("Selected seats added to cart!");
+
+
+      } catch (err) {
+          console.error("[EventDetailPage] Failed to add seats to cart:", err); // Log error
+          alert("Failed to add seats to cart: " + (err.message || 'Unknown error'));
+      } finally {
+          setIsAddingToCart(false); // Reset loading state
+      }
+  };
+
 
   if (loading) {
+    console.log('[EventDetailPage] Rendering loading state...'); // Log loading state
     return <div className={styles.loading}>Loading event details...</div>;
   }
 
   if (error) {
+    console.log('[EventDetailPage] Rendering error state:', error); // Log error state
     return <div className={styles.error}>Error: {error}</div>;
   }
 
   if (!event) {
+     console.log('[EventDetailPage] Rendering not found state...'); // Log not found state
     return <div className={styles.notFound}>Event not found.</div>;
   }
 
@@ -222,20 +275,72 @@ const EventDetailPage = () => {
     eventDate === "Date TBA" ? eventDate : formatDate(eventDate);
   const displayTime =
     eventTime === "Time TBA" ? eventTime : formatTime(eventTime);
-
-  // Ticket types
-  const ticketTypes = event.ticketTypes || [];
-
-  // Calculate price display
   const priceDisplay =
     ticketTypes.length > 0
       ? `From ${getLowestPrice(ticketTypes)}`
-      : event.price
-      ? event.price
+      : event.price // Fallback to event.price if no ticketTypes
+      ? `$${parseFloat(event.price).toFixed(2)}` // Format event.price if it exists
       : "Price not specified";
 
-  // Get category for seating layout (still useful for display, but not for layout generation in the new component)
+  // Get category for seating layout
   const eventCategory = event.category || "";
+
+  console.log('[EventDetailPage] Rendering main content.'); // Log main content render
+  console.log('[EventDetailPage] Seating Selector conditions:'); // Log seating selector conditions
+  console.log('  eventStatus === "ACTIVE":', eventStatus === "ACTIVE");
+  console.log('  eventCategory:', eventCategory);
+  console.log('  ticketTypes.length:', ticketTypes.length);
+
+
+  // Helper function to format time in a shorter "Hpm" or "H:MMpm" format
+  const formatTimeShort = (timeString) => {
+    if (!timeString) return "Time not specified";
+    if (timeString === "Time TBA") return "Time TBA";
+
+    try {
+        const [hours, minutes] = timeString.split(':');
+        // Use a fixed date for Date object to avoid date-related issues
+        const date = new Date(`2000-01-01T${hours}:${minutes}:00`);
+
+        // Use toLocaleTimeString to handle locale differences and AM/PM
+        const formatted = date.toLocaleTimeString("en-AU", {
+            hour: "numeric", // Use numeric hour (1-12)
+            minute: "2-digit", // Keep 2-digit minutes
+            hour12: true,
+        });
+
+        // Example formatted: "4:00 PM", "8:30 AM", "12:00 PM"
+        // We want "4pm", "8:30am", "12pm"
+
+        const [timePart, ampm] = formatted.split(' ');
+        const [h, m] = timePart.split(':');
+
+        let shortTime = h;
+        // Only include minutes if they are not '00'
+        if (m !== '00') {
+            shortTime += `:${m}`;
+        }
+        // Append lowercase am/pm
+        shortTime += ampm.toLowerCase();
+
+        return shortTime;
+
+    } catch (e) {
+        console.error("Error formatting time short:", e);
+        return timeString; // Return original string on error
+    }
+  };
+
+  // Format start and end times for display
+  const formattedStartTimeShort = formatTimeShort(eventTime);
+  const formattedEndTimeShort = formatTimeShort(eventEndTime);
+
+  // Construct the combined time display string
+  let timeDisplayString = formattedStartTimeShort;
+  if (eventTime !== "Time TBA" && eventEndTime && eventEndTime !== "Time TBA") {
+      timeDisplayString = `${formattedStartTimeShort} - ${formattedEndTimeShort}`;
+  } else if (eventEndTime && eventEndTime !== "Time TBA") {
+  }
 
 
   return (
@@ -246,17 +351,19 @@ const EventDetailPage = () => {
           <div className={styles.metaItem}>
             <i className="icon-calendar"></i> {displayDate}
           </div>
+          {/* Combined Time Display */}
           <div className={styles.metaItem}>
-            <i className="icon-clock"></i> {displayTime}
+            <i className="icon-clock"></i> {timeDisplayString}
           </div>
           <div className={styles.metaItem}>
-            <i className="icon-location"></i> {eventVenue || "Location TBA"}
+            <i className="icon-location"></i> Venue: {eventVenue || "Location TBA"}
           </div>
-          {eventCategory && (
-            <div className={styles.metaItem}>
-              <i className="icon-tag"></i> {eventCategory}
-            </div>
-          )}
+          <div className={styles.metaItem}>
+            <i className="icon-tag"></i> {priceDisplay}
+          </div>
+          <div className={styles.metaItem}>
+            <i className="icon-users"></i> Capacity: {event.capacity ? `${event.capacity} people` : "Capacity TBA"}
+          </div>
           {eventStatus && (
             <div
               className={`${styles.statusTag} ${
@@ -277,77 +384,28 @@ const EventDetailPage = () => {
             className={styles.eventImage}
             onError={(e) => {
               e.target.onerror = null;
-              // 使用随机默认图片，如果图片加载失败
               e.target.src = getRandomDefaultImageUrl();
             }}
           />
-        </div>
-
-        <div className={styles.infoSection}>
-          <div className={styles.eventDescription}>
+                  <div className={styles.eventDescription}>
             <h2>Event Description</h2>
             <div className={styles.descriptionText}>{eventDescription}</div>
           </div>
+        </div>
 
-          <div className={styles.eventDetails}>
-            <h2>Event Details</h2>
-            <div className={styles.detailsGrid}>
-              <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Date</span>
-                <span className={styles.detailValue}>{displayDate}</span>
-              </div>
-              <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Time</span>
-                <span className={styles.detailValue}>{displayTime}</span>
-              </div>
+        <div className={styles.infoSection}>
 
-              {eventEndTime && (
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>End Time</span>
-                  <span className={styles.detailValue}>
-                    {/* Assuming eventEndTime is also a time string, adjust if it's a full date */}
-                    {formatTime(eventEndTime)}
-                  </span>
-                </div>
-              )}
-
-
-              <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Venue</span>
-                <span className={styles.detailValue}>
-                  {eventVenue || "TBA"}
-                </span>
-              </div>
-              <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Price</span>
-                <span className={styles.detailValue}>{priceDisplay}</span>
-              </div>
-              {event.capacity && (
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Capacity</span>
-                  <span className={styles.detailValue}>
-                    {event.capacity} people
-                  </span>
-                </div>
-              )}
-              {eventCategory && (
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Category</span>
-                  <span className={styles.detailValue}>{eventCategory}</span>
-                </div>
-              )}
-            </div>
-          </div>
 
           {/* Display ticket type information (Optional, as seating selector replaces this) */}
           {/* You might remove this section if the seating layout is the primary way to see ticket info */}
+          {/* Keeping this section might still be useful to show price/description per ticket type */}
           {ticketTypes.length > 0 && (
             <div className={styles.ticketTypesSection}>
-              <h2>Ticket Information (by Type)</h2> {/* Changed title */}
+              <h2>Ticket Information</h2> {/* Changed title */}
               <div className={styles.ticketTypesList}>
                 {ticketTypes.map((ticket, index) => (
                   <div
-                    key={ticket.id || `ticket-${index}-${ticket.name}`}
+                    key={ticket.ticket_type_id || ticket.id || `ticket-${index}-${ticket.name}`}
                     className={styles.ticketTypeCard}
                   >
                     <div className={styles.ticketTypeHeader}>
@@ -358,10 +416,10 @@ const EventDetailPage = () => {
                           : "Free"}
                       </span>
                     </div>
-                    {/* Display description (seat number) if it exists */}
+                    {/* Display description */}
                      {ticket.description && (
                       <p className={styles.ticketDescription}>
-                        Seat: {ticket.description}
+                        {ticket.description}
                       </p>
                     )}
                     {/* Display available quantity */}
@@ -375,50 +433,33 @@ const EventDetailPage = () => {
               </div>
             </div>
           )}
-
-          {/* Display venue seating layout image if available */}
-          {eventVenueLayout && (
-            <div className={styles.venueLayout}>
-              <h3>Venue Seating Layout Image (Reference)</h3> {/* Changed title */}
-              <img
-                src={getSeatLayoutUrl(eventVenueLayout)}
-                alt="Venue Seating Layout"
-                className={styles.layoutImage}
-                onClick={() =>
-                  window.open(getSeatLayoutUrl(eventVenueLayout), "_blank")
-                }
-                onError={(e) => {
-                  e.target.onerror = null;
-                  // Use a default image or hide if layout image fails to load
-                  e.target.style.display = 'none'; // Hide the broken image
-                  console.error("Failed to load venue seating layout image:", getSeatLayoutUrl(eventVenueLayout));
-                }}
-              />
-               <p className={styles.clickToEnlarge}>Click image to enlarge</p>
-            </div>
-          )}
-
-
         </div>
       </div>
 
       {/* Seating Layout Selector Component */}
-      {/* Render if event is active and has ticket types */}
-      {eventStatus === "ACTIVE" && ticketTypes.length > 0 && (
-          <SeatingLayoutSelector
-              eventId={event.event_id || event.id} // Pass event ID
-              ticketTypes={ticketTypes} // Pass the ticket types array
-          />
+      {/* Render if event is active and has category and ticket types */}
+      {eventStatus === "ACTIVE" && eventCategory && ticketTypes.length > 0 && (
+          <> {/* Use a fragment to wrap the component and log */}
+            {console.log('[EventDetailPage] Rendering SeatingLayoutSelector...')} {/* Log before rendering */}
+            <SeatingLayoutSelector
+                eventId={event.event_id || event.id} // Pass event ID
+                category={eventCategory} // Pass the category string
+                ticketTypes={ticketTypes} // Pass the ticket types array
+                onAddToCart={handleAddToCart} // Pass the handler function
+            />
+
+          </>
+
       )}
-       {/* Display message if event is not active or no ticket types */}
+       {/* Display message if event is not active or no ticket types/category */}
        {eventStatus !== "ACTIVE" && (
            <div className={styles.unavailableMessage}>
                Tickets are not available for purchase for this event.
            </div>
        )}
-        {eventStatus === "ACTIVE" && ticketTypes.length === 0 && (
+        {eventStatus === "ACTIVE" && (!eventCategory || ticketTypes.length === 0) && (
            <div className={styles.unavailableMessage}>
-               No ticket types available for this event.
+               Seating information or ticket types are not available for this event.
            </div>
        )}
 

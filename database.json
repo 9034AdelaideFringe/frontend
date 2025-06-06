@@ -1,0 +1,358 @@
+[{
+  "table_name": "cart",
+  "column_name": "cart_item_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "cart",
+  "column_name": "user_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "cart",
+  "column_name": "ticket_type_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "cart",
+  "column_name": "quantity",
+  "data_type": "integer",
+  "character_maximum_length": null,
+  "column_default": "1",
+  "is_nullable": "NO"
+}, {
+  "table_name": "cart",
+  "column_name": "added_at",
+  "data_type": "timestamp without time zone",
+  "character_maximum_length": null,
+  "column_default": "CURRENT_TIMESTAMP",
+  "is_nullable": "YES"
+}, {
+  "table_name": "events",
+  "column_name": "event_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "events",
+  "column_name": "title",
+  "data_type": "character varying",
+  "character_maximum_length": 255,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "events",
+  "column_name": "description",
+  "data_type": "text",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "YES"
+}, {
+  "table_name": "events",
+  "column_name": "short_description",
+  "data_type": "character varying",
+  "character_maximum_length": 500,
+  "column_default": null,
+  "is_nullable": "YES"
+}, {
+  "table_name": "events",
+  "column_name": "image",
+  "data_type": "character varying",
+  "character_maximum_length": 255,
+  "column_default": null,
+  "is_nullable": "YES"
+}, {
+  "table_name": "events",
+  "column_name": "venueseatinglayout",
+  "data_type": "character varying",
+  "character_maximum_length": 255,
+  "column_default": null,
+  "is_nullable": "YES"
+}, {
+  "table_name": "events",
+  "column_name": "date",
+  "data_type": "date",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "events",
+  "column_name": "time",
+  "data_type": "character varying",
+  "character_maximum_length": 100,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "events",
+  "column_name": "end_time",
+  "data_type": "character varying",
+  "character_maximum_length": 100,
+  "column_default": null,
+  "is_nullable": "YES"
+}, {
+  "table_name": "events",
+  "column_name": "venue",
+  "data_type": "character varying",
+  "character_maximum_length": 255,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "events",
+  "column_name": "capacity",
+  "data_type": "integer",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "events",
+  "column_name": "category",
+  "data_type": "character varying",
+  "character_maximum_length": 100,
+  "column_default": null,
+  "is_nullable": "YES"
+}, {
+  "table_name": "events",
+  "column_name": "status",
+  "data_type": "USER-DEFINED",
+  "character_maximum_length": null,
+  "column_default": "'ACTIVE'::event_status",
+  "is_nullable": "YES"
+}, {
+  "table_name": "events",
+  "column_name": "created_by",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "events",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "character_maximum_length": null,
+  "column_default": "CURRENT_TIMESTAMP",
+  "is_nullable": "YES"
+}, {
+  "table_name": "events",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "character_maximum_length": null,
+  "column_default": "CURRENT_TIMESTAMP",
+  "is_nullable": "YES"
+}, {
+  "table_name": "orders",
+  "column_name": "order_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "orders",
+  "column_name": "user_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "orders",
+  "column_name": "total_amount",
+  "data_type": "numeric",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "orders",
+  "column_name": "order_date",
+  "data_type": "timestamp without time zone",
+  "character_maximum_length": null,
+  "column_default": "CURRENT_TIMESTAMP",
+  "is_nullable": "YES"
+}, {
+  "table_name": "orders",
+  "column_name": "status",
+  "data_type": "USER-DEFINED",
+  "character_maximum_length": null,
+  "column_default": "'COMPLETED'::order_status",
+  "is_nullable": "YES"
+}, {
+  "table_name": "tickets",
+  "column_name": "ticket_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickets",
+  "column_name": "order_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickets",
+  "column_name": "ticket_type_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickets",
+  "column_name": "event_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickets",
+  "column_name": "qr_code",
+  "data_type": "character varying",
+  "character_maximum_length": 255,
+  "column_default": null,
+  "is_nullable": "YES"
+}, {
+  "table_name": "tickets",
+  "column_name": "status",
+  "data_type": "USER-DEFINED",
+  "character_maximum_length": null,
+  "column_default": "'ACTIVE'::ticket_status",
+  "is_nullable": "YES"
+}, {
+  "table_name": "tickets",
+  "column_name": "issue_date",
+  "data_type": "timestamp without time zone",
+  "character_maximum_length": null,
+  "column_default": "CURRENT_TIMESTAMP",
+  "is_nullable": "YES"
+}, {
+  "table_name": "tickets",
+  "column_name": "expiry_date",
+  "data_type": "date",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickets",
+  "column_name": "last_refund_date",
+  "data_type": "date",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickets",
+  "column_name": "scan_date",
+  "data_type": "timestamp without time zone",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "YES"
+}, {
+  "table_name": "tickettypes",
+  "column_name": "ticket_type_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickettypes",
+  "column_name": "event_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickettypes",
+  "column_name": "name",
+  "data_type": "character varying",
+  "character_maximum_length": 100,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickettypes",
+  "column_name": "description",
+  "data_type": "character varying",
+  "character_maximum_length": 255,
+  "column_default": null,
+  "is_nullable": "YES"
+}, {
+  "table_name": "tickettypes",
+  "column_name": "price",
+  "data_type": "numeric",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickettypes",
+  "column_name": "available_quantity",
+  "data_type": "integer",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "tickettypes",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "character_maximum_length": null,
+  "column_default": "CURRENT_TIMESTAMP",
+  "is_nullable": "YES"
+}, {
+  "table_name": "tickettypes",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "character_maximum_length": null,
+  "column_default": "CURRENT_TIMESTAMP",
+  "is_nullable": "YES"
+}, {
+  "table_name": "users",
+  "column_name": "user_id",
+  "data_type": "uuid",
+  "character_maximum_length": null,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "users",
+  "column_name": "email",
+  "data_type": "character varying",
+  "character_maximum_length": 255,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "users",
+  "column_name": "password",
+  "data_type": "character varying",
+  "character_maximum_length": 255,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "users",
+  "column_name": "name",
+  "data_type": "character varying",
+  "character_maximum_length": 100,
+  "column_default": null,
+  "is_nullable": "NO"
+}, {
+  "table_name": "users",
+  "column_name": "role",
+  "data_type": "USER-DEFINED",
+  "character_maximum_length": null,
+  "column_default": "'USER'::user_role",
+  "is_nullable": "NO"
+}, {
+  "table_name": "users",
+  "column_name": "created_at",
+  "data_type": "timestamp without time zone",
+  "character_maximum_length": null,
+  "column_default": "CURRENT_TIMESTAMP",
+  "is_nullable": "YES"
+}, {
+  "table_name": "users",
+  "column_name": "updated_at",
+  "data_type": "timestamp without time zone",
+  "character_maximum_length": null,
+  "column_default": "CURRENT_TIMESTAMP",
+  "is_nullable": "YES"
+}]

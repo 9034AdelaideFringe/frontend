@@ -1,0 +1,174 @@
+.seatingContainer {
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.sectionTitle {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.screen {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    margin-bottom: 30px;
+    border-radius: 5px;
+    font-size: 1.2em;
+    font-weight: bold;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.seatGrid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    overflow-x: auto; /* Add horizontal scroll for wide layouts */
+    padding-bottom: 10px; /* Space for scrollbar */
+}
+
+.seatRow {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.rowLabel {
+    width: 30px;
+    text-align: center;
+    font-weight: bold;
+    color: #555;
+    margin: 0 10px;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.seats {
+    display: flex;
+    gap: 4px; /* Space between seats */
+}
+
+.seat {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.seat:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.standardSeat {
+    background-color: #e0f7fa; /* Light blue */
+    border-color: #00bcd4; /* Cyan */
+    color: #006064; /* Dark cyan */
+}
+
+.standardSeat:not(:disabled):hover {
+    background-color: #b2ebf2; /* Lighter cyan */
+}
+
+.vipSeat {
+    background-color: #fff9c4; /* Light yellow */
+    border-color: #fbc02d; /* Amber */
+    color: #f57f17; /* Dark amber */
+}
+
+.vipSeat:not(:disabled):hover {
+    background-color: #ffee58; /* Lighter amber */
+}
+
+.selectedSeat {
+    background-color: #ef5350; /* Light red */
+    border-color: #d32f2f; /* Red */
+    color: white;
+    font-weight: bold;
+}
+
+.selectedSeat:not(:disabled):hover {
+    background-color: #e53935; /* Darker red */
+}
+
+/* Optional: Style for unavailable seats */
+.unavailableSeat {
+    background-color: #e0e0e0;
+    border-color: #bdbdbd;
+    color: #757575;
+    cursor: not-allowed;
+    text-decoration: line-through; /* Optional: cross out sold seats */
+}
+
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.legendBox {
+    width: 20px;
+    height: 20px;
+    border-width: 1px !important; /* Override seat border */
+    cursor: default !important; /* No pointer cursor */
+}
+
+.selectedSeatsSummary {
+    margin-top: 15px;
+    font-size: 1em;
+    color: #333;
+    min-height: 1.2em; /* Reserve space */
+}
+
+.buyButton {
+    margin-top: 20px;
+    padding: 12px 25px;
+    font-size: 1.1em;
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.buyButton:hover:not(:disabled) {
+    background-color: #388E3C; /* Darker green */
+}
+
+.buyButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.error {
+    color: #d32f2f;
+    font-weight: bold;
+    margin-top: 20px;
+}
