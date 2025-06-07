@@ -83,3 +83,46 @@ export const getTicketById = async (ticketId) => {
     throw error;
   }
 };
+
+// --- New Function: Fetch occupied seats for an event ---
+/**
+ * 获取指定事件已被占用的座位列表
+ * @param {string} eventId - 事件ID
+ * @returns {Promise<Array<{ seat: string, ticket_id: string }>>} 已占用座位列表
+ * @throws {Error} 如果获取失败
+ */
+export const getOccupiedSeatsByEventIdAPI = async (eventId) => {
+  if (!eventId) {
+    console.error("[ticketQueryService] getOccupiedSeatsByEventIdAPI requires an event ID.");
+    throw new Error("Event ID is required.");
+  }
+  console.log(`[ticketQueryService] Attempting to fetch occupied seats for event ID: ${eventId}`);
+
+  try {
+    // 构建 API URL，使用您提供的端点格式
+    const url = TICKET_ENDPOINTS.GET_OCCUPIED_SEATS_BY_EVENT_ID(eventId);
+    console.log(`[ticketQueryService] API URL for occupied seats: ${url}`);
+
+    const apiResponse = await authenticatedRequest(url, {
+      method: 'GET',
+    });
+
+    console.log(`[ticketQueryService] Received API response for occupied seats:`, apiResponse);
+
+    // 处理 API 响应
+    // 期望的响应格式是 { data: [{ seat: "...", ticket_id: "..." }, ...], message: "ok" }
+    if (isApiResponseSuccess(apiResponse) && apiResponse.data && Array.isArray(apiResponse.data)) {
+       console.log(`[ticketQueryService] Successfully fetched ${apiResponse.data.length} occupied seats.`);
+       // 返回包含 seat 和 ticket_id 的数组
+       return apiResponse.data;
+    } else {
+      console.error('[ticketQueryService] Failed to fetch occupied seats or invalid format:', apiResponse);
+      // 抛出包含后端错误消息的错误
+      throw new Error((apiResponse && apiResponse.message) || (apiResponse && apiResponse.error) || ERROR_MESSAGES.OCCUPIED_SEATS_FAILED);
+    }
+  } catch (error) {
+    console.error(`[ticketQueryService] Error in getOccupiedSeatsByEventIdAPI for event ID ${eventId}:`, error);
+    throw error; // Re-throw the error for the component to handle
+  }
+};
+// --- End New Function ---

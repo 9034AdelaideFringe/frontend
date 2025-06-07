@@ -107,11 +107,21 @@
 
 /* Optional: Style for unavailable seats */
 .unavailableSeat {
-    background-color: #e0e0e0;
-    border-color: #bdbdbd;
-    color: #757575;
+    background-color: #e0e0e0; /* Light grey */
+    border-color: #bdbdbd; /* Medium grey */
+    color: #757575; /* Dark grey */
     cursor: not-allowed;
-    text-decoration: line-through; /* Optional: cross out sold seats */
+    /* text-decoration: line-through; Optional: cross out sold seats */
+    opacity: 0.8; /* Make them slightly transparent */
+}
+
+/* Ensure unavailable seats don't change style on hover */
+.unavailableSeat:hover {
+    background-color: #e0e0e0; /* Keep the same background */
+    border-color: #bdbdbd; /* Keep the same border */
+    color: #757575; /* Keep the same color */
+    transform: none; /* Prevent any transform effects */
+    box-shadow: none; /* Prevent any shadow effects */
 }
 
 

@@ -3,6 +3,9 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { getEventById } from "../services/eventService";
 import { addToCart } from "../services/cartService";
 import { getTicketTypesByEventIdAPI } from '../services/ticketTypeService';
+// Import the new function to get occupied seats
+import { getOccupiedSeatsByEventIdAPI } from '../services/ticketService/operations/query'; // Adjust path if needed
+
 import SeatingLayoutSelector from "../components/events/SeatingLayoutSelector"; // Import the new component
 import styles from "./EventDetailPage.module.css";
 import { getRandomDefaultImageUrl } from '../utils/defaultImages'; // 导入新创建的函数
@@ -11,11 +14,11 @@ import { getRandomDefaultImageUrl } from '../utils/defaultImages'; // 导入新�
 const EventDetailPage = () => {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
-  // Add state for ticket types
   const [ticketTypes, setTicketTypes] = useState([]);
+  // Add state for occupied seats
+  const [occupiedSeats, setOccupiedSeats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // const [showTicketSelector, setShowTicketSelector] = useState(false); // No longer needed
   const navigate = useNavigate();
   const [isAddingToCart, setIsAddingToCart] = useState(false); // State to manage adding to cart status
 
@@ -30,9 +33,9 @@ const EventDetailPage = () => {
 
         try {
             // Fetch event details
-            console.log('[EventDetailPage] Fetching event details with getEventById...'); // Log event fetch start
+            console.log('[EventDetailPage] Fetching event details with getEventById...');
             const eventDataResponse = await getEventById(id);
-            console.log('[EventDetailPage] getEventById success:', eventDataResponse); // Log successful event fetch
+            console.log('[EventDetailPage] getEventById success:', eventDataResponse);
 
             let eventData;
             if (Array.isArray(eventDataResponse)) {
@@ -47,33 +50,48 @@ const EventDetailPage = () => {
             } else if (eventDataResponse && (eventDataResponse.event_id || eventDataResponse.id)) {
               eventData = eventDataResponse;
             } else {
-              console.error('[EventDetailPage] Invalid event data format received:', eventDataResponse); // Log invalid format
+              console.error('[EventDetailPage] Invalid event data format received:', eventDataResponse);
               throw new Error("Invalid event data format");
             }
 
-            console.log('[EventDetailPage] Processed event data:', eventData); // Log processed event data
+            console.log('[EventDetailPage] Processed event data:', eventData);
             setEvent(eventData);
 
             // Fetch ticket types separately
-            console.log('[EventDetailPage] Fetching ticket types with getTicketTypesByEventIdAPI...'); // Log ticket types fetch start
+            console.log('[EventDetailPage] Fetching ticket types with getTicketTypesByEventIdAPI...');
             const ticketTypesData = await getTicketTypesByEventIdAPI(id);
-            console.log('[EventDetailPage] getTicketTypesByEventIdAPI success:', ticketTypesData); // Log successful ticket types fetch
+            console.log('[EventDetailPage] getTicketTypesByEventIdAPI success:', ticketTypesData);
 
-            // Ensure ticketTypesData is an array
             if (Array.isArray(ticketTypesData)) {
                  setTicketTypes(ticketTypesData);
             } else if (ticketTypesData && Array.isArray(ticketTypesData.data)) {
-                 // Handle potential nested data structure from API
                  setTicketTypes(ticketTypesData.data);
             }
             else {
-                 console.warn('[EventDetailPage] getTicketTypesByEventIdAPI returned non-array data:', ticketTypesData); // Warn about unexpected format
-                 setTicketTypes([]); // Default to empty array on unexpected format
+                 console.warn('[EventDetailPage] getTicketTypesByEventIdAPI returned non-array data:', ticketTypesData);
+                 setTicketTypes([]);
             }
+
+            // --- New: Fetch occupied seats ---
+            console.log('[EventDetailPage] Fetching occupied seats with getOccupiedSeatsByEventIdAPI...');
+            const occupiedSeatsData = await getOccupiedSeatsByEventIdAPI(id);
+            console.log('[EventDetailPage] getOccupiedSeatsByEventIdAPI success:', occupiedSeatsData);
+
+             if (Array.isArray(occupiedSeatsData)) {
+                 setOccupiedSeats(occupiedSeatsData);
+            } else if (occupiedSeatsData && Array.isArray(occupiedSeatsData.data)) {
+                 // Handle potential nested data structure from API
+                 setOccupiedSeats(occupiedSeatsData.data);
+            }
+            else {
+                 console.warn('[EventDetailPage] getOccupiedSeatsByEventIdAPI returned non-array data:', occupiedSeatsData);
+                 setOccupiedSeats([]); // Default to empty array on unexpected format
+            }
+            // --- End New ---
 
 
         } catch (err) {
-            console.error('[EventDetailPage] Error fetching data:', err); // Log fetch error
+            console.error('[EventDetailPage] Error fetching data:', err);
             setError(err.message || 'Failed to load event details or ticket types.');
         } finally {
             setLoading(false);
@@ -86,39 +104,29 @@ const EventDetailPage = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "Date not specified";
-
     try {
-      // Handle direct date string format: "YYYY-MM-DD"
       const date = new Date(dateString);
-
       if (!isNaN(date.getTime())) {
         const [year, month, day] = dateString.split('-').map(Number);
-        const localDate = new Date(year, month - 1, day); // Month is 0-indexed
-
+        const localDate = new Date(year, month - 1, day);
         return localDate.toLocaleDateString("en-AU", {
           year: "numeric",
           month: "long",
           day: "numeric",
         });
       }
-
-      // If we can't parse it as a date, return the original string
       return dateString;
     } catch (e) {
       console.error("Error formatting date:", e);
-      return dateString; // Return original string on error
+      return dateString;
     }
   };
 
   const formatTime = (timeString) => {
     if (!timeString) return "Time not specified";
-    // Assuming timeString is in "HH:MM" or "HH:MM:SS" format
     try {
       const [hours, minutes] = timeString.split(':');
-      // Create a Date object using a fixed date to avoid date-related issues
       const date = new Date(`2000-01-01T${hours}:${minutes}:00`);
-
-
       return date.toLocaleTimeString("en-AU", {
         hour: "2-digit",
         minute: "2-digit",
@@ -126,77 +134,46 @@ const EventDetailPage = () => {
       });
     } catch (e) {
       console.error("Error formatting time:", e);
-      return timeString; // Return original string on error
+      return timeString;
     }
   };
 
-
-  // Helper function to get image URL
   const getEventImageUrl = (imagePath) => {
-    const IMAGE_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use the base URL from env
-
-    // Add a check for IMAGE_BASE_URL being defined
+    const IMAGE_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     if (!IMAGE_BASE_URL) {
-        console.error("[EventDetailPage] VITE_API_BASE_URL is not defined in environment variables."); // Added context to log
-        // Return a random default image URL if the base URL is missing
-        return getRandomDefaultImageUrl(); // 使用随机默认图片
+        console.error("[EventDetailPage] VITE_API_BASE_URL is not defined.");
+        return getRandomDefaultImageUrl();
     }
-
     if (!imagePath || typeof imagePath !== "string") {
-      // console.warn("Invalid image path:", imagePath);
-      // Return a random default image URL
-      return getRandomDefaultImageUrl(); // 使用随机默认图片
+      return getRandomDefaultImageUrl();
     }
-
-    // If it's already a full URL, return it
     if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
         return imagePath;
     }
-
-
-    // Remove leading "./" or "/" if present
     const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\//, "");
-
     if (!cleanPath) {
-      return getRandomDefaultImageUrl(); // 使用随机默认图片
+      return getRandomDefaultImageUrl();
     }
-
-    // Ensure base URL doesn't have a trailing slash and cleanPath doesn't have a leading slash
-    const baseUrl = IMAGE_BASE_URL.endsWith("/")
-      ? IMAGE_BASE_URL.slice(0, -1)
-      : IMAGE_BASE_URL;
+    const baseUrl = IMAGE_BASE_URL.endsWith("/") ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
     const finalPath = cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath;
-
-    return `${baseUrl}/${finalPath}`; // Construct the full URL
+    return `${baseUrl}/${finalPath}`;
   };
 
-    // Helper function to get seat layout image URL (保持不变，除非你也想对布局图使用随机默认图)
     const getSeatLayoutUrl = (imagePath) => {
-        const IMAGE_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use the base URL from env
-
-
+        const IMAGE_BASE_URL = import.meta.env.VITE_API_BASE_URL;
         if (!imagePath || typeof imagePath !== "string") {
-            // console.warn("Invalid seat layout image path:", imagePath);
-            return ""; // Return empty string if no valid path
+            return "";
         }
-
-         // If it's already a full URL, return it
         if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
             return imagePath;
         }
-
-
-        // Remove leading './' or '/' if present
         const cleanPath = imagePath.replace(/^\.\//, "").replace(/^\//, "");
-
         if (!cleanPath) {
-             return ""; // Return empty string if path is empty after cleaning
+             return "";
         }
         const baseUrl = IMAGE_BASE_URL ? (IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL) : '';
         const finalPath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
-
-        // Only construct URL if baseUrl is available
-        return baseUrl ? `${baseUrl}/${finalPath}` : ""; // Construct the full URL or return empty if base URL is missing
+        return baseUrl ? `${baseUrl}/${finalPath}` : "";
     };
 
 
@@ -204,73 +181,66 @@ const EventDetailPage = () => {
     if (!ticketTypes || ticketTypes.length === 0) {
       return "N/A";
     }
-
     const prices = ticketTypes
       .map((ticket) => parseFloat(ticket.price))
       .filter((price) => !isNaN(price) && price > 0);
-
     if (prices.length === 0) return "Free";
-
     const lowestPrice = Math.min(...prices).toFixed(2);
     return `$${lowestPrice}`;
   };
 
-  // Define the handleAddToCart function in the parent component
   const handleAddToCart = async (itemsToAdd) => {
-      console.log('[EventDetailPage] handleAddToCart called with items:', itemsToAdd); // Log received items
-      setIsAddingToCart(true); // Set loading state
-
+      console.log('[EventDetailPage] handleAddToCart called with items:', itemsToAdd);
+      setIsAddingToCart(true);
       try {
-
           await Promise.all(itemsToAdd.map(item => addToCart(item)));
-
           alert("Selected seats added to cart!");
-
+          // --- New: Re-fetch occupied seats after adding to cart ---
+          console.log('[EventDetailPage] Successfully added to cart, re-fetching occupied seats...');
+          const updatedOccupiedSeats = await getOccupiedSeatsByEventIdAPI(id);
+          setOccupiedSeats(updatedOccupiedSeats);
+          console.log('[EventDetailPage] Re-fetched occupied seats:', updatedOccupiedSeats);
+          // --- End New ---
 
       } catch (err) {
-          console.error("[EventDetailPage] Failed to add seats to cart:", err); // Log error
+          console.error("[EventDetailPage] Failed to add seats to cart:", err);
           alert("Failed to add seats to cart: " + (err.message || 'Unknown error'));
       } finally {
-          setIsAddingToCart(false); // Reset loading state
+          setIsAddingToCart(false);
       }
   };
 
 
   if (loading) {
-    console.log('[EventDetailPage] Rendering loading state...'); // Log loading state
+    console.log('[EventDetailPage] Rendering loading state...');
     return <div className={styles.loading}>Loading event details...</div>;
   }
 
   if (error) {
-    console.log('[EventDetailPage] Rendering error state:', error); // Log error state
+    console.log('[EventDetailPage] Rendering error state:', error);
     return <div className={styles.error}>Error: {error}</div>;
   }
 
   if (!event) {
-     console.log('[EventDetailPage] Rendering not found state...'); // Log not found state
+     console.log('[EventDetailPage] Rendering not found state...');
     return <div className={styles.notFound}>Event not found.</div>;
   }
 
-  // Destructure event properties with fallbacks
   const eventTitle = event.title || "Untitled Event";
   const eventImage = event.image || "";
   const eventVenue = event.venue || "";
   const eventDate = event.date || "";
   const eventTime = event.time || "";
   const eventEndTime = event.end_time || "";
-
   const eventStatus = event.status || "INACTIVE";
   const eventVenueLayout =
     event.venueseatinglayout || event.venueSeatingLayout || "";
-
-  // Event description - retain all possible field names
   const eventDescription =
     event.short_description ||
     event.description ||
     event.des ||
     "No description available";
 
-  // Format for display
   const displayDate =
     eventDate === "Date TBA" ? eventDate : formatDate(eventDate);
   const displayTime =
@@ -278,18 +248,18 @@ const EventDetailPage = () => {
   const priceDisplay =
     ticketTypes.length > 0
       ? `From ${getLowestPrice(ticketTypes)}`
-      : event.price // Fallback to event.price if no ticketTypes
-      ? `$${parseFloat(event.price).toFixed(2)}` // Format event.price if it exists
+      : event.price
+      ? `$${parseFloat(event.price).toFixed(2)}`
       : "Price not specified";
 
-  // Get category for seating layout
   const eventCategory = event.category || "";
 
-  console.log('[EventDetailPage] Rendering main content.'); // Log main content render
-  console.log('[EventDetailPage] Seating Selector conditions:'); // Log seating selector conditions
+  console.log('[EventDetailPage] Rendering main content.');
+  console.log('[EventDetailPage] Seating Selector conditions:');
   console.log('  eventStatus === "ACTIVE":', eventStatus === "ACTIVE");
   console.log('  eventCategory:', eventCategory);
   console.log('  ticketTypes.length:', ticketTypes.length);
+  console.log('  occupiedSeats.length:', occupiedSeats.length); // Log occupied seats count
 
 
   // Helper function to format time in a shorter "Hpm" or "H:MMpm" format
@@ -340,6 +310,8 @@ const EventDetailPage = () => {
   if (eventTime !== "Time TBA" && eventEndTime && eventEndTime !== "Time TBA") {
       timeDisplayString = `${formattedStartTimeShort} - ${formattedEndTimeShort}`;
   } else if (eventEndTime && eventEndTime !== "Time TBA") {
+       // If only end time is available (unlikely but handle)
+       timeDisplayString = `Ends ${formattedEndTimeShort}`;
   }
 
 
@@ -361,9 +333,11 @@ const EventDetailPage = () => {
           <div className={styles.metaItem}>
             <i className="icon-tag"></i> {priceDisplay}
           </div>
-          <div className={styles.metaItem}>
-            <i className="icon-users"></i> Capacity: {event.capacity ? `${event.capacity} people` : "Capacity TBA"}
-          </div>
+          {event.capacity && ( // Only show capacity if it exists
+            <div className={styles.metaItem}>
+              <i className="icon-users"></i> Capacity: {event.capacity} people
+            </div>
+          )}
           {eventStatus && (
             <div
               className={`${styles.statusTag} ${
@@ -445,11 +419,10 @@ const EventDetailPage = () => {
                 eventId={event.event_id || event.id} // Pass event ID
                 category={eventCategory} // Pass the category string
                 ticketTypes={ticketTypes} // Pass the ticket types array
+                occupiedSeats={occupiedSeats} // --- New: Pass occupied seats ---
                 onAddToCart={handleAddToCart} // Pass the handler function
             />
-
           </>
-
       )}
        {/* Display message if event is not active or no ticket types/category */}
        {eventStatus !== "ACTIVE" && (
@@ -462,29 +435,6 @@ const EventDetailPage = () => {
                Seating information or ticket types are not available for this event.
            </div>
        )}
-
-
-      {/* No longer needed */}
-      {/* {eventStatus === "ACTIVE" && ticketTypes.length > 0 && (
-        <div className={styles.buyButtonContainer}>
-          <button
-            className={styles.buyButton}
-            onClick={() => setShowTicketSelector(true)}
-          >
-            Buy Tickets
-          </button>
-        </div>
-      )} */}
-
-      {/* No longer needed */}
-      {/* {showTicketSelector && (
-        <TicketSelector
-          event={event}
-          ticketTypes={ticketTypes}
-          onClose={() => setShowTicketSelector(false)}
-          onAddToCart={handleAddToCart}
-        />
-      )} */}
     </div>
   );
 };

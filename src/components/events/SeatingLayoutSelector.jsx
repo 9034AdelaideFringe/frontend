@@ -3,20 +3,23 @@ import styles from './SeatingLayoutSelector.module.css'; // Create a correspondi
 // Remove the import for addToCart
 // import { addToCart } from '../../services/cartService'; // Assuming addToCart is in cartService
 
-// Add onAddToCart to the props
-const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) => {
+// Add occupiedSeats to the props
+const SeatingLayoutSelector = ({ eventId, category, ticketTypes, occupiedSeats, onAddToCart }) => {
   const [seatLayout, setSeatLayout] = useState([]);
   const [selectedSeats, setSelectedSeats] = useState(new Set());
   const [vipTicketTypeId, setVipTicketTypeId] = useState(null);
   const [standardTicketTypeId, setStandardTicketTypeId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Keep internal loading state for layout generation
   const [error, setError] = useState(null);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false); // State to prevent double clicks
 
-  console.log('[SeatingLayoutSelector] Component rendered with props:', { eventId, category, ticketTypes, onAddToCart: typeof onAddToCart }); // Log props on render
+  console.log('[SeatingLayoutSelector] Component rendered with props:', { eventId, category, ticketTypes, occupiedSeats: occupiedSeats ? occupiedSeats.length : 0, onAddToCart: typeof onAddToCart }); // Log props on render
 
   useEffect(() => {
     console.log('[SeatingLayoutSelector] useEffect triggered.'); // Log useEffect start
+
+    // This effect is responsible for generating the seat layout based on category, ticket types, AND occupied seats.
+    // It should run whenever any of these props change.
 
     if (!category || !ticketTypes || ticketTypes.length === 0) {
       console.log('[SeatingLayoutSelector] Missing category or ticketTypes.'); // Log missing data
@@ -40,8 +43,8 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
     }
 
     setVipTicketTypeId(vipType.ticket_type_id || vipType.id); // Use ticket_type_id or id
-    setStandardTicketTypeId(standardType.ticket_type_id || standardType.id); // Use ticket_type_id or id
-    console.log('[SeatingLayoutSelector] Set ticket type IDs:', { vipTicketTypeId: (vipType.ticket_type_id || vipType.id), standardTicketTypeId: (standardType.ticket_type_id || standardType.id) }); // Log set IDs
+    setStandardTicketTypeId(standardType.ticket_type_id || standardType.id);
+    console.log('[SeatingLayoutSelector] Set ticket type IDs:', { vipTicketTypeId: (vipType.ticket_type_id || vipType.id), standardTicketTypeId: (standardType.ticket_type_id || standardType.id) });
 
 
     // Parse category string (e.g., "4F+2") -> 4 rows, 'F' columns, 2 VIP rows
@@ -81,22 +84,31 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
 
 
     const layout = [];
+    // Create a Set of occupied seat IDs for quick lookup
+    // Ensure occupiedSeats is an array before mapping
+    const occupiedSeatIds = new Set(Array.isArray(occupiedSeats) ? occupiedSeats.map(seat => seat.seat) : []);
+    console.log('[SeatingLayoutSelector] Occupied seat IDs:', Array.from(occupiedSeatIds)); // Log occupied IDs
+
+
     for (let row = 0; row < numRows; row++) {
       const rowSeats = [];
       const rowLetter = String.fromCharCode(65 + row); // A, B, C...
       const isVipRow = row < numVipRows; // Determine if this is a VIP row based on parsed number
 
       for (let col = 1; col <= numCols; col++) {
+        const seatId = `${rowLetter}${col}`;
+        // --- New: Check if the seat is occupied ---
+        const isOccupied = occupiedSeatIds.has(seatId);
+        // --- End New ---
+
         rowSeats.push({
-          id: `${rowLetter}${col}`,
+          id: seatId,
           row: rowLetter,
           col: col,
-          available: true, // Assuming all seats are available initially from category string
+          // --- New: Set availability based on occupied status ---
+          available: !isOccupied,
+          // --- End New ---
           isVip: isVipRow,
-          // We don't have per-seat availability from this category string,
-          // so we assume all seats in the layout are potentially available.
-          // Actual availability check would happen when adding to cart or fetching ticketTypes
-          // if ticketTypes included seat-specific availability.
         });
       }
       layout.push(rowSeats);
@@ -104,22 +116,48 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
 
     console.log('[SeatingLayoutSelector] Generated seat layout:', layout); // Log generated layout
     setSeatLayout(layout);
-    setLoading(false);
-    console.log('[SeatingLayoutSelector] Finished useEffect, loading set to false.'); // Log useEffect end
+    setLoading(false); // Set internal loading to false after layout generation
+    console.log('[SeatingLayoutSelector] Finished useEffect, internal loading set to false.'); // Log useEffect end
 
-  }, [category, ticketTypes]); // Re-run if category or ticketTypes change
+  }, [category, ticketTypes, occupiedSeats]); // --- New: Add occupiedSeats to dependency array ---
+
+  // Effect to clear selected seats if they become occupied (optional, but good UX)
+  // If a selected seat becomes occupied by another user, this clears it from selection.
+  useEffect(() => {
+      // Ensure occupiedSeats is an array before mapping
+      const occupiedSeatIds = new Set(Array.isArray(occupiedSeats) ? occupiedSeats.map(seat => seat.seat) : []);
+      const newSelected = new Set(selectedSeats);
+      let selectionChanged = false;
+      selectedSeats.forEach(seatId => {
+          if (occupiedSeatIds.has(seatId)) {
+              newSelected.delete(seatId);
+              selectionChanged = true;
+          }
+      });
+      if (selectionChanged) {
+          setSelectedSeats(newSelected);
+          console.log('[SeatingLayoutSelector] Cleared selected seats that became occupied.'); // Log cleared seats
+      }
+  }, [occupiedSeats, selectedSeats]); // Depend on occupiedSeats and selectedSeats
+
 
   const handleSeatClick = (seatId) => {
     console.log('[SeatingLayoutSelector] Seat clicked:', seatId); // Log seat click
-    // Find the seat object to check availability (if we had per-seat availability)
-    // For now, assuming all seats in the layout are selectable unless marked otherwise
-    // let clickedSeat = null;
-    // for (const row of seatLayout) {
-    //     clickedSeat = row.find(seat => seat.id === seatId);
-    //     if (clickedSeat && !clickedSeat.available) {
-    //         return; // Cannot select unavailable seats
-    //     }
-    // }
+
+    // --- New: Find the seat object to check availability ---
+    let clickedSeat = null;
+    for (const row of seatLayout) {
+        clickedSeat = row.find(seat => seat.id === seatId);
+        if (clickedSeat) break;
+    }
+
+    // Prevent clicking if the seat object wasn't found (shouldn't happen) or if it's not available
+    if (!clickedSeat || !clickedSeat.available) {
+        console.log('[SeatingLayoutSelector] Seat is unavailable or not found, ignoring click.'); // Log unavailable click
+        return; // Cannot select unavailable seats
+    }
+    // --- End New ---
+
 
     const newSelected = new Set(selectedSeats);
     if (newSelected.has(seatId)) {
@@ -132,16 +170,18 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
   };
 
   const getSeatStyle = (seat) => {
+    // --- New: Check if seat is unavailable first ---
+    if (!seat.available) {
+        return styles.unavailableSeat;
+    }
+    // --- End New ---
+
     if (selectedSeats.has(seat.id)) {
       return styles.selectedSeat;
     }
     if (seat.isVip) { // Use the isVip property set during layout generation
       return styles.vipSeat;
     }
-    // Add a style for unavailable seats if needed (requires per-seat availability data)
-    // if (!seat.available) {
-    //   return styles.unavailableSeat;
-    // }
     return styles.standardSeat;
   };
 
@@ -166,7 +206,7 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
     const itemsToAdd = [];
 
     selectedSeats.forEach(seatId => {
-        // Find the corresponding seat object to determine if it's VIP
+        // Find the corresponding seat object to determine if it's VIP and available
         let selectedSeat = null;
         for (const row of seatLayout) {
             selectedSeat = row.find(seat => seat.id === seatId);
@@ -174,6 +214,15 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
         }
 
         if (selectedSeat) {
+             // --- New: Double check if the seat is available before adding to cart ---
+             if (!selectedSeat.available) {
+                 console.warn(`[SeatingLayoutSelector] Attempted to add unavailable seat ${seatId} to cart.`);
+                 // Optionally alert the user or skip this seat
+                 // alert(`Seat ${seatId} is no longer available.`);
+                 return; // Skip this seat
+             }
+             // --- End New ---
+
              itemsToAdd.push({
                 eventId: eventId,
                 // Use the ticket type ID based on the seat's isVip property
@@ -182,8 +231,7 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
                 seat: seatId, // Include the specific seat ID
             });
         } else {
-            console.error("[SeatingLayoutSelector] Could not find seat object for selected seat ID:", seatId); // Added context to log
-            // This should ideally not happen if seatId comes from seatLayout
+            console.error("[SeatingLayoutSelector] Could not find seat object for selected seat ID:", seatId);
         }
     });
 
@@ -198,45 +246,31 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
     // Call the onAddToCart prop passed from the parent (EventDetailPage)
     if (onAddToCart) {
         console.log("[SeatingLayoutSelector] Calling onAddToCart prop."); // Log calling prop
-        await onAddToCart(itemsToAdd); // Pass the items to the parent's handler
+        // The parent's onAddToCart handler is responsible for setting isAddingToCart back to false
+        // and potentially re-fetching occupied seats and clearing selectedSeats.
+        onAddToCart(itemsToAdd)
+            .catch(error => {
+                 // Catch any errors from the parent's handler if needed, though parent should handle its own errors
+                 console.error("[SeatingLayoutSelector] Error from parent onAddToCart:", error);
+                 // The parent's finally block should handle setting isAddingToCart(false)
+            });
     } else {
         console.error("[SeatingLayoutSelector] onAddToCart prop is not provided."); // Log missing prop
         alert("Add to cart functionality is not available.");
+        setIsAddingToCart(false); // Ensure state is reset even if prop is missing
     }
 
-    // The parent's onAddToCart handler should handle setting isAddingToCart back to false
-    // and clearing selectedSeats after successful addition.
-    // For now, we'll keep the state updates here for simplicity, but ideally
-    // the parent would manage the loading/success state after the callback.
-    // setIsAddingToCart(false); // Moved to parent's handler
-    // setSelectedSeats(new Set()); // Moved to parent's handler
+    // Clearing selected seats is now handled in the parent's handleAddToCart after successful API call
+    // setSelectedSeats(new Set());
 
   };
 
-  // Keep the state updates here for now, but consider moving them to the parent
-  // after the onAddToCart callback resolves.
-  useEffect(() => {
-      if (!isAddingToCart && selectedSeats.size > 0) {
-          // This effect could be used to clear selection after parent's handler finishes
-          // but requires a state update from the parent.
-      }
-  }, [isAddingToCart, selectedSeats]);
 
-
-  if (loading) {
-    console.log('[SeatingLayoutSelector] Rendering loading state...'); // Log loading state
-    return <div>Loading seating layout...</div>;
-  }
-
-  if (error) {
-    console.log('[SeatingLayoutSelector] Rendering error state:', error); // Log error state
-    return <div className={styles.error}>{error}</div>;
-  }
-
-   // Check if there are any rows/seats to display after parsing
+  // Check if there are any rows/seats to display after parsing
    // Corrected check for empty layout
-  if (seatLayout.length === 0 || (seatLayout.length > 0 && seatLayout[0].length === 0)) {
+  if (!loading && (seatLayout.length === 0 || (seatLayout.length > 0 && seatLayout[0].length === 0))) {
       console.log('[SeatingLayoutSelector] Rendering no seating layout message.'); // Log no layout message
+      // Only show this message if not loading and layout is empty
       return <div className={styles.noSeating}>No seating layout information available for this event.</div>;
   }
 
@@ -258,9 +292,9 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
                   key={seat.id}
                   className={`${styles.seat} ${getSeatStyle(seat)}`}
                   onClick={() => handleSeatClick(seat.id)}
-                  // Disable if adding to cart. Availability check would go here if we had the data.
-                  disabled={isAddingToCart}
-                  title={`Seat ${seat.id}${seat.isVip ? ' (VIP)' : ''}`}
+                  // Disable if adding to cart OR if the seat is not available
+                  disabled={isAddingToCart || !seat.available} // --- New: Disable if not available ---
+                  title={`Seat ${seat.id}${seat.isVip ? ' (VIP)' : ''}${!seat.available ? ' (Occupied)' : ''}`} // --- New: Add occupied status to title ---
                 >
                   {/* Display column number */}
                   {seat.col}
@@ -286,11 +320,12 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
               <div className={`${styles.seat} ${styles.selectedSeat} ${styles.legendBox}`}></div>
               <span>Selected Seat</span>
           </div>
-          {/* Add legend for unavailable seats if implemented */}
-          {/* <div className={styles.legendItem}>
+          {/* --- New: Add legend for unavailable seats --- */}
+          <div className={styles.legendItem}>
               <div className={`${styles.seat} ${styles.unavailableSeat} ${styles.legendBox}`}></div>
-              <span>Unavailable</span>
-          </div> */}
+              <span>Occupied</span> {/* Changed text to Occupied */}
+          </div>
+          {/* --- End New --- */}
       </div>
 
 
@@ -312,9 +347,9 @@ const SeatingLayoutSelector = ({ eventId, category, ticketTypes, onAddToCart }) 
       <button
         className={styles.buyButton}
         onClick={handleBuyTickets}
-        disabled={selectedSeats.size === 0 || isAddingToCart}
+        disabled={selectedSeats.size === 0 || isAddingToCart} // Disable if no seats selected or adding to cart
       >
-        {isAddingToCart ? 'Adding to Cart...' : `Buy Tickets (${selectedSeats.size})`}
+        {isAddingToCart ? 'Adding to Cart...' : `Add Selected Seats to Cart (${selectedSeats.size})`} {/* Change button text while adding */}
       </button>
     </div>
   );
