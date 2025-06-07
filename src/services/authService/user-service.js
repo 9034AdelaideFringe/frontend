@@ -175,7 +175,7 @@ export const isAuthenticated = () => {
   // Check if user info exists
   // (JWT token is handled automatically in cookies)
   const isLoggedIn = localStorage.getItem("isLoggedIn");
-  const user = getCurrentUser();
+  const user = getCurrentUser(); // getCurrentUser is defined within this file
   return isLoggedIn === "true" && !!user;
 };
 
@@ -184,99 +184,162 @@ export const isAuthenticated = () => {
  * Update user profile
  * @param {Object} updateData - User data to update
  * @param {string} [updateData.name] - User's new name
- * @param {string} [updateData.currentPassword] - Current password (required for password change)
+ * @param {string} [updateData.currentPassword] - Current password (required for password change or name change with this API)
  * @param {string} [updateData.newPassword] - New password
- * @returns {Promise<Object>} Updated user data
+ * @returns {Promise<Object>} Updated user data or API response data
  */
 export const updateUserProfile = async (updateData) => {
   try {
     const currentUser = getCurrentUser();
-    if (!currentUser || !currentUser.user_id) {
-      throw new Error("用户未登录或无法获取用户ID");
+    if (!currentUser || !currentUser.user_id || !currentUser.email) {
+      throw new Error("User not logged in or unable to get user ID/email");
     }
-    
-    console.log("[user-service.js] 发送更新用户资料请求:", updateData);
-    
-    // 构建请求体，根据API要求格式
-    const requestBody = {
-      name: updateData.name
-    };
-    
-    // 如果要更改密码，使用正确的字段名
-    if (updateData.newPassword) {
-      // 需要当前密码验证
-      if (!updateData.currentPassword) {
-        throw new Error("更改密码需要提供当前密码");
-      }
-      requestBody.password = updateData.newPassword;
-      requestBody.current_password = updateData.currentPassword; 
-    } else if (updateData.currentPassword) {
-      // 如果提供了当前密码但不是更改密码，保留当前密码字段用于验证
-      requestBody.current_password = updateData.currentPassword;
-      // 不设置 password 字段，因为不是在更改密码
-    }
-    
-    console.log("[user-service.js] 更新用户资料请求体:", JSON.parse(JSON.stringify(requestBody)));
-    
-    // 使用正确的API端点路径并确保包含credentials: 'include'
-    const data = await authRequest("/user", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      credentials: 'include', // 确保包含凭据
-    });
-    
-    console.log("[user-service.js] 更新用户资料API响应:", data);
-    
-    // 更新成功后，更新本地存储的用户信息
-    if (data && (data.message === "ok" || data.success)) {
-      const updatedUser = {
-        ...currentUser,
-        name: updateData.name // 只更新名称，密码不存储在本地
-      };
-      
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      console.log("[user-service.js] 已更新本地用户信息");
-      
-      return updatedUser;
+
+    console.log("[user-service.js] Sending update user profile request:", updateData);
+
+    let hardcodedUrl;
+    let requestBody;
+
+    // Determine which endpoint and request body to use based on provided data
+    const updatingName = updateData.name !== undefined && updateData.name !== null; // Allow empty string name update
+    const updatingPassword = !!updateData.newPassword; // Check for truthiness of newPassword
+
+    if (updatingName && updatingPassword) {
+        // Case 3: Update both name and password via /profile endpoint
+        hardcodedUrl = "https://changusers.tj15982183241.workers.dev/api/user/profile";
+        if (!updateData.currentPassword) {
+            throw new Error("Current password is required to update both username and password");
+        }
+        requestBody = {
+            email: currentUser.email,
+            currentPassword: updateData.currentPassword,
+            newName: updateData.name,
+            newPassword: updateData.newPassword,
+        };
+        console.log("[user-service.js] Preparing to call /profile endpoint");
+
+    } else if (updatingName) {
+        // Case 1: Update name only via /name endpoint
+        hardcodedUrl = "https://changusers.tj15982183241.workers.dev/api/user/name";
+        // Current password is NOT required for this endpoint based on test.html
+        requestBody = {
+            email: currentUser.email,
+            newName: updateData.name,
+        };
+         console.log("[user-service.js] Preparing to call /name endpoint");
+
+    } else if (updatingPassword) {
+        // Case 2: Update password only via /password endpoint
+        hardcodedUrl = "https://changusers.tj15982183241.workers.dev/api/user/password";
+         if (!updateData.currentPassword) {
+            throw new Error("Current password is required to change password");
+        }
+        requestBody = {
+            email: currentUser.email,
+            currentPassword: updateData.currentPassword,
+            newPassword: updateData.newPassword,
+        };
+         console.log("[user-service.js] Preparing to call /password endpoint");
+
     } else {
-      throw new Error(data?.message || "更新用户资料失败");
+        // Neither name nor password provided
+        throw new Error("No information provided for update (new username or new password)");
     }
+
+    console.log("[user-service.js] Update user profile request body:", JSON.parse(JSON.stringify(requestBody)));
+
+    // Use fetch directly with hardcoded URL and manual headers, matching test.html
+    const headers = {
+      'Content-Type': 'application/json',
+      // No Authorization header or credentials: 'include' based on test.html working
+    };
+
+    console.log("[user-service.js] Sending PATCH request using hardcoded URL:", hardcodedUrl);
+    console.log("[user-service.js] Request headers:", headers); // Log headers for debugging
+
+    const response = await fetch(hardcodedUrl, {
+      method: "PATCH", // Use PATCH method
+      headers: headers,
+      body: JSON.stringify(requestBody),
+      // Use default credentials: 'omit'
+    });
+
+    // --- Inline response handling based on backend structure ---
+    let responseData = null;
+    try {
+        responseData = await response.json();
+        console.log("[user-service.js] API response:", responseData);
+    } catch (jsonError) {
+        console.error("[user-service.js] Failed to parse API response JSON:", jsonError);
+        // If JSON parsing fails, still proceed to check response.ok
+    }
+
+
+    if (response.ok) { // Check for successful HTTP status (2xx)
+        // Backend returns { status: 'success', message: '...', data: { user_id, email, name, updated_at } } on success
+        if (responseData && responseData.status === 'success') {
+            const updatedUser = { ...currentUser }; // Start with current user data
+            let localUserUpdated = false;
+
+            // Update name in local storage if the API response contains updated user data with a name
+            if (responseData.data && responseData.data.name !== undefined) {
+                 updatedUser.name = responseData.data.name;
+                 localStorage.setItem("user", JSON.stringify(updatedUser));
+                 console.log("[user-service.js] Local user info updated (name)");
+                 localUserUpdated = true;
+            } else {
+                 // If API didn't return updated user data, but the call was successful
+                 // (e.g., password update), log success.
+                 console.log(`[user-service.js] Update successful (${hardcodedUrl.split('/').pop()})`);
+                 localUserUpdated = true; // Consider it locally updated for success reporting
+            }
+
+            if (!localUserUpdated) {
+                 console.warn("[user-service.js] Update successful, but API response format unknown or did not return updated user data. Local user info may not be fully synced.");
+            }
+
+            // Return the API response data on success
+            return responseData;
+
+        } else {
+            // Response status is 2xx, but backend status is not 'success' - unexpected format
+            const errorMessage = responseData?.message || responseData?.error || `Update user profile (${hardcodedUrl.split('/').pop()}) failed with unexpected success response format`;
+            console.error("[user-service.js] Unexpected successful API response format:", responseData);
+            const error = new Error(errorMessage);
+            error.response = response; // Attach response for potential further inspection
+            error.responseData = responseData;
+            throw error;
+        }
+
+    } else { // Non-2xx HTTP status
+        // Backend returns { error: '...', message: '...' } on failure
+        const errorMessage = responseData?.message || responseData?.error || `Update user profile (${hardcodedUrl.split('/').pop()}) failed with status ${response.status}`;
+        console.error("[user-service.js] API error response:", responseData);
+        const error = new Error(errorMessage);
+        // Attach response details to the error object
+        error.response = response;
+        error.responseData = responseData;
+        throw error;
+    }
+    // --- End inline response handling ---
+
   } catch (error) {
-    console.error("[user-service.js] 更新用户资料错误:", error);
-    
-    // 如果是网络错误，允许本地更新UI
-    if (error.message && (error.message.includes("Failed to fetch") || error.message.includes("API端点不存在"))) {
-      console.log("[user-service.js] API请求失败，仅更新本地数据");
-      const currentUser = getCurrentUser();
-      if (currentUser && updateData.name) {
-        const updatedUser = { ...currentUser, name: updateData.name };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        throw new Error("服务器连接失败，但已更新本地显示。下次登录后可能会重置。");
-      }
+    console.error("[user-service.js] Update user profile error:", error);
+
+    // Log more detailed error information if available
+    if (error.response) { // If the error object includes response info
+        console.error("[user-service.js] API error response status:", error.response.status);
+        // responseData is already logged above if available
+    } else if (error.message) {
+         console.error("[user-service.js] Error message:", error.message);
     }
-    
-    // 返回格式化的错误信息
-    const errorMessage = handleApiError(error, "更新用户资料");
-    throw new Error(errorMessage);
+
+    // handleApiError can be used for more detailed error mapping if needed elsewhere
+    // const errorMessage = handleApiError(error, "Update user profile");
+    throw error; // Re-throw the error for the component to handle
   }
 };
 
-/**
- * Change user password
- * @param {Object} passwordData - Password data
- * @param {string} passwordData.currentPassword - Current password
- * @param {string} passwordData.newPassword - New password
- * @returns {Promise<Object>} Result
- */
-export const changePassword = async ({ currentPassword, newPassword }) => {
-  try {
-    // 使用通用的更新资料函数来更改密码
-    return await updateUserProfile({ currentPassword, newPassword });
-  } catch (error) {
-    console.error("更改密码错误:", error);
-    throw error;
-  }
-};
 
 /**
  * Delete user account
@@ -287,27 +350,27 @@ export const deleteAccount = async (password) => {
   try {
     const currentUser = getCurrentUser();
     if (!currentUser || !currentUser.user_id) {
-      throw new Error("用户未登录或无法获取用户ID");
+      throw new Error("User not logged in or unable to get user ID");
     }
-    
+
     const data = await authRequest("/user/delete", {
       method: "DELETE",
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         user_id: currentUser.user_id,
-        password 
+        password
       }),
     });
-    
-    // 成功删除后清除本地存储
+
+    // Clear local storage on successful deletion
     if (data.message === "ok" || data.success) {
       localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("user");
     }
-    
-    return { success: true, message: "账号已成功删除" };
+
+    return { success: true, message: "Account deleted successfully" };
   } catch (error) {
-    console.error("删除账号错误:", error);
-    const errorMessage = handleApiError(error, "删除账号");
+    console.error("Delete account error:", error);
+    const errorMessage = handleApiError(error, "Delete account");
     throw new Error(errorMessage);
   }
 };
