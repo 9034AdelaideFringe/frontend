@@ -16,27 +16,29 @@ import { mapApiTicketToFrontend } from '../utils'; // Adjust import path as need
  */
 export const refundTicket = async (ticketId) => {
   try {
-    // 1. 构建 API URL
-    const url = TICKET_ENDPOINTS.REFUND_TICKET(ticketId);
+    // 1. 构建 API URL (现在 REFUND_TICKET 端点不再需要 ticketId 参数)
+    const url = TICKET_ENDPOINTS.REFUND_TICKET(); // 调用不带参数的函数
 
     // 2. 调用 authenticatedRequest 发送请求
     const apiResponse = await authenticatedRequest(url, {
-      method: 'POST', // 假设退票是 POST 请求
-      // 如果后端需要请求体，例如 { ticketId: ticketId }，则添加 body
-      // headers: { 'Content-Type': 'application/json' },
-      // body: JSON.stringify({ ticketId }),
+      method: 'DELETE', // <-- 修改为 DELETE 方法
+      headers: { 'Content-Type': 'application/json' }, // <-- 添加 Content-Type 头
+      body: JSON.stringify({ ticket_id: ticketId }), // <-- 在请求体中发送 ticket_id
     });
 
     // 3. 处理 API 响应 (使用 ticketService/utils 中实现的函数)
-    // 假设 API 成功时返回 { success: true, ... }
+    // 假设 API 成功时返回 { success: true, ... } 或您提供的包含 data 和 message 的结构
     if (isApiResponseSuccess(apiResponse)) {
+       // 您提供的成功响应包含 data 字段，可以根据需要处理
+       console.log('Refund successful:', apiResponse);
        return apiResponse; // 返回 API 响应，可能包含更新后的票据状态等信息
     } else {
       // 抛出包含后端错误消息的错误
       throw new Error((apiResponse && apiResponse.message) || (apiResponse && apiResponse.error) || ERROR_MESSAGES.REFUND_FAILED);
     }
   } catch (error) {
-    throw error;
+    console.error('Error in refundTicket:', error); // Log the error
+    throw error; // Re-throw the error for the component to handle
   }
 };
 
@@ -67,6 +69,7 @@ export const downloadTicket = async (ticketId) => {
       throw new Error(ERROR_MESSAGES.DOWNLOAD_FAILED + ': Invalid response format');
     }
   } catch (error) {
+    console.error('Error in downloadTicket:', error); // Log the error
     throw error;
   }
 };
@@ -101,6 +104,7 @@ export const updateTicketStatus = async (ticketId, status) => {
       throw new Error((apiResponse && apiResponse.message) || (apiResponse && apiResponse.error) || ERROR_MESSAGES.UPDATE_STATUS_FAILED);
     }
   } catch (error) {
+    console.error('Error in updateTicketStatus:', error); // Log the error
     throw error;
   }
 };

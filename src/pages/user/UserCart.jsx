@@ -9,6 +9,9 @@ import {
 import styles from "./UserCart.module.css";
 // Assuming getFullImageUrl is available in a shared utility file, e.g., ../../utils/imageUtils
 // import { getFullImageUrl } from '../../utils/imageUtils'; // Example import if needed
+// 导入随机默认图片函数
+import { getRandomDefaultImageUrl } from '../../utils/defaultImages'; // 导入新创建的函数
+
 
 const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -138,7 +141,15 @@ const UserCart = () => {
                   {/* Assuming item.eventImage contains the image path/URL mapped from API */}
                   {/* You might need a utility function here to construct the full URL if item.eventImage is a relative path */}
                   {/* <img src={getFullImageUrl(item.eventImage)} alt={item.eventName} /> */}
-                  <img src={item.eventImage} alt={item.eventName} /> {/* Using mapped path directly */}
+                  <img
+                    src={item.eventImage} // Using mapped path directly (should be full URL)
+                    alt={item.eventName}
+                    // 添加 onError 处理器来处理图片加载失败的情况
+                    onError={(e) => {
+                      e.target.onerror = null; // 防止无限循环
+                      e.target.src = getRandomDefaultImageUrl(); // 加载失败时显示随机默认图片
+                    }}
+                  />
                 </div>
 
                 <div className={styles.itemDetails}>

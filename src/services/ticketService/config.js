@@ -5,7 +5,8 @@ export const TICKET_ENDPOINTS = {
   // 获取当前用户的所有票据 (需要用户ID)
   GET_USER_TICKETS: (userId) => apiUrl(`/ticket/userid/${userId}`), // 示例路径
   // 申请退票
-  REFUND_TICKET: (ticketId) => apiUrl(`/tickets/${ticketId}/refund`), // 示例路径
+  // 根据后端实际接口修改为 DELETE /api/ticket 并发送 ticket_id 在 body 中
+  REFUND_TICKET: () => apiUrl(`/ticket`), // 端点路径修改为 /ticket，不再需要 ticketId 参数来构建 URL
   // 下载票据 (例如 QR 码或 PDF)
   DOWNLOAD_TICKET: (ticketId) => apiUrl(`/tickets/${ticketId}/download`), // 示例路径
   // 管理员更新票据状态
