@@ -1,49 +1,57 @@
 import { buildApiUrl } from '../../shared/apiConfig';
 import { authenticatedRequest } from '../../authService';
 import { CART_ENDPOINTS } from '../config';
-import { 
-  validateUserAndGetId, 
-  mapCartItemFromApi, 
+import {
+  validateUserAndGetId,
+  mapCartItemFromApi,
   isApiResponseSuccess,
-  logCartOperation 
+  logCartOperation
 } from '../utils';
-import { enrichCartItems } from './enrichCartItems';
 
 /**
  * 获取当前用户的购物车项目
- * @param {boolean} enrichData - 是否丰富数据（获取票种和事件信息）
  * @returns {Promise<Array>} 购物车项目列表
  */
-export const getCartItems = async (enrichData = true) => {
+export const getCartItems = async () => {
   logCartOperation('GET_CART_ITEMS', 'STARTED');
-  
+
   try {
     // 验证用户并获取ID
     const userId = validateUserAndGetId();
-    
+
     // 构建API URL
     const apiUrl = buildApiUrl(CART_ENDPOINTS.GET_CART(userId));
+    console.log('[cartService/getCartItems.js] Fetching cart items from:', apiUrl);
 
     // 发送API请求
     const response = await authenticatedRequest(apiUrl, {
       method: 'GET',
     });
-    // console.log('获取购物车的API响应:', response);
+    console.log('[cartService/getCartItems.js] Received API response:', response);
+
 
     // 处理成功响应
-    if (isApiResponseSuccess(response) && response.data) {
-      const basicItems = response.data.map(mapCartItemFromApi);
+    // 新的API返回 { data: [...items], message: "ok" }
+    if (isApiResponseSuccess(response) && response.data && Array.isArray(response.data)) {
+      console.log(`[cartService/getCartItems.js] Successfully fetched ${response.data.length} cart items.`);
+      // 使用更新后的mapCartItemFromApi映射原始API项目
+      const mappedItems = response.data.map(mapCartItemFromApi).filter(item => item !== null); // 过滤掉映射中任何null结果
+      logCartOperation('GET_CART_ITEMS', 'FINISHED', { itemCount: mappedItems.length });
+      // 直接返回映射的项目
 
-      if (enrichData) {
-        return await enrichCartItems(basicItems);
-      }
-      return basicItems;
+      return mappedItems; 
+
     } else {
-      return [];
+      // 处理响应正常但数据格式意外的情况
+      console.error('[cartService/getCartItems.js] Failed to fetch cart items or invalid format:', response);
+      logCartOperation('GET_CART_ITEMS', 'FAILED', { response });
+      // 如果响应不在预期的成功格式中，则抛出错误
+      throw new Error((response && response.message) || (response && response.error) || 'Failed to fetch cart items or invalid response format');
     }
 
   } catch (error) {
+    console.error("[cartService/getCartItems.js] Error fetching cart items:", error); // 记录错误
     logCartOperation('GET_CART_ITEMS', 'FAILED', { error: error.message });
-    throw error;
+    throw error; // 重新抛出错误以供组件处理
   }
 };

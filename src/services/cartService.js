@@ -6,8 +6,7 @@
 // 从新的模块化结构中导入所有功能
 export { 
   getCartItems,
-  addToCart, 
-  updateCartItemQuantity,
+  addToCart,
   removeFromCart,
   checkout
 } from './cartService/index';

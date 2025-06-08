@@ -2,83 +2,49 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   getCartItems,
-  updateCartItemQuantity,
+  // Removed updateCartItemQuantity import
   removeFromCart,
-  checkout, // 导入 checkout (目前是 mock 或需要替换)
+  checkout, // Import checkout
 } from "../../services/cartService";
 import styles from "./UserCart.module.css";
+// Assuming getFullImageUrl is available in a shared utility file, e.g., ../../utils/imageUtils
+// import { getFullImageUrl } from '../../utils/imageUtils'; // Example import if needed
 
 const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [processingItemId, setProcessingItemId] = useState(null); // New state
+  const [processingItemId, setProcessingItemId] = useState(null); // State for item being removed
   const navigate = useNavigate();
 
-  // 加载购物车商品
+  // Load cart items
   useEffect(() => {
     loadCartItems();
-  }, []); // 依赖项为空数组，只在组件挂载时加载一次
+  }, []); // Empty dependency array means this effect runs once on mount
 
   const loadCartItems = async () => {
     try {
       setLoading(true);
-      // 调用更新后的 getCartItems 函数
+      console.log('Loading cart items...');
+      // Call the updated getCartItems function (no longer needs enrichData=true)
       const items = await getCartItems();
-      // 注意：这里接收到的 items 已经是经过 cartService 映射过的格式
+      // Note: items received here are already in the mapped frontend format
       setCartItems(items);
       setError(null);
+      console.log('Cart loaded:', items);
     } catch (err) {
-      setError('加载购物车失败: ' + (err.message || '未知错误'));
+      console.error('Failed to load cart:', err);
+      setError('Failed to load cart: ' + (err.message || 'Unknown error'));
     } finally {
       setLoading(false);
     }
   };
 
-  // 更新商品数量
-  const handleQuantityChange = async (itemId, newQuantity) => {
-    const originalCartItems = [...cartItems]; // Store original items for rollback
-    setProcessingItemId(itemId); // Indicate this item is being processed
+  // Removed handleQuantityChange function as quantity modification is no longer needed.
 
-    // Optimistically update UI
-    setCartItems(prevItems =>
-      prevItems.map(item =>
-        (item.id === itemId || item.cartItemId === itemId)
-          ? {
-              ...item,
-              quantity: newQuantity,
-              totalPrice: newQuantity * item.pricePerTicket, // Recalculate totalPrice
-            }
-          : item
-      )
-    );
 
-    try {
-      const itemToUpdate = originalCartItems.find(item => item.id === itemId || item.cartItemId === itemId);
-
-      if (!itemToUpdate) {
-        throw new Error(`未找到购物车项目 ${itemId} 进行后端同步`);
-      }
-
-      const ticketTypeId = itemToUpdate.ticketTypeId;
-
-      if (typeof ticketTypeId === 'undefined') {
-        throw new Error(`项目 ${itemId} 的 ticketTypeId 未定义`);
-      }
-
-      await updateCartItemQuantity(itemId, newQuantity, ticketTypeId);
-      setError(null); 
-    } catch (err) {
-      setError('更新商品数量失败: ' + (err.message || '未知错误'));
-      // Rollback UI to original state if API call fails
-      setCartItems(originalCartItems);
-    } finally {
-      setProcessingItemId(null); // Clear processing state
-    }
-  };
-
-  // 删除商品
+  // Remove item from cart
   const handleRemoveItem = async (itemId) => {
     if (
       window.confirm(
@@ -92,10 +58,14 @@ const UserCart = () => {
       setCartItems(prevItems => prevItems.filter(item => item.id !== itemId && item.cartItemId !== itemId));
 
       try {
+        // Removed diagnostic log: console.log(`[UserCart.jsx] Attempting to remove item with ID: ${itemId}`);
+        // Call removeFromCart directly
         await removeFromCart(itemId);
         setError(null);
+        console.log(`Item ${itemId} removed successfully.`);
       } catch (err) {
-        setError('删除商品失败: ' + (err.message || '未知错误'));
+        console.error(`Failed to remove item ${itemId}:`, err);
+        setError('Failed to remove item: ' + (err.message || 'Unknown error'));
         // Rollback UI to original state if API call fails
         setCartItems(originalCartItems);
       } finally {
@@ -104,7 +74,7 @@ const UserCart = () => {
     }
   };
 
-  // 结账
+  // Checkout
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
       alert("Your cart is empty");
@@ -113,7 +83,9 @@ const UserCart = () => {
 
     try {
       setIsCheckingOut(true);
-      const result = await checkout(cartItems); // 传递当前购物车项目
+      console.log('Starting checkout...');
+      // Pass current cart items to checkout (assuming checkout service uses this)
+      const result = await checkout(cartItems);
 
       setIsCheckingOut(false);
 
@@ -123,22 +95,22 @@ const UserCart = () => {
          setCartItems([]); // Clear the cart on successful checkout
          // Navigate to a relevant page, e.g., user's tickets/orders page or homepage
          // Since no order_id is directly returned, can't go to specific order confirmation
-         navigate("/user/tickets"); 
+         navigate("/user/tickets");
       } else {
          // Handle cases where checkout might not throw an error but isn't successful
          alert(result.message || "Checkout failed. Please try again.");
       }
 
     } catch (err) {
-      setError('结账失败: ' + (err.message || '未知错误'));
+      console.error('Checkout failed:', err);
+      setError('Checkout failed: ' + (err.message || 'Unknown error'));
       setIsCheckingOut(false);
     }
   };
 
   const calculateTotalPrice = () => {
-    // 确保 cartItems 中的每个 item 都有 totalPrice 字段
-    // 如果后端返回的数据没有 totalPrice，需要在 getCartItems 中计算或映射
-    return cartItems.reduce((total, item) => total + (item.totalPrice || (item.quantity * item.pricePerTicket) || 0), 0);
+    // Sum up totalPrice from each item (which is quantity * pricePerTicket, where quantity is 1)
+    return cartItems.reduce((total, item) => total + (item.totalPrice || 0), 0);
   };
 
   if (loading) {
@@ -147,7 +119,7 @@ const UserCart = () => {
 
   return (
     <div className={styles.cartPage}>
-      {cartItems.length === 0 && !loading ? ( // 只有在不加载且购物车为空时显示
+      {cartItems.length === 0 && !loading ? ( // Only show when not loading and cart is empty
         <div className={styles.emptyCart}>
           <p>Your cart is empty</p>
           <Link to="/events" className={styles.browseBtn}>
@@ -157,40 +129,51 @@ const UserCart = () => {
       ) : (
         <>
           <h2>Your Cart</h2>
-          {error && <div className={styles.error}>{error}</div>} {/* 显示错误信息 */}
+          {error && <div className={styles.error}>{error}</div>} {/* Display error message */}
           <div className={styles.cartItems}>
             {cartItems.map((item) => (
-              <div key={item.id} className={styles.cartItem}> {/* 使用后端返回的 cart_item_id 作为 key */}
+              // Removed diagnostic log: console.log('[UserCart.jsx] Mapping item with ID:', item.id, 'and cartItemId:', item.cartItemId);
+              <div key={item.id} className={styles.cartItem}> {/* Use backend cart_item_id as key */}
                 <div className={styles.itemImage}>
-                  {/* 假设 item.eventImage 包含了完整的图片 URL */}
-                  <img src={item.eventImage} alt={item.eventName} />
+                  {/* Assuming item.eventImage contains the image path/URL mapped from API */}
+                  {/* You might need a utility function here to construct the full URL if item.eventImage is a relative path */}
+                  {/* <img src={getFullImageUrl(item.eventImage)} alt={item.eventName} /> */}
+                  <img src={item.eventImage} alt={item.eventName} /> {/* Using mapped path directly */}
                 </div>
 
                 <div className={styles.itemDetails}>
                   <h3>{item.eventName}</h3>
                   <div className={styles.itemInfo}>
-                    {/* 假设后端返回了这些信息，或者在 getCartItems 中补充 */}
+                    {/* Assuming backend provides these details, mapped in mapCartItemFromApi */}
                     <p>
-                      <strong>Date:</strong> {item.date}
+                      <strong>Date:</strong> {item.eventDate} {/* Use mapped eventDate */}
                     </p>
                     <p>
-                      <strong>Time:</strong> {item.time}
+                      <strong>Time:</strong> {item.eventTime} {/* Use mapped eventTime */}
                     </p>
                     <p>
-                      <strong>Venue:</strong> {item.venue}
+                      <strong>Venue:</strong> {item.eventVenue} {/* Use mapped eventVenue */}
                     </p>
                     <p>
-                      <strong>Ticket Type:</strong> {item.ticketName || item.ticketType} {/* 使用 ticketName 或 ticketType */}
+                      <strong>Ticket Type:</strong> {item.ticketTypeName} {/* Use mapped ticketTypeName */}
                     </p>
+                     {/* Display Seat information if available */}
+                     {item.seat && (
+                         <p>
+                             <strong>Seat:</strong> {item.seat} {/* Display mapped seat */}
+                         </p>
+                     )}
                   </div>
                 </div>
 
+                {/* Removed Quantity controls */}
+                {/*
                 <div className={styles.itemQuantity}>
                   <button
                     onClick={() =>
                       handleQuantityChange(item.id, item.quantity - 1)
                     }
-                    disabled={item.quantity <= 1 || isCheckingOut || processingItemId === item.id} // Updated
+                    disabled={item.quantity <= 1 || isCheckingOut || processingItemId === item.id}
                   >
                     -
                   </button>
@@ -199,21 +182,22 @@ const UserCart = () => {
                     onClick={() =>
                       handleQuantityChange(item.id, item.quantity + 1)
                     }
-                    disabled={isCheckingOut || processingItemId === item.id} // Updated
+                    disabled={isCheckingOut || processingItemId === item.id}
                   >
                     +
                   </button>
                 </div>
+                */}
 
                 <div className={styles.itemPrice}>
-                  {/* 假设 item.totalPrice 存在或可以计算 */}
-                  ${(item.totalPrice || (item.quantity * item.pricePerTicket) || 0).toFixed(2)}
+                  {/* Display total price for this item (which is pricePerTicket * 1) */}
+                  ${(item.totalPrice || 0).toFixed(2)}
                 </div>
 
                 <button
                   className={styles.removeButton}
                   onClick={() => handleRemoveItem(item.id)}
-                  disabled={isCheckingOut || processingItemId === item.id} // Updated
+                  disabled={isCheckingOut || processingItemId === item.id} // Disable if checking out or processing this item
                 >
                   Remove
                 </button>
@@ -227,7 +211,7 @@ const UserCart = () => {
               <span>Subtotal:</span>
               <span>${calculateTotalPrice().toFixed(2)}</span>
             </div>
-            {/* 可以添加其他费用，如税费、运费等 */}
+            {/* Add other fees like tax, shipping, etc. if applicable */}
             <div className={styles.summaryRow}>
               <span>Total:</span>
               <span>${calculateTotalPrice().toFixed(2)}</span>
@@ -235,7 +219,7 @@ const UserCart = () => {
             <button
               className={styles.checkoutButton}
               onClick={handleCheckout}
-              disabled={cartItems.length === 0 || isCheckingOut} // 购物车为空或结账中禁用
+              disabled={cartItems.length === 0 || isCheckingOut} // Disable if cart is empty or checking out
             >
               {isCheckingOut ? 'Processing...' : 'Checkout'}
             </button>

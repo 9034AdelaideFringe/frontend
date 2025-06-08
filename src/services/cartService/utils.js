@@ -2,9 +2,9 @@ import { getCurrentUser } from '../authService/user-service';
 import { ERROR_MESSAGES, DEFAULT_VALUES } from './config';
 
 /**
- * 验证用户身份并获取用户ID
- * @returns {string} 用户ID
- * @throws {Error} 如果用户未登录或ID缺失
+ * Validate user identity and get user ID
+ * @returns {string} User ID
+ * @throws {Error} If user is not logged in or ID is missing
  */
 export const validateUserAndGetId = () => {
   const currentUser = getCurrentUser();
@@ -15,7 +15,7 @@ export const validateUserAndGetId = () => {
 
   const userId = currentUser.user_id;
   if (!userId) {
-    console.warn("用户ID缺失，无法执行购物车操作", currentUser);
+    console.warn("User ID missing, cannot perform cart operation", currentUser);
     throw new Error(ERROR_MESSAGES.USER_ID_NOT_FOUND);
   }
 
@@ -23,42 +23,68 @@ export const validateUserAndGetId = () => {
 };
 
 /**
- * 映射后端购物车项目到前端格式
- * @param {Object} item - 后端返回的购物车项目
- * @returns {Object} 前端格式的购物车项目
+ * Maps backend cart item object to frontend format.
+ * Assumes the API response for GET /cart/:userId includes nested event_details and ticket_type_details.
+ * @param {Object} item - The raw cart item object from the API.
+ * @returns {Object} The mapped cart item object for the frontend.
  */
-export const mapCartItemFromApi = (item) => ({
-  id: item.cart_item_id,
-  cartItemId: item.cart_item_id,
-  ticketTypeId: item.ticket_type_id,
-  userId: item.user_id,
-  quantity: parseInt(item.quantity, 10) || 0, // Ensure quantity is a number
-  seat: item.seat || null, // Include seat field
-  addedAt: item.added_at,
+export const mapCartItemFromApi = (item) => {
+  if (!item) {
+    console.warn('[cartService/utils.js] mapCartItemFromApi received null/undefined item');
+    return null;
+  }
 
-  // 设置默认值，这些字段需要从其他API获取
-  // Assuming backend provides nested event and ticket type details
-  eventName: item.event?.title || DEFAULT_VALUES.EVENT_NAME,
-  eventImage: item.event?.image || DEFAULT_VALUES.EVENT_IMAGE,
-  eventDate: item.event?.date || DEFAULT_VALUES.DATE, // Changed from 'date' to 'eventDate' for clarity
-  eventTime: item.event?.time || DEFAULT_VALUES.TIME, // Changed from 'time' to 'eventTime' for clarity
-  eventVenue: item.event?.venue || DEFAULT_VALUES.VENUE, // Changed from 'venue' to 'eventVenue' for clarity
-  ticketName: item.ticket_type?.name || DEFAULT_VALUES.TICKET_TYPE_NAME, // Changed from 'TICKET_NAME' to 'TICKET_TYPE_NAME'
-  ticketDescription: item.ticket_type?.description || '',
-  pricePerTicket: parseFloat(item.ticket_type?.price) || DEFAULT_VALUES.PRICE,
-  totalPrice: (parseFloat(item.ticket_type?.price) || DEFAULT_VALUES.PRICE) * (parseInt(item.quantity, 10) || 0),
-  availableQuantity: item.ticket_type?.available_quantity !== undefined ? item.ticket_type.available_quantity : 0,
-});
+  // Extract nested details with fallback checks
+  const eventDetails = item.event_details || {};
+  const ticketTypeDetails = item.ticket_type_details || {};
+
+  // Quantity is implicitly 1 per item in the new structure
+  const quantity = 1;
+  const pricePerTicket = parseFloat(ticketTypeDetails.price) || DEFAULT_VALUES.PRICE;
+  const totalPrice = pricePerTicket * quantity;
+
+  return {
+    // Basic cart item details
+    id: item.cart_item_id, // Use cart_item_id as the unique ID for frontend
+    cartItemId: item.cart_item_id, // Keep original API field name as well
+    ticketTypeId: item.ticket_type_id,
+    userId: item.user_id,
+    quantity: quantity, // Fixed quantity to 1
+    seat: item.seat || null, // Map the seat field
+    addedAt: item.added_at,
+
+    // Event Details (flattened from nested event_details)
+    eventId: eventDetails.event_id || null,
+    eventName: eventDetails.title || DEFAULT_VALUES.EVENT_NAME,
+    // Map the image path directly. Component rendering the image should handle full URL construction.
+    eventImage: eventDetails.image || DEFAULT_VALUES.EVENT_IMAGE,
+    eventDate: eventDetails.date || DEFAULT_VALUES.DATE,
+    eventTime: eventDetails.time || DEFAULT_VALUES.TIME,
+    eventEndTime: eventDetails.end_time || null,
+    eventVenue: eventDetails.venue || DEFAULT_VALUES.VENUE,
+    eventCategory: eventDetails.category || null,
+    eventStatus: eventDetails.status || 'UNKNOWN',
+
+    // Ticket Type Details (flattened from nested ticket_type_details)
+    ticketTypeName: ticketTypeDetails.name || DEFAULT_VALUES.TICKET_TYPE_NAME,
+    ticketTypeDescription: ticketTypeDetails.description || '',
+    pricePerTicket: pricePerTicket, // Use the parsed price
+    ticketTypeAvailableQuantity: ticketTypeDetails.available_quantity !== undefined ? ticketTypeDetails.available_quantity : 0,
+
+    // Calculated total price for this item
+    totalPrice: totalPrice,
+  };
+};
 
 
 /**
- * 创建添加到购物车请求体
- * @param {Object} params - 参数对象
- * @param {string} params.userId - 用户ID
- * @param {string} params.ticketTypeId - 票种ID
- * @param {number} params.quantity - 数量 (应为 1)
- * @param {string} [params.seat] - 座位信息 (可选，对于选座票必须提供)
- * @returns {Object} 请求体
+ * Creates request body for adding an item to the cart.
+ * @param {Object} params - Parameters object
+ * @param {string} params.userId - User ID
+ * @param {string} params.ticketTypeId - Ticket Type ID
+ * @param {number} params.quantity - Quantity (should be 1 for seat-based tickets)
+ * @param {string} [params.seat] - Seat information (optional, required for seated tickets)
+ * @returns {Object} Request body
  */
 export const createCartRequestBody = ({ userId, ticketTypeId, quantity, seat }) => {
   const body = {
@@ -66,43 +92,50 @@ export const createCartRequestBody = ({ userId, ticketTypeId, quantity, seat }) 
     ticket_type_id: ticketTypeId,
     quantity: String(quantity), // Ensure quantity is a string ("1")
   };
-  // --- New: Add seat to body if provided ---
+  // Add seat to body if provided
   if (seat) {
       body.seat = seat;
   }
-  // --- End New ---
   return body;
 };
 
 
 /**
- * 检查API响应是否表示成功
- * @param {Object} response - API响应对象
- * @returns {boolean} 是否成功
+ * Checks if the API response indicates success.
+ * This is a general utility function.
+ * @param {Object} response - API response object
+ * @returns {boolean} Whether it's successful
  */
 export const isApiResponseSuccess = (response) => {
-  // 根据您的API实际成功判断逻辑调整
-  // 常见的成功状态码是 2xx，或者响应体中有 success: true 或 message: "ok"
-  // 这里假设成功的响应有一个 message 字段且不包含明显的错误指示
-  return response && (response.message === 'ok' || response.success === true || (response.data !== undefined && response.error === undefined));
+  // Check for common success indicators:
+  // 1. response object exists and is not null
+  // 2. response has a 'success' field that is true
+  // 3. OR response has a 'message' field that is 'ok' (specific to some APIs like your cart)
+  // 4. OR response does NOT have an 'error' field and 'message' is not 'error' (general check for lack of explicit error)
+  return response !== undefined && response !== null && (
+    response.success === true ||
+    response.message === 'ok' || // Keep this for compatibility with your cart API
+    (response.message !== "error" && !response.error) // More general check
+  );
 };
 
 /**
- * 检查API响应是否表示重复键错误 (例如，重复添加相同的票种/座位)
- * @param {Object} response - API响应对象
- * @returns {boolean} 是否是重复键错误
+ * Checks if the API response indicates a duplicate key error.
+ * @param {Object} response - API response object
+ * @returns {boolean} Whether it's a duplicate key error
  */
 export const isDuplicateKeyError = (response) => {
-  // 根据您的API实际重复键错误判断逻辑调整
-  // 例如，后端可能返回特定的错误码或错误消息
-  return response && response.error && response.error.includes('duplicate key'); // 示例：检查错误消息是否包含 'duplicate key'
+  // Adjust based on your backend's actual duplicate key error response
+  // Example: check for a specific status code or error message content
+  return response && response.error && response.error.includes('duplicate key'); // Example check
 };
 
+
 /**
- * 记录购物车操作日志
- * @param {string} operation - 操作类型 (e.g., 'ADD_TO_CART', 'REMOVE_FROM_CART')
- * @param {string} status - 状态 ('STARTED', 'FINISHED', 'FAILED')
- * @param {Object} [details] - 附加详情
+ * Logs cart operation details.
+ * @param {string} operation - Operation type (e.g., 'ADD_TO_CART', 'REMOVE_FROM_CART')
+ * @param {string} status - Status ('STARTED', 'FINISHED', 'FAILED')
+ * @param {Object} [details] - Additional details
  */
 export const logCartOperation = (operation, status, details) => {
   console.log(`[CartService] ${operation} ${status}`, details || '');
