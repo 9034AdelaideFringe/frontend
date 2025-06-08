@@ -53,6 +53,36 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* 假设 FilterBar 使用 Flexbox 横向布局其直接子元素 */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap; /* 允许换行 */
+  gap: 15px; /* 子元素之间的间距 */
+  align-items: flex-start; /* 子元素顶部对齐 */
+}
+
+/* 新增的容器，用于纵向布局 SearchFilter 和 CapacityFilter */
+.searchAndCapacityFilters {
+  display: flex;
+  flex-direction: column; /* 纵向排列 */
+  gap: 10px; /* SearchFilter 和 CapacityFilter 之间的间距 */
+  /* 您可能需要根据需要调整宽度 */
+  /* width: 200px; */
+}
+
+/* 如果 SearchFilter 和 CapacityFilter 内部有自己的容器，可能需要调整 */
+/* 例如，如果 SearchFilter 内部有一个 input，您可能需要调整 input 的宽度 */
+.searchInput {
+    width: 100%; /* 让搜索输入框填充其父容器的宽度 */
+    box-sizing: border-box; /* 包含 padding 和 border 在宽度内 */
+}
+
+/* 如果 CapacityFilter 内部的按钮需要填充宽度 */
+.capacityFilter button {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 @media (max-width: 768px) {
   .filterControls {
     flex-direction: column;

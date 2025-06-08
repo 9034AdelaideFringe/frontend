@@ -53,6 +53,7 @@
 .priceInputs {
   display: flex;
   gap: 15px;
+  flex-direction: column;
 }
 
 .priceField {
@@ -82,4 +83,41 @@
   border-color: #ff3366;
   outline: none;
   box-shadow: 0 0 0 2px rgba(255, 51, 102, 0.2);
+}
+
+/* --- New styles for filter buttons --- */
+.filterButton {
+  padding: 10px 15px; /* Adjust padding as needed */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f8f8f8; /* Light background */
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  /* Ensure button takes full width if its container allows */
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center; /* Center text */
+}
+
+.filterButton:hover {
+  background-color: #eee;
+  border-color: #ccc;
+}
+
+.filterButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.activeFilter {
+  background-color: #ff3366; /* Adelaide Fringe primary color */
+  color: white;
+  border-color: #ff3366;
+}
+
+.activeFilter:hover {
+   background-color: #e6004c; /* Darker shade on hover */
+   border-color: #e6004c;
 }
