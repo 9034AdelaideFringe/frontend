@@ -30,6 +30,7 @@ console.error = (...args) => {
 global.fetch = vi.fn();
 
 // 重置所有mocks
+import { beforeEach } from "vitest";
 beforeEach(() => {
   vi.resetAllMocks();
 });
@@ -47,5 +48,5 @@ expect.extend({
   },
 });
 
-// 静默控制台错误，可选
-vi.spyOn(console, "error").mockImplementation(() => {});
+// 静默控制台错误，可选 - 注释掉以便调试
+// vi.spyOn(console, "error").mockImplementation(() => {});

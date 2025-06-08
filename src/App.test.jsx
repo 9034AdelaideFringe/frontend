@@ -1,35 +1,63 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render } from "@testing-library/react";
 import App from "./App";
 
-// 模拟环境变量和路由模块
-vi.mock("react-router-dom", () => {
-  const actual = vi.importActual("react-router-dom");
-  return {
-    ...actual,
-    BrowserRouter: ({ children }) => (
-      <div data-testid="mock-router">{children}</div>
-    ),
-    Routes: ({ children }) => <div data-testid="mock-routes">{children}</div>,
-    Route: ({ children }) => <div data-testid="mock-route">{children}</div>,
-  };
-});
-
-// 模拟 AppRoutes
+// Mock the dependencies
 vi.mock("./routes", () => ({
-  default: () => <div data-testid="mock-app-routes">Mocked Routes</div>,
+  default: () => <div data-testid="app-routes">App Routes</div>,
+}));
+
+vi.mock("./services/connectionManager", () => ({
+  ConnectionProvider: ({ children }) => (
+    <div data-testid="connection-provider">{children}</div>
+  ),
+}));
+
+vi.mock("react-router-dom", () => ({
+  BrowserRouter: ({ children }) => <div data-testid="router">{children}</div>,
 }));
 
 describe("App", () => {
-  it("renders without crashing", () => {
+  beforeEach(() => {
+    // Mock console.log
+    vi.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("renders the app with correct structure", () => {
+    const { getByTestId } = render(<App />);
+
+    // Verify the component hierarchy
+    expect(getByTestId("connection-provider")).toBeInTheDocument();
+    expect(getByTestId("router")).toBeInTheDocument();
+    expect(getByTestId("app-routes")).toBeInTheDocument();
+  });
+
+  it("logs the API URL from environment variables", () => {
+    render(<App />);
+
+    // Just verify console.log was called with the expected pattern
+    expect(console.log).toHaveBeenCalledWith(
+      "VITE_APP_API_URL:12",
+      expect.anything()
+    );
+  });
+
+  it("wraps components in the correct order", () => {
     const { container } = render(<App />);
 
-    // 验证 App 渲染成功，且包含模拟的路由组件
-    expect(
-      container.querySelector('[data-testid="mock-router"]')
-    ).toBeDefined();
-    expect(
-      container.querySelector('[data-testid="mock-app-routes"]')
-    ).toBeDefined();
+    // Check the nesting order: ConnectionProvider > Router > AppRoutes
+    const connectionProvider = container.querySelector(
+      '[data-testid="connection-provider"]'
+    );
+    const router = connectionProvider.querySelector('[data-testid="router"]');
+    const appRoutes = router.querySelector('[data-testid="app-routes"]');
+
+    expect(connectionProvider).toBeInTheDocument();
+    expect(router).toBeInTheDocument();
+    expect(appRoutes).toBeInTheDocument();
   });
 });

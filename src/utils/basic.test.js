@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
 
-// 一个简单的函数用于测试
+// Simple function for testing
 const sum = (a, b) => a + b;
 
-describe("基本测试", () => {
-  it("可以运行最基本的测试", () => {
+describe("Basic tests", () => {
+  it("should run basic test", () => {
     expect(1 + 1).toBe(2);
   });
 
-  it("可以测试一个简单函数", () => {
+  it("should test simple function", () => {
     expect(sum(2, 3)).toBe(5);
   });
 });

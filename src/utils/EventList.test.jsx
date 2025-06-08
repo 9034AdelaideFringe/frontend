@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import EventList from "./EventList";
 
-// 模拟 EventCard 组件和路由
+// Mock EventCard component and routing
 vi.mock("./EventCard", () => ({
   default: ({ event }) => (
     <div data-testid={`event-card-${event.id}`}>
@@ -29,27 +29,45 @@ describe("EventList", () => {
   ];
 
   it("renders a list of events", () => {
-    const { container } = render(<EventList events={mockEvents} />);
+    render(<EventList events={mockEvents} />);
 
-    // 使用标准 DOM 属性验证
     expect(screen.getByText("Test Event 1")).toBeDefined();
     expect(screen.getByText("Test Event 2")).toBeDefined();
     expect(screen.getByText("Abstract 1")).toBeDefined();
     expect(screen.getByText("Abstract 2")).toBeDefined();
-
-    // 验证事件卡片的数量
     expect(screen.getAllByTestId(/^event-card-/)).toHaveLength(2);
   });
 
   it("renders an empty grid when no events", () => {
     const { container } = render(<EventList events={[]} title="Empty List" />);
 
-    // 验证标题存在
     expect(screen.getByText("Empty List")).toBeDefined();
 
-    // 验证网格存在但为空
     const grid = container.querySelector("div[class*='grid']");
     expect(grid).toBeDefined();
     expect(grid.children.length).toBe(0);
+  });
+
+  it("renders with default title when title not provided", () => {
+    render(<EventList events={mockEvents} />);
+    expect(screen.getByText("Event List")).toBeDefined();
+  });
+
+  it("renders with custom title when provided", () => {
+    render(<EventList events={mockEvents} title="Featured Events" />);
+    expect(screen.getByText("Featured Events")).toBeDefined();
+  });
+
+  it("renders without title when title is empty string", () => {
+    render(<EventList events={mockEvents} title="" />);
+    expect(screen.queryByText("Event List")).toBeNull();
+  });
+
+  it("handles single event", () => {
+    const singleEvent = [mockEvents[0]];
+    render(<EventList events={singleEvent} />);
+
+    expect(screen.getByText("Test Event 1")).toBeDefined();
+    expect(screen.getAllByTestId(/^event-card-/)).toHaveLength(1);
   });
 });

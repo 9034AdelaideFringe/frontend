@@ -1,75 +1,77 @@
-import { mockOrders } from './ordersMock';
-import { mockUserTickets } from './ticketsMock';
+import { mockOrders } from "./ordersMock";
+import { mockUserTickets } from "./ticketsMock";
 
-// 存储本地订单数据
+// Store local orders data
 let orders = [...mockOrders];
 
 /**
- * 获取用户的所有订单
- * @returns {Promise<Array>} 订单列表
+ * Get all user orders
+ * @returns {Promise<Array>} List of orders
  */
 export const getUserOrders = () => {
   return Promise.resolve([...orders]);
 };
 
 /**
- * 获取订单详情
- * @param {string} orderId - 订单ID
- * @returns {Promise<Object>} 订单详情
+ * Get order details by ID
+ * @param {string} orderId - Order ID
+ * @returns {Promise<Object>} Order details
  */
 export const getOrderById = (orderId) => {
-  const order = orders.find(order => order.id === orderId);
-  
+  const order = orders.find((order) => order.id === orderId);
+
   if (!order) {
-    return Promise.reject(new Error('Order not found'));
+    return Promise.reject(new Error("Order not found"));
   }
-  
-  // 获取与该订单相关的所有票据
-  const orderTickets = mockUserTickets.filter(ticket => ticket.orderId === orderId);
-  
+
+  // Get all tickets related to this order
+  const orderTickets = mockUserTickets.filter(
+    (ticket) => ticket.orderId === orderId
+  );
+
   return Promise.resolve({
     ...order,
-    tickets: orderTickets
+    tickets: orderTickets,
   });
 };
 
 /**
- * 创建新订单
- * @param {Object} orderData - 订单数据
- * @returns {Promise<Object>} 创建的订单
+ * Create new order
+ * @param {Object} orderData - Order data
+ * @returns {Promise<Object>} Created order
  */
 export const createOrder = (orderData) => {
   const newOrder = {
     id: `order-${Date.now()}`,
     date: new Date().toISOString(),
     totalAmount: orderData.totalAmount,
-    status: 'COMPLETED',
-    items: orderData.items
+    status: "COMPLETED",
+    items: orderData.items,
   };
-  
+
   orders.unshift(newOrder);
-  
+
   return Promise.resolve(newOrder);
 };
 
 /**
- * 取消订单
- * @param {string} orderId - 订单ID
- * @returns {Promise<Object>} 操作结果
+ * Cancel order
+ * @param {string} orderId - Order ID
+ * @returns {Promise<Object>} Operation result
  */
 export const cancelOrder = (orderId) => {
-  const orderIndex = orders.findIndex(order => order.id === orderId);
-  
+  const orderIndex = orders.findIndex((order) => order.id === orderId);
+
   if (orderIndex === -1) {
-    return Promise.reject(new Error('Order not found'));
+    return Promise.reject(new Error("Order not found"));
   }
-  
-  orders = orders.map(order =>
-    order.id === orderId ? { ...order, status: 'CANCELLED' } : order
+
+  orders = orders.map((order) =>
+    order.id === orderId ? { ...order, status: "CANCELLED" } : order
   );
-  
+
   return Promise.resolve({
     success: true,
-    message: 'Order cancelled successfully'
+    message: "Order cancelled successfully",
   });
 };

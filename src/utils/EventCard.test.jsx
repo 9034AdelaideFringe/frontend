@@ -1,15 +1,25 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import EventCard from "./EventCard";
 
-// 模拟 react-router-dom 以避免路由问题
+// Mock react-router-dom to avoid routing issues
 vi.mock("react-router-dom", () => ({
   Link: ({ to, children, className }) => (
-    <a href={to} className={className} data-testid="learn-more-link">
+    <a href={to} className={className} data-testid="event-link">
       {children}
     </a>
   ),
 }));
+
+// Mock defaultImages module
+vi.mock("./defaultImages", () => ({
+  getRandomDefaultImageUrl: vi.fn(() => "https://example.com/default.jpg"),
+}));
+
+// Mock environment variables
+beforeEach(() => {
+  vi.stubEnv("VITE_APP_IMAGE_BASE_URL", "https://example.com/images");
+});
 
 describe("EventCard", () => {
   const mockEvent = {
@@ -20,18 +30,77 @@ describe("EventCard", () => {
   };
 
   it("renders event information correctly", () => {
-    const { container } = render(<EventCard event={mockEvent} />);
+    render(<EventCard event={mockEvent} />);
 
-    // 使用标准 DOM 查询和基本断言
-    const titleElement = screen.getByText("Test Event");
-    const abstractElement = screen.getByText("Test abstract");
-    const imageElement = screen.getByAltText("Test Event");
-    const linkElement = screen.getByTestId("learn-more-link");
+    expect(screen.getByText("Test Event")).toBeDefined();
+    expect(screen.getByText("Test abstract")).toBeDefined();
+    expect(screen.getByAltText("Test Event")).toBeDefined();
+    expect(screen.getByTestId("event-link")).toBeDefined();
+  });
 
-    expect(titleElement).toBeDefined();
-    expect(abstractElement).toBeDefined();
-    expect(imageElement.getAttribute("src")).toBe("test.jpg");
-    expect(linkElement.getAttribute("href")).toBe("/events/1");
-    expect(linkElement.textContent).toBe("Learn More");
+  it("handles missing image with default", () => {
+    const eventWithoutImage = { ...mockEvent, image: null };
+    render(<EventCard event={eventWithoutImage} />);
+
+    const image = screen.getByAltText("Test Event");
+    expect(image.getAttribute("src")).toBe("https://example.com/default.jpg");
+  });
+
+  it("handles missing title with fallback", () => {
+    const eventWithoutTitle = { ...mockEvent, title: null };
+    render(<EventCard event={eventWithoutTitle} />);
+
+    expect(screen.getByText("Untitled Event")).toBeDefined();
+  });
+
+  it("handles missing abstract with fallback", () => {
+    const eventWithoutAbstract = { ...mockEvent, abstract: null };
+    render(<EventCard event={eventWithoutAbstract} />);
+
+    expect(screen.getByText("No description available.")).toBeDefined();
+  });
+
+  it("handles image loading error", () => {
+    render(<EventCard event={mockEvent} />);
+
+    const image = screen.getByAltText("Test Event");
+    fireEvent.error(image);
+
+    expect(image.getAttribute("src")).toBe("https://example.com/default.jpg");
+  });
+
+  it("handles full HTTP URL images", () => {
+    const eventWithHttpImage = {
+      ...mockEvent,
+      image: "https://external.com/image.jpg",
+    };
+    render(<EventCard event={eventWithHttpImage} />);
+
+    const image = screen.getByAltText("Test Event");
+    expect(image.getAttribute("src")).toBe("https://external.com/image.jpg");
+  });
+
+  it("constructs image URL correctly with base URL", () => {
+    render(<EventCard event={mockEvent} />);
+
+    const image = screen.getByAltText("Test Event");
+    expect(image.getAttribute("src")).toBe(
+      "https://example.com/images/test.jpg"
+    );
+  });
+
+  it("handles invalid image path types", () => {
+    const eventWithInvalidImage = { ...mockEvent, image: 123 };
+    render(<EventCard event={eventWithInvalidImage} />);
+
+    const image = screen.getByAltText("Test Event");
+    expect(image.getAttribute("src")).toBe("https://example.com/default.jpg");
+  });
+
+  it("creates correct link to event detail", () => {
+    render(<EventCard event={mockEvent} />);
+
+    const link = screen.getByTestId("event-link");
+    expect(link.getAttribute("href")).toBe("/events/1");
   });
 });
