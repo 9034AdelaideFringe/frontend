@@ -65,6 +65,11 @@ const UserProfile = () => {
         setPasswordError('Password must be at least 8 characters and include letters and numbers');
         return false;
       }
+      // New check: Ensure new password is not the same as the current password
+      if (formData.currentPassword === formData.newPassword) {
+        setPasswordError('New password cannot be the same as the current password.');
+        return false;
+      }
     }
     return true;
   };
