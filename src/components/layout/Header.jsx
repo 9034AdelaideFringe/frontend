@@ -174,38 +174,41 @@ const Header = () => {
         <div className={styles.authButtons}>
           {isLoggedIn ? (
             <div className={styles.userMenu}>
-              <div 
-                className={styles.userAvatar} 
+              <div
+                className={styles.userAvatar}
                 onClick={toggleDropdown}
                 ref={avatarRef}
                 tabIndex="0"
               >
                 {getUserInitial()}
               </div>
-              <div 
+              <div
                 className={`${styles.userDropdown} ${showDropdown ? styles.show : ''}`}
                 ref={dropdownRef}
               >
                 <span className={styles.userName}>{user?.name}</span>
                 {user?.role === 'ADMIN' || user?.role === 'admin' ? (
-                  <Link 
-                    to="/admin" 
-                    className={`${formStyles.btn} ${formStyles.btnSecondary} ${styles.menuLink}`}
+                  <Link
+                    to="/admin"
+                    // Modified: Only use .dropdownItem class
+                    className={styles.dropdownItem}
                     onClick={() => setShowDropdown(false)}
                   >
                     Admin Dashboard
                   </Link>
                 ) : (
-                  <Link 
-                    to="/user" 
-                    className={`${formStyles.btn} ${formStyles.btnSecondary} ${styles.menuLink}`}
+                  <Link
+                    to="/user"
+                    // Modified: Only use .dropdownItem class
+                    className={styles.dropdownItem}
                     onClick={() => setShowDropdown(false)}
                   >
                     My Account
                   </Link>
                 )}
-                <button 
-                  className={`${formStyles.btn} ${formStyles.btnSecondary}`}
+                <button
+                  // Modified: Only use .dropdownItem class
+                  className={styles.dropdownItem}
                   onClick={handleLogout}
                 >
                   Logout
@@ -214,7 +217,8 @@ const Header = () => {
             </div>
           ) : (
             <>
-              <button 
+              {/* Keep existing button styles for Login/Register outside dropdown */}
+              <button
                 className={`${formStyles.btn} ${formStyles.btnSecondary}`}
                 onClick={() => {
                   setLoginError('');
@@ -224,7 +228,7 @@ const Header = () => {
               >
                 Login
               </button>
-              <button 
+              <button
                 className={`${formStyles.btn} ${formStyles.btnPrimary}`}
                 onClick={() => {
                   setRegisterError('');
@@ -314,7 +318,7 @@ const Header = () => {
           <>
             <ForgotPasswordForm onSubmit={handleForgotPasswordSubmit} />
             <div className={formStyles.formFooter}>
-              <button 
+              <button
                 className={formStyles.linkButton}
                 onClick={() => {
                   setIsForgotPasswordModalOpen(false);

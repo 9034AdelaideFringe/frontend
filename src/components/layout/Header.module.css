@@ -75,8 +75,9 @@
   right: 0;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 16px;
+  /* Modified: Lighter shadow similar to homepage cards */
+  box-shadow: 0 4px 24px rgba(59, 130, 246, 0.07); /* Using a blue-tinted shadow */
+  padding: 10px 0; /* Adjusted padding for menu items */
   display: none;
   flex-direction: column;
   min-width: 180px;
@@ -89,9 +90,11 @@
 }
 
 .userName {
-  font-weight: 500;
+  font-weight: 700;
   margin-bottom: 12px;
   color: #333;
+  padding: 0 15px; /* Add horizontal padding */
+  font-size: 1.2rem; /* Adjusted font size for consistency */
 }
 
 .errorMessage {
@@ -104,9 +107,39 @@
   font-size: 0.9rem;
 }
 
-.menuLink {
-  display: block;
-  text-align: center;
-  margin-bottom: 8px;
-  text-decoration: none;
+/* Modified: Styles for general dropdown menu items */
+.dropdownItem {
+display: block;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: 700;
+    background-color: #036bbe45;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin: 6px;
+}
+
+.dropdownItem:hover {
+  /* Modified: Use a light blue background on hover, similar to homepage accents */
+  background-color: rgba(59, 130, 246, 0.08); /* Light blue with some transparency */
+}
+
+/* Optional: Add a separator between items */
+.dropdownItem:not(:last-child) {
+    border-bottom: 1px solid #eee; /* Keep a subtle separator */
+}
+
+/* Style for the Logout button specifically if needed, inheriting from .dropdownItem */
+.userDropdown button.dropdownItem {
+    /* Add any specific button styles here if needed, e.g., color */
+    color: #e53e3e; /* Keep logout button red for clarity */
+}
+
+.userDropdown button.dropdownItem:hover {
+    /* Modified: Use a lighter red background on hover for logout, consistent with light theme */
+    background-color: #ffebeb;
 }

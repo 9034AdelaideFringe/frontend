@@ -6,6 +6,7 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  color: #555; /* Adjusted text color */
 }
 
 .formGroup input {
@@ -14,9 +15,11 @@
   border: 1px solid #e2e8f0;
   border-radius: 0.25rem;
   background-color: white;
+  font-size: 1rem; /* Ensure consistent font size */
 }
 
 .formGroup input:focus {
+  /* Modified: Use blue outline color from homepage */
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
   border-color: transparent;
@@ -24,43 +27,45 @@
 
 .btn {
   display: block;
-  width: 100%;
   padding: 0.75rem;
   border: none;
-  border-radius: 4px;
-  font-weight: 500;
+  /* Modified: More rounded corners like homepage buttons */
+  border-radius: 15px;
+  font-weight: 600; /* Slightly bolder font weight */
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 1rem;
+  font-size: 1rem; /* Ensure consistent font size */
 }
 
-.btnPrimary {
-  background-color: #ff3366;
-  color: white;
-}
-
-.btnPrimary:hover {
-  background-color: #e62c5d;
-}
-
+.btnPrimary,
 .btnSecondary {
-  background-color: transparent;
-  border: 1px solid #ff3366;
-  color: #ff3366;
+  /* Modified: Use blue primary color from homepage */
+  background-color: #3b82f6;
+  color: white;
+  /* Added: Subtle shadow like homepage buttons */
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12);
 }
 
+.btnPrimary:hover,
 .btnSecondary:hover {
-  background-color: #fff5f7;
+  /* Modified: Darker blue on hover */
+  background-color: #2563eb;
+  /* Modified: Enhanced shadow on hover */
+  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.18);
 }
 
 .btnOutline {
   background-color: transparent;
-  color: #ff3366;
-  border: 1px solid #ff3366;
+  /* Modified: Use blue text color */
+  color: #3b82f6;
+  /* Modified: Use blue border color */
+  border: 1px solid #3b82f6;
 }
 
 .btnOutline:hover {
-  background-color: rgba(255, 51, 102, 0.05);
+  /* Modified: Lighter blue background on hover */
+  background-color: rgba(59, 130, 246, 0.05);
 }
 
 .errorText {
@@ -77,13 +82,16 @@
   align-items: center;
   min-height: 100vh;
   padding: 1rem;
-  background-color: #f8f9fa;
+  /* Modified: Use a background similar to homepage */
+  background: linear-gradient(135deg, #e0eaff 0%, #f8fbff 100%);
 }
 
 .authCard {
   background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* Modified: More rounded corners */
+  border-radius: 12px;
+  /* Modified: Softer, blue-tinted shadow */
+  box-shadow: 0 4px 24px rgba(59, 130, 246, 0.07);
   padding: 2rem;
   width: 100%;
   max-width: 400px;
@@ -91,8 +99,11 @@
 
 .authTitle {
   text-align: center;
-  color: #ff3366;
+  /* Modified: Use darker blue title color from homepage */
+  color: #2563eb;
   margin-bottom: 1.5rem;
+  font-size: 1.8rem; /* Adjusted font size */
+  font-weight: 700; /* Adjusted font weight */
 }
 
 .formToggle {
@@ -109,44 +120,58 @@
   font-weight: 500;
   color: #64748b;
   cursor: pointer;
+  transition: color 0.2s ease, border-bottom-color 0.2s ease; /* Added transition */
 }
 
 .activeBtn {
-  color: #ff3366;
-  border-bottom: 2px solid #ff3366;
+  /* Modified: Use blue active color */
+  color: #3b82f6;
+  border-bottom: 2px solid #3b82f6;
 }
 
 .formFooter {
-  margin-top: 1rem;
+  margin-top: 1.5rem; /* Increased margin */
   text-align: center;
+  font-size: 0.95rem; /* Adjusted font size */
+  color: #555; /* Adjusted text color */
+}
+
+.formFooter p {
+    margin: 0; /* Remove default paragraph margin */
 }
 
 .link {
-  color: #ff3366;
+  /* Modified: Use blue link color */
+  color: #3b82f6;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
 .link:hover {
   text-decoration: underline;
-  color: #e62c5d;
+  /* Modified: Darker blue on hover */
+  color: #2563eb;
 }
 
 .successMessage {
-  background-color: #dcf8e6;
-  color: #0f783c;
+  /* Modified: Softer green background and text color */
+  background-color: #d4edda;
+  color: #155724;
   padding: 1rem;
   border-radius: 4px;
   margin-bottom: 1rem;
   text-align: center;
+  border: 1px solid #c3e6cb; /* Added border */
 }
 
 .errorMessage {
-  background-color: #fee2e2;
-  color: #ef4444;
+  /* Modified: Softer red background and text color */
+  background-color: #f8d7da;
+  color: #721c24;
   padding: 1rem;
   border-radius: 4px;
   margin-bottom: 1rem;
+  border: 1px solid #f5c6cb; /* Added border */
 }
 
 .loading {
@@ -166,14 +191,17 @@
   background: none;
   border: none;
   padding: 0;
-  color: #ff3366;
+  /* Modified: Use blue link color */
+  color: #3b82f6;
   text-decoration: none;
   cursor: pointer;
   font-size: inherit;
   font-family: inherit;
+  transition: all 0.2s ease;
 }
 
 .linkButton:hover {
   text-decoration: underline;
-  color: #e62c5d;
+  /* Modified: Darker blue on hover */
+  color: #2563eb;
 }
