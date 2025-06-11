@@ -215,6 +215,109 @@
   background-color: #e62c5d;
 }
 
+.modalOverlay {
+  position: fixed; /* Fixed position relative to the viewport */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+  display: flex; /* Use flexbox to center content */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  z-index: 1000; /* Ensure it's on top of other content */
+}
+
+.modalContent {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  max-width: 500px; /* Limit the width of the modal */
+  width: 90%; /* Make it responsive */
+  z-index: 1001; /* Higher z-index than overlay */
+}
+
+.modalContent h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.modalContent p {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #555;
+}
+
+.paymentInputs {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between input groups */
+    margin-bottom: 20px;
+}
+
+.paymentInputs label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block; /* Make label a block element */
+}
+
+.paymentInputs input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%; /* Make input fill container */
+    box-sizing: border-box; /* Include padding and border in element's total width */
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: 10px; /* Space between buttons */
+  margin-top: 20px;
+}
+
+.confirmPaymentButton,
+.cancelPaymentButton,
+.applePayButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.confirmPaymentButton {
+  background-color: #ff3366;
+  color: white;
+}
+
+.confirmPaymentButton:hover {
+  background-color: #e62c5d;
+}
+
+.cancelPaymentButton {
+  background-color: #ddd;
+  color: #333;
+}
+
+.cancelPaymentButton:hover {
+  background-color: #ccc;
+}
+
+.applePayButton {
+    background-color: #000; /* Example Apple Pay button color */
+    color: white;
+    /* Add specific styling for Apple Pay button if needed */
+}
+
+.applePayButton:hover {
+    background-color: #333;
+}
+
 @media (max-width: 768px) {
   .cartItem {
     flex-direction: column;

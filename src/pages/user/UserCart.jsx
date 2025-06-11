@@ -19,6 +19,7 @@ const UserCart = () => {
   const [error, setError] = useState(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [processingItemId, setProcessingItemId] = useState(null); // State for item being removed
+  const [showPaymentModal, setShowPaymentModal] = useState(false); // State to control payment modal visibility
   const navigate = useNavigate();
 
   // Load cart items
@@ -96,9 +97,10 @@ const UserCart = () => {
       if (result && result.success) {
          alert(result.message || "Checkout successful! Your order is being processed.");
          setCartItems([]); // Clear the cart on successful checkout
-         // Navigate to a relevant page, e.g., user's tickets/orders page or homepage
-         // Since no order_id is directly returned, can't go to specific order confirmation
-         navigate("/user/tickets");
+
+         // *** Replace window.confirm with showing the payment modal ***
+         setShowPaymentModal(true);
+
       } else {
          // Handle cases where checkout might not throw an error but isn't successful
          alert(result.message || "Checkout failed. Please try again.");
@@ -110,6 +112,20 @@ const UserCart = () => {
       setIsCheckingOut(false);
     }
   };
+
+  // Handle payment confirmation from modal
+  const handlePaymentConfirmed = () => {
+    setShowPaymentModal(false); // Close the modal
+    navigate("/user/tickets"); // Navigate to tickets page
+  };
+
+  // Handle closing the modal without confirming payment (e.g., cancel)
+  const handleClosePaymentModal = () => {
+    setShowPaymentModal(false);
+    // Optionally, you might want to handle what happens if the user cancels payment
+    // For now, we just close the modal.
+  };
+
 
   const calculateTotalPrice = () => {
     // Sum up totalPrice from each item (which is quantity * pricePerTicket, where quantity is 1)
@@ -236,6 +252,30 @@ const UserCart = () => {
             </button>
           </div>
         </>
+      )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <p>Please enter payment details</p>
+            {/* Add simulated input fields here */}
+            <div className={styles.paymentInputs}>
+                <label htmlFor="cardNumber">Card Number:</label>
+                <input type="text" id="cardNumber" placeholder="XXXX-XXXX-XXXX-XXXX" />
+                <label htmlFor="expiryDate">Expiry Date:</label>
+                <input type="text" id="expiryDate" placeholder="MM/YY" />
+                <label htmlFor="cvv">CVV:</label>
+                <input type="text" id="cvv" placeholder="XXX" />
+                {/* Or simulate Apple Pay button */}
+                <button className={styles.applePayButton}>Pay with Apple Pay</button> {/* Example */}
+            </div>
+            <div className={styles.modalActions}>
+              <button onClick={handlePaymentConfirmed} className={styles.confirmPaymentButton}>Confirm Payment</button>
+              <button onClick={handleClosePaymentModal} className={styles.cancelPaymentButton}>Cancel</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
